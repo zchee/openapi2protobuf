@@ -17,7 +17,6 @@
 !*.go
 !go.sum
 !go.mod
-!go.work.sum
 
 !README.md
 !LICENSE
@@ -28,3 +27,4 @@
 !.golangci.yml
 
 !*/
+vendor/
