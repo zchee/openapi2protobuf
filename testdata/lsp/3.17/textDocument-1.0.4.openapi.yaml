@@ -1,0 +1,241 @@
+components:
+  schemas:
+    CharCode:
+      enum:
+      - 10
+      - 13
+      title: CharCode
+      type: number
+    DocumentUri:
+      description: A tagging type for string properties that are actually URIs.
+      title: DocumentUri
+      type: string
+    FullTextDocument:
+      defaultProperties: []
+      properties:
+        _content:
+          title: _content
+          type: string
+        _languageId:
+          title: _languageId
+          type: string
+        _lineOffsets:
+          items:
+            type: integer
+          title: _lineOffsets
+          type: array
+        _uri:
+          $ref: '#/components/schemas/DocumentUri'
+          title: _uri
+        _version:
+          title: _version
+          type: integer
+        languageId:
+          title: languageId
+          type: string
+        lineCount:
+          title: lineCount
+          type: integer
+        uri:
+          title: uri
+          type: string
+        version:
+          title: version
+          type: integer
+      propertyOrder:
+      - _uri
+      - _languageId
+      - _version
+      - _content
+      - _lineOffsets
+      - uri
+      - languageId
+      - version
+      - getText
+      - update
+      - getLineOffsets
+      - positionAt
+      - offsetAt
+      - lineCount
+      required:
+      - _content
+      - _languageId
+      - _uri
+      - _version
+      - languageId
+      - lineCount
+      - uri
+      - version
+      title: FullTextDocument
+      type: object
+    Position:
+      defaultProperties: []
+      description: "Position in a text document expressed as zero-based line and character
+        offset.\nThe offsets are based on a UTF-16 string representation. So a string
+        of the form\n`a\U00010400b` the character offset of the character `a` is 0,
+        the character offset of `\U00010400`\nis 1 and the character offset of b is
+        3 since `\U00010400` is represented using two code\nunits in UTF-16.\n\nPositions
+        are line end character agnostic. So you can not specify a position that\ndenotes
+        `\\r|\\n` or `\\n|` where `|` represents the character offset."
+      properties:
+        character:
+          description: |-
+            Character offset on a line in a document (zero-based). Assuming that the line is
+            represented as a string, the `character` value represents the gap between the
+            `character` and `character + 1`.
+
+            If the character value is greater than the line length it defaults back to the
+            line length.
+            If a line number is negative, it defaults to 0.
+          title: character
+          type: integer
+        line:
+          description: |-
+            Line position in a document (zero-based).
+            If a line number is greater than the number of lines in a document, it defaults back to the number of lines in the document.
+            If a line number is negative, it defaults to 0.
+          title: line
+          type: integer
+      propertyOrder:
+      - line
+      - character
+      required:
+      - character
+      - line
+      title: Position
+      type: object
+    Range:
+      defaultProperties: []
+      description: |-
+        A range in a text document expressed as (zero-based) start and end positions.
+
+        If you want to specify a range that contains a line including the line ending
+        character(s) then use an end position denoting the start of the next line.
+        For example:
+        ```ts
+        {
+            start: { line: 5, character: 23 }
+            end : { line 6, character : 0 }
+        }
+        ```
+      properties:
+        end:
+          $ref: '#/components/schemas/Position'
+          description: The range's end position.
+          title: end
+        start:
+          $ref: '#/components/schemas/Position'
+          description: The range's start position
+          title: start
+      propertyOrder:
+      - start
+      - end
+      required:
+      - end
+      - start
+      title: Range
+      type: object
+    TextDocument:
+      defaultProperties: []
+      description: |-
+        A simple text document. Not to be implemented. The document keeps the content
+        as string.
+      properties:
+        languageId:
+          description: The identifier of the language associated with this document.
+          title: languageId
+          type: string
+        lineCount:
+          description: The number of lines in this document.
+          title: lineCount
+          type: integer
+        uri:
+          $ref: '#/components/schemas/DocumentUri'
+          description: |-
+            The associated URI for this document. Most documents have the __file__-scheme, indicating that they
+            represent files on disk. However, some documents may have other schemes indicating that they are not
+            available on disk.
+          title: uri
+        version:
+          description: |-
+            The version number of this document (it will increase after each
+            change, including undo/redo).
+          title: version
+          type: integer
+      propertyOrder:
+      - uri
+      - languageId
+      - version
+      - getText
+      - positionAt
+      - offsetAt
+      - lineCount
+      required:
+      - languageId
+      - lineCount
+      - uri
+      - version
+      title: TextDocument
+      type: object
+    TextDocumentContentChangeEvent:
+      oneOf:
+      - defaultProperties: []
+        properties:
+          range:
+            $ref: '#/components/schemas/Range'
+            description: The range of the document that changed.
+            title: range
+          rangeLength:
+            description: The optional length of the range that got replaced.
+            title: rangeLength
+            type: integer
+          text:
+            description: The new text for the provided range.
+            title: text
+            type: string
+        propertyOrder:
+        - range
+        - rangeLength
+        - text
+        required:
+        - range
+        - text
+        type: object
+      - defaultProperties: []
+        properties:
+          text:
+            description: The new text of the whole document.
+            title: text
+            type: string
+        propertyOrder:
+        - text
+        required:
+        - text
+        type: object
+      description: |-
+        An event describing a change to a text document. If range and rangeLength are omitted
+        the new text is considered to be the full content of the document.
+    TextEdit:
+      defaultProperties: []
+      description: A text edit applicable to a text document.
+      properties:
+        newText:
+          description: |-
+            The string to be inserted. For delete operations use an
+            empty string.
+          title: newText
+          type: string
+        range:
+          $ref: '#/components/schemas/Range'
+          description: |-
+            The range of the text document to be manipulated. To insert
+            text into a document create a range where start === end.
+          title: range
+      propertyOrder:
+      - range
+      - newText
+      required:
+      - newText
+      - range
+      title: TextEdit
+      type: object
