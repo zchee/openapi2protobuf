@@ -5,24 +5,28 @@ package compiler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-openapi/jsonpointer"
 	"github.com/iancoleman/strcase"
 	"github.com/jhump/protoreflect/desc"
-	descbuilder "github.com/jhump/protoreflect/desc/builder"
+	"github.com/jhump/protoreflect/desc/builder"
 	"github.com/jhump/protoreflect/desc/protoprint"
+	"google.golang.org/protobuf/types/descriptorpb"
 
+	"go.lsp.dev/openapi2protobuf/internal"
 	"go.lsp.dev/openapi2protobuf/openapi"
 )
 
 var _ = jsonpointer.GetForToken
+
+var _ = descriptorpb.Default_EnumOptions_Deprecated
 
 // Option represents an idiomatic functional option pattern to compile the Protocol Buffers structure from the OpenAPI schema.
 type Option func(o *option)
@@ -37,8 +41,8 @@ type option struct {
 	wrapPrimitives    bool
 }
 
-// WithPackagePath specifies the package name when compiling the Protocol Buffers.
-func WithPackagePath(packageName string) Option {
+// WithPackageName specifies the package name when compiling the Protocol Buffers.
+func WithPackageName(packageName string) Option {
 	return func(o *option) { o.packageName = packageName }
 }
 
@@ -74,9 +78,14 @@ func WithWrapPrimitives(wrapPrimitives bool) Option {
 	return func(o *option) { o.wrapPrimitives = wrapPrimitives }
 }
 
+type lookupFunc func(token string) (interface{}, error)
+
 type compiler struct {
 	opt *option
-	fb  *descbuilder.FileBuilder
+	fb  *builder.FileBuilder
+
+	schemasLookupFunc lookupFunc
+	pathLookupFunc    lookupFunc
 }
 
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.
@@ -96,7 +105,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 
 	c := &compiler{
 		opt: opt,
-		fb:  descbuilder.NewFile(pkgname + ".proto").SetName(pkgname).SetPackageName(pkgname),
+		fb:  builder.NewFile(pkgname + ".proto").SetName(pkgname).SetPackageName(pkgname),
 	}
 	c.fb.SetProto3(true) // forces compiling to proto3 syntax
 
@@ -175,19 +184,202 @@ func (c *compiler) compileServers(info openapi3.Servers) error { return nil }
 func (c *compiler) compilePaths(paths openapi3.Paths) error { return nil }
 
 func (c *compiler) compileComponents(components openapi3.Components) error {
+	c.schemasLookupFunc = components.Schemas.JSONLookup
+
 	for name, schema := range components.Schemas {
-		msg, err := c.compileSchemaRef(name, schema, components.Schemas.JSONLookup)
+		msg, err := c.compileSchemaRef(name, schema)
 		if err != nil {
 			return err
 		}
-		if msg == nil {
-			continue
-		}
-
 		c.fb.AddMessage(msg)
 	}
 
 	return nil
+}
+
+func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*builder.MessageBuilder, error) {
+	msg := builder.NewMessage(normalizeMessageName(name))
+
+	if val := schemaRef.Value; val != nil {
+		if isEnum(val) {
+			return c.CompileEnum(msg, val)
+		}
+
+		switch val.Type {
+		case openapi3.TypeBoolean:
+			return c.CompileBuiltin(msg, val, builder.FieldTypeBool()), nil
+
+		case openapi3.TypeInteger:
+			return c.CompileBuiltin(msg, val, IntegerFieldType(val.Format)), nil
+
+		case openapi3.TypeNumber:
+			return c.CompileBuiltin(msg, val, NumberFieldType(val.Format)), nil
+
+		case openapi3.TypeString:
+			return c.CompileBuiltin(msg, val, StringFieldType(val.Format)), nil
+
+		case openapi3.TypeArray:
+			return c.CompileArray(msg, val)
+
+		case openapi3.TypeObject:
+			return c.CompileObject(msg, val)
+
+		default: // OneOf, AnyOf, AllOf
+			switch {
+			case isOneOf(val):
+				return c.CompileOneOf(msg, name, val)
+
+			case isAnyOf(val):
+				return c.CompileAnyOf(msg, name, val)
+
+			case isAllOf(val):
+
+			default:
+				internal.Dump("val.Type", val.Type, "\nname", name)
+			}
+		}
+	}
+
+	return nil, errors.New("unreachable")
+}
+
+func isEnum(schema *openapi3.Schema) bool { return len(schema.Enum) > 0 }
+
+func isOneOf(schema *openapi3.Schema) bool { return len(schema.OneOf) > 0 }
+
+func isAnyOf(schema *openapi3.Schema) bool { return len(schema.AnyOf) > 0 }
+
+func isAllOf(schema *openapi3.Schema) bool { return len(schema.AllOf) > 0 }
+
+func (c *compiler) CompileBuiltin(msg *builder.MessageBuilder, schema *openapi3.Schema, fieldType *builder.FieldType) *builder.MessageBuilder {
+	field := builder.NewField(normalizeFieldName(schema.Title), fieldType)
+	if description := schema.Description; description != "" {
+		msg.SetComments(normalizeComment(schema.Title, description))
+	}
+	msg.AddField(field)
+
+	return msg
+}
+
+func (c *compiler) CompileEnum(msg *builder.MessageBuilder, enum *openapi3.Schema) (*builder.MessageBuilder, error) {
+	msgName := normalizeMessageName(enum.Title)
+
+	eb := builder.NewEnum(msgName)
+	if description := enum.Description; description != "" {
+		msg.SetComments(normalizeComment(enum.Title, description))
+	}
+	for i, e := range enum.Enum {
+		enumVal := builder.NewEnumValue(msgName + "_" + strconv.Itoa(int(e.(float64))))
+		enumVal.SetNumber(int32(i))
+		eb.AddValue(enumVal)
+	}
+	msg.AddNestedEnum(eb)
+
+	field := builder.NewField(normalizeFieldName(enum.Title), builder.FieldTypeEnum(eb))
+	msg.AddField(field)
+
+	return msg, nil
+}
+
+func (c *compiler) CompileArray(msg *builder.MessageBuilder, array *openapi3.Schema) (*builder.MessageBuilder, error) {
+	if ref := array.Items.Ref; ref != "" {
+		refBase := path.Base(ref)
+		refObj, err := c.schemasLookupFunc(refBase)
+		if err != nil {
+			return nil, fmt.Errorf("%s: not found %s ref: %w", openapi3.TypeArray, ref, err)
+		}
+
+		switch refObj := refObj.(type) {
+		case *openapi3.Schema:
+			refMsg := builder.NewMessage(normalizeMessageName(refObj.Title))
+			field := builder.NewField(normalizeFieldName(refObj.Title), builder.FieldTypeMessage(refMsg))
+			msg.AddField(field)
+		}
+
+		return msg, nil
+	}
+
+	arrayMsg, err := c.compileSchemaRef(normalizeMessageName(array.Title), array.Items)
+	if err != nil {
+		return nil, fmt.Errorf("compile array items: %w", err)
+	}
+	field := builder.NewField(normalizeFieldName(array.Title), builder.FieldTypeMessage(arrayMsg))
+	msg.AddField(field)
+
+	return msg, nil
+}
+
+func (c *compiler) CompileObject(msg *builder.MessageBuilder, object *openapi3.Schema) (*builder.MessageBuilder, error) {
+	for propName, prop := range object.Properties {
+		if ref := prop.Ref; ref != "" {
+			refBase := path.Base(ref)
+			refObj, err := c.schemasLookupFunc(refBase)
+			if err != nil {
+				return nil, fmt.Errorf("not found %s ref: %w", ref, err)
+			}
+
+			switch refObj := refObj.(type) {
+			case *openapi3.Schema:
+				refMsg := builder.NewMessage(normalizeMessageName(refObj.Title))
+				field := builder.NewField(normalizeFieldName(propName), builder.FieldTypeMessage(refMsg))
+				msg.AddField(field)
+			}
+			continue
+		}
+
+		propMsg, err := c.compileSchemaRef(normalizeMessageName(propName), prop)
+		if err != nil {
+			return nil, fmt.Errorf("compile object items: %w", err)
+		}
+		if nested := msg.GetNestedMessage(normalizeMessageName(propMsg.GetName())); nested == nil {
+			msg.AddNestedMessage(propMsg)
+		}
+		field := builder.NewField(normalizeFieldName(propName), builder.FieldTypeMessage(propMsg))
+		if prop.Value.Type == openapi3.TypeArray {
+			field.SetRepeated()
+		}
+		msg.AddField(field)
+	}
+
+	return msg, nil
+}
+
+func (c *compiler) CompileOneOf(msg *builder.MessageBuilder, name string, oneof *openapi3.Schema) (*builder.MessageBuilder, error) {
+	ob := builder.NewOneOf(normalizeFieldName(name))
+	for i, ref := range oneof.OneOf {
+		oneOfMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref)
+		if err != nil {
+			return nil, fmt.Errorf("compile oneof ref: %w", err)
+		}
+		oneOfMsg.SetName(name + "_" + strconv.Itoa(i))
+		msg.AddNestedMessage(oneOfMsg)
+		field := builder.NewField(normalizeFieldName(name+"_"+strconv.Itoa(i)), builder.FieldTypeMessage(oneOfMsg))
+		ob.AddChoice(field)
+	}
+	msg.AddOneOf(ob)
+
+	return msg, nil
+}
+
+// CompileAnyOf compiles the AnyOf
+func (c *compiler) CompileAnyOf(msg *builder.MessageBuilder, name string, anyOf *openapi3.Schema) (*builder.MessageBuilder, error) {
+	for i, ref := range anyOf.AnyOf {
+		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(name+"_"+strconv.Itoa(i)), ref)
+		if err != nil {
+			return nil, fmt.Errorf("compile anyOf ref: %w", err)
+		}
+		anyOfMsg.SetName(normalizeMessageName(name + "_" + strconv.Itoa(i)))
+		var field *builder.FieldBuilder
+		if nested := msg.GetNestedMessage(normalizeMessageName(anyOfMsg.GetName())); nested != nil {
+			field = builder.NewField(normalizeFieldName(nested.GetName()), builder.FieldTypeMessage(nested))
+		} else {
+			msg.AddNestedMessage(anyOfMsg)
+			field = builder.NewField(normalizeFieldName(anyOfMsg.GetName()), builder.FieldTypeMessage(anyOfMsg))
+		}
+		msg.AddField(field)
+	}
+
+	return msg, nil
 }
 
 func (c *compiler) compileSecurity(security openapi3.SecurityRequirements) error { return nil }
@@ -196,216 +388,38 @@ func (c *compiler) compileTags(tags openapi3.Tags) error { return nil }
 
 func (c *compiler) compileExternalDocs(docs *openapi3.ExternalDocs) error { return nil }
 
-func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef, lookupfn func(token string) (interface{}, error)) (*descbuilder.MessageBuilder, error) {
-	msg := descbuilder.NewMessage(normalizeMessageName(name))
-
-	if val := schemaRef.Value; val != nil {
-		// compile enum
-		if len(val.Enum) > 0 {
-			msgName := normalizeMessageName(val.Title)
-			enum := descbuilder.NewEnum(msgName)
-			if description := val.Description; description != "" {
-				msg.SetComments(normalizeComment(val.Title, description))
-			}
-
-			for i, e := range val.Enum {
-				enumVal := descbuilder.NewEnumValue(msgName + "_" + strconv.Itoa(int(e.(float64))))
-				enumVal.SetNumber(int32(i))
-				enum.AddValue(enumVal)
-			}
-			msg.AddNestedEnum(enum)
-			field := descbuilder.NewField(normalizeFieldName(val.Title), descbuilder.FieldTypeEnum(enum))
-			msg.AddField(field)
-
-			return msg, nil
-		}
-
-		switch val.Type {
-		case openapi3.TypeBoolean:
-			field := c.compileBooleanField(val.Title)
-			if description := val.Description; description != "" {
-				msg.SetComments(normalizeComment(val.Title, description))
-			}
-			msg.AddField(field)
-
-		case openapi3.TypeInteger:
-			field := c.compileIntegerField(val.Title, val.Format)
-			if description := val.Description; description != "" {
-				msg.SetComments(normalizeComment(val.Title, description))
-			}
-			msg.AddField(field)
-
-		case openapi3.TypeNumber:
-			field := c.compileNumberField(val.Title, val.Format)
-			if description := val.Description; description != "" {
-				msg.SetComments(normalizeComment(val.Title, description))
-			}
-			msg.AddField(field)
-
-		case openapi3.TypeString:
-			field := c.compileStringField(val.Title, val.Format)
-			if description := val.Description; description != "" {
-				msg.SetComments(normalizeComment(val.Title, description))
-			}
-			msg.AddField(field)
-
-		case openapi3.TypeArray:
-			if ref := val.Items.Ref; ref != "" {
-				refBase := path.Base(ref)
-				refObj, err := lookupfn(refBase)
-				if err != nil {
-					return nil, fmt.Errorf("%s: not found %s ref: %w", openapi3.TypeArray, ref, err)
-				}
-
-				switch refObj := refObj.(type) {
-				case *openapi3.Schema:
-					refMsg := descbuilder.NewMessage(normalizeMessageName(refObj.Title))
-					field := descbuilder.NewField(normalizeFieldName(refObj.Title), descbuilder.FieldTypeMessage(refMsg))
-					msg.AddField(field)
-				}
-
-				return msg, nil
-			}
-
-			arrayMsg, err := c.compileSchemaRef(normalizeMessageName(val.Title), val.Items, lookupfn)
-			if err != nil {
-				return nil, fmt.Errorf("compile array items: %w", err)
-			}
-			field := descbuilder.NewField(normalizeFieldName(val.Title), descbuilder.FieldTypeMessage(arrayMsg))
-			msg.AddField(field)
-
-		case openapi3.TypeObject:
-			for propName, prop := range val.Properties {
-				if ref := prop.Ref; ref != "" {
-					refBase := path.Base(ref)
-					refObj, err := lookupfn(refBase)
-					if err != nil {
-						return nil, fmt.Errorf("not found %s ref: %w", ref, err)
-					}
-
-					switch refObj := refObj.(type) {
-					case *openapi3.Schema:
-						refMsg := descbuilder.NewMessage(normalizeMessageName(refObj.Title))
-						field := descbuilder.NewField(normalizeFieldName(propName), descbuilder.FieldTypeMessage(refMsg))
-						msg.AddField(field)
-					}
-					continue
-				}
-
-				propMsg, err := c.compileSchemaRef(normalizeMessageName(propName), prop, lookupfn)
-				if err != nil {
-					return nil, fmt.Errorf("compile object items: %w", err)
-				}
-				if nested := msg.GetNestedMessage(normalizeMessageName(propMsg.GetName())); nested == nil {
-					msg.AddNestedMessage(propMsg)
-				}
-				field := descbuilder.NewField(normalizeFieldName(propName), descbuilder.FieldTypeMessage(propMsg))
-				if prop.Value.Type == openapi3.TypeArray {
-					field.SetRepeated()
-				}
-				msg.AddField(field)
-			}
-
-		default: // OneOf, AnyOf, AllOf
-			switch {
-			case len(val.OneOf) > 0:
-				oneOf := descbuilder.NewOneOf(normalizeFieldName(name))
-				for i, ref := range val.OneOf {
-					oneOfMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref, lookupfn)
-					if err != nil {
-						return nil, fmt.Errorf("compile oneof ref: %w", err)
-					}
-					oneOfMsg.SetName(name + "_" + strconv.Itoa(i))
-					msg.AddNestedMessage(oneOfMsg)
-					field := descbuilder.NewField(normalizeFieldName(name+"_"+strconv.Itoa(i)), descbuilder.FieldTypeMessage(oneOfMsg))
-					oneOf.AddChoice(field)
-				}
-				msg.AddOneOf(oneOf)
-
-			case len(val.AnyOf) > 0:
-				for i, ref := range val.AnyOf {
-					anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(name+"_"+strconv.Itoa(i)), ref, lookupfn)
-					if err != nil {
-						return nil, fmt.Errorf("compile anyOf ref: %w", err)
-					}
-					anyOfMsg.SetName(normalizeMessageName(name + "_" + strconv.Itoa(i)))
-					var field *descbuilder.FieldBuilder
-					if nested := msg.GetNestedMessage(normalizeMessageName(anyOfMsg.GetName())); nested != nil {
-						field = descbuilder.NewField(normalizeFieldName(nested.GetName()), descbuilder.FieldTypeMessage(nested))
-					} else {
-						msg.AddNestedMessage(anyOfMsg)
-						field = descbuilder.NewField(normalizeFieldName(anyOfMsg.GetName()), descbuilder.FieldTypeMessage(anyOfMsg))
-					}
-					msg.AddField(field)
-				}
-
-			case len(val.AllOf) > 0:
-			}
-		}
-	}
-
-	return msg, nil
-}
-
-func normalizeComment(title, description string) descbuilder.Comments {
-	var sb strings.Builder
-	sb.WriteString(" ")
-	sb.WriteString(normalizeMessageName(title))
-	sb.WriteString(" ")
-	sb.WriteByte(byte(unicode.ToLower(rune(description[0]))))
-	sb.WriteString(strings.ReplaceAll(description[1:], "\n", " "))
-	return descbuilder.Comments{
-		LeadingComment: sb.String(),
-	}
-}
-
-func (c *compiler) compileBooleanField(title string) *descbuilder.FieldBuilder {
-	return descbuilder.NewField(normalizeFieldName(title), descbuilder.FieldTypeBool())
-}
-
-func (c *compiler) compileIntegerField(title, format string) *descbuilder.FieldBuilder {
-	fieldType := integerFieldType(format)
-	return descbuilder.NewField(normalizeFieldName(title), fieldType)
-}
-
-func (c *compiler) compileNumberField(title, format string) *descbuilder.FieldBuilder {
-	fieldType := numberFieldType(format)
-	return descbuilder.NewField(normalizeFieldName(title), fieldType)
-}
-
-func (c *compiler) compileStringField(title, format string) *descbuilder.FieldBuilder {
-	return descbuilder.NewField(normalizeFieldName(title), stringFieldType(format))
-}
-
-func integerFieldType(format string) *descbuilder.FieldType {
+// IntegerFieldType returns the FieldType of the underlying type of integer from the format.
+func IntegerFieldType(format string) *builder.FieldType {
 	switch format {
 	case "", "int32":
-		return descbuilder.FieldTypeInt32()
+		return builder.FieldTypeInt32()
 	case "int64":
-		return descbuilder.FieldTypeInt64()
+		return builder.FieldTypeInt64()
 	default:
-		return descbuilder.FieldTypeInt64()
+		return builder.FieldTypeInt64()
 	}
 }
 
-func numberFieldType(format string) *descbuilder.FieldType {
+// NumberFieldType returns the FieldType of the underlying type of number from the format.
+func NumberFieldType(format string) *builder.FieldType {
 	switch format {
 	case "", "double":
-		return descbuilder.FieldTypeDouble()
+		return builder.FieldTypeDouble()
 	case "int64", "long":
-		return descbuilder.FieldTypeInt64()
+		return builder.FieldTypeInt64()
 	case "integer", "int32":
-		return descbuilder.FieldTypeInt32()
+		return builder.FieldTypeInt32()
 	default:
-		return descbuilder.FieldTypeFloat()
+		return builder.FieldTypeFloat()
 	}
 }
 
-func stringFieldType(format string) *descbuilder.FieldType {
+// StringFieldType returns the FieldType of the underlying type of string from the format.
+func StringFieldType(format string) *builder.FieldType {
 	switch format {
 	case "byte":
-		return descbuilder.FieldTypeBytes()
+		return builder.FieldTypeBytes()
 	default:
-		return descbuilder.FieldTypeString()
+		return builder.FieldTypeString()
 	}
 }

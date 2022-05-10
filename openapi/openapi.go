@@ -44,6 +44,8 @@ func LoadFile(ctx context.Context, f string) (*Schema, error) {
 		return nil, fmt.Errorf("could not open %s file: %w", f, err)
 	}
 
+	schema.InternalizeRefs(ctx, openapi3.DefaultRefNameResolver)
+
 	return &Schema{T: schema}, nil
 }
 
