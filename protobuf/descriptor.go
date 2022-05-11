@@ -27,6 +27,10 @@ func NewFileDescriptorProto(name string) *FileDescriptorProto {
 	}
 }
 
+func (fd *FileDescriptorProto) GetName() string {
+	return fd.desc.GetName()
+}
+
 func (fd *FileDescriptorProto) AddDependency(fdp *FileDescriptorProto) *FileDescriptorProto {
 	fd.desc.Dependency = append(fd.desc.Dependency, fdp.desc.GetName())
 

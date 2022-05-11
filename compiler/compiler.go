@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-openapi/jsonpointer"
@@ -85,9 +86,10 @@ func WithWrapPrimitives(wrapPrimitives bool) Option {
 type lookupFunc func(token string) (interface{}, error)
 
 type compiler struct {
-	opt *option
-	fb  *builder.FileBuilder
-	d   *protobuf.FileDescriptorProto
+	opt     *option
+	fb      *builder.FileBuilder
+	d       *protobuf.FileDescriptorProto
+	pkgname string
 
 	schemasLookupFunc lookupFunc
 	pathLookupFunc    lookupFunc
@@ -109,9 +111,10 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	pkgname = strcase.ToSnake(pkgname)
 
 	c := &compiler{
-		opt: opt,
-		fb:  builder.NewFile(pkgname + ".proto").SetName(pkgname).SetPackageName(pkgname),
-		d:   protobuf.NewFileDescriptorProto(pkgname),
+		opt:     opt,
+		fb:      builder.NewFile(pkgname + ".proto").SetName(pkgname).SetPackageName(pkgname),
+		d:       protobuf.NewFileDescriptorProto(pkgname),
+		pkgname: pkgname,
 	}
 	c.fb.SetProto3(true) // forces compiling to proto3 syntax
 
@@ -156,17 +159,17 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	// }
 	fd := c.d.Build()
 	fmt.Fprintln(os.Stdout, fd.String())
-	// fdesc, err := desc.CreateFileDescriptor(fd)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not convert to desc: %w", err)
-	// }
-	//
-	// p := protoprint.Printer{}
-	// var sb strings.Builder
-	// if err := p.PrintProtoFile(fdesc, &sb); err != nil {
-	// 	return nil, fmt.Errorf("could not print proto: %w", err)
-	// }
-	// fmt.Fprintln(os.Stdout, sb.String())
+	fdesc, err := desc.CreateFileDescriptor(fd)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert to desc: %w", err)
+	}
+
+	p := protoprint.Printer{}
+	var sb strings.Builder
+	if err := p.PrintProtoFile(fdesc, &sb); err != nil {
+		return nil, fmt.Errorf("could not print proto: %w", err)
+	}
+	fmt.Fprintln(os.Stdout, sb.String())
 
 	return fd, nil
 }
@@ -214,10 +217,6 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 	msg := protobuf.NewMessageDescriptorProto(name)
 
 	if val := schemaRef.Value; val != nil {
-		if isEnum(val) {
-			return c.CompileEnum(msg, val)
-		}
-
 		switch val.Type {
 		case openapi3.TypeBoolean:
 			return c.CompileBuiltin(msg, val, protobuf.FieldTypeBool()), nil
@@ -237,8 +236,10 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 		case openapi3.TypeObject:
 			return c.CompileObject(msg, val)
 
-		default: // OneOf, AnyOf, AllOf
+		default: // Enum, OneOf, AnyOf, AllOf
 			switch {
+			case isEnum(val):
+				return c.CompileEnum(msg, val)
 			case isOneOf(val):
 				return c.CompileOneOf(msg, name, val)
 
@@ -266,7 +267,10 @@ func isAllOf(schema *openapi3.Schema) bool { return len(schema.AllOf) > 0 }
 
 func (c *compiler) CompileBuiltin(msg *protobuf.MessageDescriptorProto, schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) *protobuf.MessageDescriptorProto {
 	// field := builder.NewField(normalizeFieldName(schema.Title), fieldType)
+	// fieldMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(schema.Title))
+	// msg.AddNestedMessage(fieldMsg)
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(schema.Title), fieldType)
+	// field.SetTypeName(fieldType.String())
 	// if description := schema.Description; description != "" {
 	// 	msg.SetComments(normalizeComment(schema.Title, description))
 	// }
@@ -283,9 +287,9 @@ func (c *compiler) CompileEnum(msg *protobuf.MessageDescriptorProto, enum *opena
 	// 	msg.SetComments(normalizeComment(enum.Title, description))
 	// }
 	for i, e := range enum.Enum {
-		enumVal := protobuf.NewEnumValueDescriptorProto(msgName+"_"+strconv.Itoa(int(e.(float64))), int32(i), false)
 		// enumVal := builder.NewEnumValue(msgName + "_" + strconv.Itoa(int(e.(float64))))
 		// enumVal.SetNumber(int32(i))
+		enumVal := protobuf.NewEnumValueDescriptorProto(msgName+"_"+strconv.Itoa(int(e.(float64))), int32(i))
 		eb.AddValue(enumVal)
 	}
 	// msg.AddNestedEnum(eb)
@@ -311,7 +315,9 @@ func (c *compiler) CompileArray(msg *protobuf.MessageDescriptorProto, array *ope
 			// field := builder.NewField(normalizeFieldName(refObj.Title), builder.FieldTypeMessage(refMsg))
 			refMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(refObj.Title))
 			field := protobuf.NewFieldDescriptorProto(refObj.Title, protobuf.FieldTypeMessage(refMsg))
+			field.SetRepeated()
 			msg.AddField(field)
+			// msg.AddNestedMessage(refMsg)
 		}
 
 		return msg, nil
@@ -321,8 +327,11 @@ func (c *compiler) CompileArray(msg *protobuf.MessageDescriptorProto, array *ope
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
+	msg.AddNestedMessage(arrayMsg)
 	// field := builder.NewField(normalizeFieldName(array.Title), builder.FieldTypeMessage(arrayMsg))
-	field := protobuf.NewFieldDescriptorProto(array.Title, protobuf.FieldTypeMessage(arrayMsg))
+	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(array.Title), protobuf.FieldTypeMessage(arrayMsg))
+	field.SetRepeated()
+	field.SetTypeName(arrayMsg.GetName())
 	msg.AddField(field)
 
 	return msg, nil
@@ -343,6 +352,7 @@ func (c *compiler) CompileObject(msg *protobuf.MessageDescriptorProto, object *o
 				// field := builder.NewField(normalizeFieldName(propName), builder.FieldTypeMessage(refMsg))
 				// msg.AddField(field)
 				refMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(refObj.Title))
+				msg.AddNestedMessage(refMsg)
 				field := protobuf.NewFieldDescriptorProto(refObj.Title, protobuf.FieldTypeMessage(refMsg))
 				msg.AddField(field)
 			}
@@ -354,9 +364,10 @@ func (c *compiler) CompileObject(msg *protobuf.MessageDescriptorProto, object *o
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
 		// if nested := msg.GetNestedMessage(normalizeMessageName(propMsg.GetName())); nested == nil {
-		// 	msg.AddNestedMessage(propMsg)
+		msg.AddNestedMessage(propMsg)
 		// }
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), protobuf.FieldTypeMessage(propMsg))
+		field.SetTypeName(propMsg.GetName())
 		if prop.Value.Type == openapi3.TypeArray {
 			field.SetRepeated()
 		}
@@ -403,6 +414,7 @@ func (c *compiler) CompileAnyOf(msg *protobuf.MessageDescriptorProto, name strin
 		msg.AddNestedMessage(anyOfMsg)
 		// field = builder.NewField(normalizeFieldName(anyOfMsg.GetName()), builder.FieldTypeMessage(anyOfMsg))
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage(anyOfMsg))
+		field.SetTypeName(normalizeFieldName(anyOfMsg.GetName()))
 		msg.AddField(field)
 	}
 
@@ -431,7 +443,7 @@ func IntegerFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 func NumberFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "", "double":
-		return protobuf.FieldTypeDouble()
+		return protobuf.FieldTypeFloat()
 	case "int64", "long":
 		return protobuf.FieldTypeInt64()
 	case "integer", "int32":

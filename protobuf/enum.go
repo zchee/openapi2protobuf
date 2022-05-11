@@ -38,16 +38,18 @@ type EnumValueDescriptorProto struct {
 	desc *descriptorpb.EnumValueDescriptorProto
 }
 
-func NewEnumValueDescriptorProto(name string, number int32, isDeprecated bool) *EnumValueDescriptorProto {
+func NewEnumValueDescriptorProto(name string, number int32) *EnumValueDescriptorProto {
 	return &EnumValueDescriptorProto{
 		desc: &descriptorpb.EnumValueDescriptorProto{
 			Name:   proto.String(name),
 			Number: proto.Int32(number),
-			Options: &descriptorpb.EnumValueOptions{
-				Deprecated: proto.Bool(isDeprecated),
-			},
 		},
 	}
+}
+
+func (evd *EnumValueDescriptorProto) SetDeprecated() *EnumValueDescriptorProto {
+	evd.desc.Options.Deprecated = proto.Bool(true)
+	return evd
 }
 
 func (evd *EnumValueDescriptorProto) Build() *descriptorpb.EnumValueDescriptorProto {

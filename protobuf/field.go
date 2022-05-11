@@ -18,11 +18,15 @@ func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescripto
 		desc: &descriptorpb.FieldDescriptorProto{
 			Name:     proto.String(name),
 			Type:     fieldType,
-			TypeName: proto.String(name),
 			JsonName: proto.String(strcase.ToLowerCamel(name)),
 		},
 	}
 
+	return fid
+}
+
+func (fid *FieldDescriptorProto) SetTypeName(name string) *FieldDescriptorProto {
+	fid.desc.TypeName = proto.String(name)
 	return fid
 }
 
