@@ -22,6 +22,7 @@ import (
 
 	"go.lsp.dev/openapi2protobuf/internal"
 	"go.lsp.dev/openapi2protobuf/openapi"
+	"go.lsp.dev/openapi2protobuf/protobuf"
 )
 
 var _ = jsonpointer.GetForToken
@@ -83,6 +84,7 @@ type lookupFunc func(token string) (interface{}, error)
 type compiler struct {
 	opt *option
 	fb  *builder.FileBuilder
+	d   *protobuf.FileDescriptorProto
 
 	schemasLookupFunc lookupFunc
 	pathLookupFunc    lookupFunc
@@ -197,8 +199,9 @@ func (c *compiler) compileComponents(components openapi3.Components) error {
 	return nil
 }
 
-func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*builder.MessageBuilder, error) {
-	msg := builder.NewMessage(normalizeMessageName(name))
+func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
+	// msg := builder.NewMessage(normalizeMessageName(name))
+	msg := protobuf.NewMessageDescriptorProto(name)
 
 	if val := schemaRef.Value; val != nil {
 		if isEnum(val) {
@@ -207,7 +210,7 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 
 		switch val.Type {
 		case openapi3.TypeBoolean:
-			return c.CompileBuiltin(msg, val, builder.FieldTypeBool()), nil
+			return c.CompileBuiltin(msg, val, protobuf.FieldTypeBool()), nil
 
 		case openapi3.TypeInteger:
 			return c.CompileBuiltin(msg, val, IntegerFieldType(val.Format)), nil
@@ -251,37 +254,40 @@ func isAnyOf(schema *openapi3.Schema) bool { return len(schema.AnyOf) > 0 }
 
 func isAllOf(schema *openapi3.Schema) bool { return len(schema.AllOf) > 0 }
 
-func (c *compiler) CompileBuiltin(msg *builder.MessageBuilder, schema *openapi3.Schema, fieldType *builder.FieldType) *builder.MessageBuilder {
-	field := builder.NewField(normalizeFieldName(schema.Title), fieldType)
-	if description := schema.Description; description != "" {
-		msg.SetComments(normalizeComment(schema.Title, description))
-	}
+func (c *compiler) CompileBuiltin(msg *protobuf.MessageDescriptorProto, schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) *protobuf.MessageDescriptorProto {
+	// field := builder.NewField(normalizeFieldName(schema.Title), fieldType)
+	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(schema.Title), fieldType)
+	// if description := schema.Description; description != "" {
+	// 	msg.SetComments(normalizeComment(schema.Title, description))
+	// }
 	msg.AddField(field)
 
 	return msg
 }
 
-func (c *compiler) CompileEnum(msg *builder.MessageBuilder, enum *openapi3.Schema) (*builder.MessageBuilder, error) {
+func (c *compiler) CompileEnum(msg *protobuf.MessageDescriptorProto, enum *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	msgName := normalizeMessageName(enum.Title)
 
-	eb := builder.NewEnum(msgName)
-	if description := enum.Description; description != "" {
-		msg.SetComments(normalizeComment(enum.Title, description))
-	}
+	eb := protobuf.NewEnumDescriptorProto(msgName)
+	// if description := enum.Description; description != "" {
+	// 	msg.SetComments(normalizeComment(enum.Title, description))
+	// }
 	for i, e := range enum.Enum {
-		enumVal := builder.NewEnumValue(msgName + "_" + strconv.Itoa(int(e.(float64))))
-		enumVal.SetNumber(int32(i))
+		enumVal := protobuf.NewEnumValueDescriptorProto(msgName+"_"+strconv.Itoa(int(e.(float64))), int32(i), false)
+		// enumVal := builder.NewEnumValue(msgName + "_" + strconv.Itoa(int(e.(float64))))
+		// enumVal.SetNumber(int32(i))
 		eb.AddValue(enumVal)
 	}
-	msg.AddNestedEnum(eb)
+	// msg.AddNestedEnum(eb)
+	msg.AddEnumType(eb)
 
-	field := builder.NewField(normalizeFieldName(enum.Title), builder.FieldTypeEnum(eb))
-	msg.AddField(field)
+	// field := builder.NewField(normalizeFieldName(enum.Title), builder.FieldTypeEnum(eb))
+	// msg.AddField(field)
 
 	return msg, nil
 }
 
-func (c *compiler) CompileArray(msg *builder.MessageBuilder, array *openapi3.Schema) (*builder.MessageBuilder, error) {
+func (c *compiler) CompileArray(msg *protobuf.MessageDescriptorProto, array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	if ref := array.Items.Ref; ref != "" {
 		refBase := path.Base(ref)
 		refObj, err := c.schemasLookupFunc(refBase)
@@ -291,8 +297,10 @@ func (c *compiler) CompileArray(msg *builder.MessageBuilder, array *openapi3.Sch
 
 		switch refObj := refObj.(type) {
 		case *openapi3.Schema:
-			refMsg := builder.NewMessage(normalizeMessageName(refObj.Title))
-			field := builder.NewField(normalizeFieldName(refObj.Title), builder.FieldTypeMessage(refMsg))
+			// refMsg := builder.NewMessage(normalizeMessageName(refObj.Title))
+			// field := builder.NewField(normalizeFieldName(refObj.Title), builder.FieldTypeMessage(refMsg))
+			refMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(refObj.Title))
+			field := protobuf.NewFieldDescriptorProto(refObj.Title, protobuf.FieldTypeMessage(refMsg))
 			msg.AddField(field)
 		}
 
@@ -303,13 +311,14 @@ func (c *compiler) CompileArray(msg *builder.MessageBuilder, array *openapi3.Sch
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
-	field := builder.NewField(normalizeFieldName(array.Title), builder.FieldTypeMessage(arrayMsg))
+	// field := builder.NewField(normalizeFieldName(array.Title), builder.FieldTypeMessage(arrayMsg))
+	field := protobuf.NewFieldDescriptorProto(array.Title, protobuf.FieldTypeMessage(arrayMsg))
 	msg.AddField(field)
 
 	return msg, nil
 }
 
-func (c *compiler) CompileObject(msg *builder.MessageBuilder, object *openapi3.Schema) (*builder.MessageBuilder, error) {
+func (c *compiler) CompileObject(msg *protobuf.MessageDescriptorProto, object *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	for propName, prop := range object.Properties {
 		if ref := prop.Ref; ref != "" {
 			refBase := path.Base(ref)
@@ -320,8 +329,11 @@ func (c *compiler) CompileObject(msg *builder.MessageBuilder, object *openapi3.S
 
 			switch refObj := refObj.(type) {
 			case *openapi3.Schema:
-				refMsg := builder.NewMessage(normalizeMessageName(refObj.Title))
-				field := builder.NewField(normalizeFieldName(propName), builder.FieldTypeMessage(refMsg))
+				// refMsg := builder.NewMessage(normalizeMessageName(refObj.Title))
+				// field := builder.NewField(normalizeFieldName(propName), builder.FieldTypeMessage(refMsg))
+				// msg.AddField(field)
+				refMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(refObj.Title))
+				field := protobuf.NewFieldDescriptorProto(refObj.Title, protobuf.FieldTypeMessage(refMsg))
 				msg.AddField(field)
 			}
 			continue
@@ -331,10 +343,10 @@ func (c *compiler) CompileObject(msg *builder.MessageBuilder, object *openapi3.S
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
-		if nested := msg.GetNestedMessage(normalizeMessageName(propMsg.GetName())); nested == nil {
-			msg.AddNestedMessage(propMsg)
-		}
-		field := builder.NewField(normalizeFieldName(propName), builder.FieldTypeMessage(propMsg))
+		// if nested := msg.GetNestedMessage(normalizeMessageName(propMsg.GetName())); nested == nil {
+		// 	msg.AddNestedMessage(propMsg)
+		// }
+		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), protobuf.FieldTypeMessage(propMsg))
 		if prop.Value.Type == openapi3.TypeArray {
 			field.SetRepeated()
 		}
@@ -344,8 +356,8 @@ func (c *compiler) CompileObject(msg *builder.MessageBuilder, object *openapi3.S
 	return msg, nil
 }
 
-func (c *compiler) CompileOneOf(msg *builder.MessageBuilder, name string, oneof *openapi3.Schema) (*builder.MessageBuilder, error) {
-	ob := builder.NewOneOf(normalizeFieldName(name))
+func (c *compiler) CompileOneOf(msg *protobuf.MessageDescriptorProto, name string, oneof *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))
 	for i, ref := range oneof.OneOf {
 		oneOfMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref)
 		if err != nil {
@@ -389,37 +401,37 @@ func (c *compiler) compileTags(tags openapi3.Tags) error { return nil }
 func (c *compiler) compileExternalDocs(docs *openapi3.ExternalDocs) error { return nil }
 
 // IntegerFieldType returns the FieldType of the underlying type of integer from the format.
-func IntegerFieldType(format string) *builder.FieldType {
+func IntegerFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "", "int32":
-		return builder.FieldTypeInt32()
+		return protobuf.FieldTypeInt32()
 	case "int64":
-		return builder.FieldTypeInt64()
+		return protobuf.FieldTypeInt64()
 	default:
-		return builder.FieldTypeInt64()
+		return protobuf.FieldTypeInt64()
 	}
 }
 
 // NumberFieldType returns the FieldType of the underlying type of number from the format.
-func NumberFieldType(format string) *builder.FieldType {
+func NumberFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "", "double":
-		return builder.FieldTypeDouble()
+		return protobuf.FieldTypeDouble()
 	case "int64", "long":
-		return builder.FieldTypeInt64()
+		return protobuf.FieldTypeInt64()
 	case "integer", "int32":
-		return builder.FieldTypeInt32()
+		return protobuf.FieldTypeInt64()
 	default:
-		return builder.FieldTypeFloat()
+		return protobuf.FieldTypeFloat()
 	}
 }
 
 // StringFieldType returns the FieldType of the underlying type of string from the format.
-func StringFieldType(format string) *builder.FieldType {
+func StringFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "byte":
-		return builder.FieldTypeBytes()
+		return protobuf.FieldTypeBytes()
 	default:
-		return builder.FieldTypeString()
+		return protobuf.FieldTypeString()
 	}
 }
