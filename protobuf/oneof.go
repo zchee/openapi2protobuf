@@ -20,6 +20,6 @@ func NewOneofDescriptorProto(name string) *OneofDescriptorProto {
 	}
 }
 
-func (md *OneofDescriptorProto) Descriptor() *descriptorpb.OneofDescriptorProto {
+func (md *OneofDescriptorProto) Build() *descriptorpb.OneofDescriptorProto {
 	return md.desc
 }

@@ -46,7 +46,7 @@ func (fid *FieldDescriptorProto) SetProto3Optional() *FieldDescriptorProto {
 	return fid
 }
 
-func (fid *FieldDescriptorProto) Descriptor() *descriptorpb.FieldDescriptorProto {
+func (fid *FieldDescriptorProto) Build() *descriptorpb.FieldDescriptorProto {
 	return fid.desc
 }
 

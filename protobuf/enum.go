@@ -26,11 +26,11 @@ func NewEnumDescriptorProto(name string, values ...*EnumValueDescriptorProto) *E
 }
 
 func (ed *EnumDescriptorProto) AddValue(value *EnumValueDescriptorProto) *EnumDescriptorProto {
-	ed.desc.Value = append(ed.desc.Value, value.Descriptor())
+	ed.desc.Value = append(ed.desc.Value, value.Build())
 	return ed
 }
 
-func (ed *EnumDescriptorProto) Descriptor() *descriptorpb.EnumDescriptorProto {
+func (ed *EnumDescriptorProto) Build() *descriptorpb.EnumDescriptorProto {
 	return ed.desc
 }
 
@@ -50,7 +50,7 @@ func NewEnumValueDescriptorProto(name string, number int32, isDeprecated bool) *
 	}
 }
 
-func (evd *EnumValueDescriptorProto) Descriptor() *descriptorpb.EnumValueDescriptorProto {
+func (evd *EnumValueDescriptorProto) Build() *descriptorpb.EnumValueDescriptorProto {
 	return evd.desc
 }
 
@@ -59,7 +59,7 @@ type EnumValues []*EnumValueDescriptorProto
 func (evs EnumValues) Build() []*descriptorpb.EnumValueDescriptorProto {
 	values := make([]*descriptorpb.EnumValueDescriptorProto, len(evs))
 	for i, ev := range evs {
-		values[i] = ev.Descriptor()
+		values[i] = ev.Build()
 	}
 
 	return values

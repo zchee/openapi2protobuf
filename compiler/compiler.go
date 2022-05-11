@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-openapi/jsonpointer"
@@ -28,6 +27,10 @@ import (
 var _ = jsonpointer.GetForToken
 
 var _ = descriptorpb.Default_EnumOptions_Deprecated
+
+var _ desc.Descriptor
+
+var _ protoprint.Printer
 
 // Option represents an idiomatic functional option pattern to compile the Protocol Buffers structure from the OpenAPI schema.
 type Option func(o *option)
@@ -91,7 +94,7 @@ type compiler struct {
 }
 
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.
-func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*desc.FileDescriptor, error) {
+func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*descriptorpb.FileDescriptorProto, error) {
 	spec.InternalizeRefs(ctx, openapi3.DefaultRefNameResolver)
 
 	opt := new(option)
@@ -108,6 +111,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	c := &compiler{
 		opt: opt,
 		fb:  builder.NewFile(pkgname + ".proto").SetName(pkgname).SetPackageName(pkgname),
+		d:   protobuf.NewFileDescriptorProto(pkgname),
 	}
 	c.fb.SetProto3(true) // forces compiling to proto3 syntax
 
@@ -146,19 +150,25 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		return nil, fmt.Errorf("could not compile external documentation object: %w", err)
 	}
 
-	fdesc, err := c.fb.Build()
-	if err != nil {
-		return nil, fmt.Errorf("could not build a file descriptor: %w", err)
-	}
+	// fdesc, err := c.fb.Build()
+	// if err != nil {
+	// 	return nil, fmt.Errorf("could not build a file descriptor: %w", err)
+	// }
+	fd := c.d.Build()
+	fmt.Fprintln(os.Stdout, fd.String())
+	// fdesc, err := desc.CreateFileDescriptor(fd)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("could not convert to desc: %w", err)
+	// }
+	//
+	// p := protoprint.Printer{}
+	// var sb strings.Builder
+	// if err := p.PrintProtoFile(fdesc, &sb); err != nil {
+	// 	return nil, fmt.Errorf("could not print proto: %w", err)
+	// }
+	// fmt.Fprintln(os.Stdout, sb.String())
 
-	p := protoprint.Printer{}
-	var sb strings.Builder
-	if err := p.PrintProtoFile(fdesc, &sb); err != nil {
-		return nil, fmt.Errorf("could not print proto: %w", err)
-	}
-	fmt.Fprintln(os.Stdout, sb.String())
-
-	return fdesc, nil
+	return fd, nil
 }
 
 func (c *compiler) compileInfo(info *openapi3.Info) error {
@@ -193,7 +203,7 @@ func (c *compiler) compileComponents(components openapi3.Components) error {
 		if err != nil {
 			return err
 		}
-		c.fb.AddMessage(msg)
+		c.d.AddMessage(msg)
 	}
 
 	return nil
@@ -365,29 +375,34 @@ func (c *compiler) CompileOneOf(msg *protobuf.MessageDescriptorProto, name strin
 		}
 		oneOfMsg.SetName(name + "_" + strconv.Itoa(i))
 		msg.AddNestedMessage(oneOfMsg)
-		field := builder.NewField(normalizeFieldName(name+"_"+strconv.Itoa(i)), builder.FieldTypeMessage(oneOfMsg))
-		ob.AddChoice(field)
+		// field := builder.NewField(normalizeFieldName(name+"_"+strconv.Itoa(i)), builder.FieldTypeMessage(oneOfMsg))
+		// field := protobuf.NewFieldDescriptorProto(normalizeFieldName(name+"_"+strconv.Itoa(i)), protobuf.FieldTypeMessage(oneOfMsg))
+		// ob.AddChoice(field)
+		msg.AddOneof(ob)
 	}
-	msg.AddOneOf(ob)
+	// msg.AddOneOf(ob)
 
 	return msg, nil
 }
 
 // CompileAnyOf compiles the AnyOf
-func (c *compiler) CompileAnyOf(msg *builder.MessageBuilder, name string, anyOf *openapi3.Schema) (*builder.MessageBuilder, error) {
+func (c *compiler) CompileAnyOf(msg *protobuf.MessageDescriptorProto, name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	for i, ref := range anyOf.AnyOf {
 		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(name+"_"+strconv.Itoa(i)), ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
 		anyOfMsg.SetName(normalizeMessageName(name + "_" + strconv.Itoa(i)))
-		var field *builder.FieldBuilder
-		if nested := msg.GetNestedMessage(normalizeMessageName(anyOfMsg.GetName())); nested != nil {
-			field = builder.NewField(normalizeFieldName(nested.GetName()), builder.FieldTypeMessage(nested))
-		} else {
-			msg.AddNestedMessage(anyOfMsg)
-			field = builder.NewField(normalizeFieldName(anyOfMsg.GetName()), builder.FieldTypeMessage(anyOfMsg))
-		}
+		// var field *builder.FieldBuilder
+		// if nested := msg.GetNestedMessage(normalizeMessageName(anyOfMsg.GetName())); nested != nil {
+		// 	field = builder.NewField(normalizeFieldName(nested.GetName()), builder.FieldTypeMessage(nested))
+		// } else {
+		// 	msg.AddNestedMessage(anyOfMsg)
+		// 	field = builder.NewField(normalizeFieldName(anyOfMsg.GetName()), builder.FieldTypeMessage(anyOfMsg))
+		// }
+		msg.AddNestedMessage(anyOfMsg)
+		// field = builder.NewField(normalizeFieldName(anyOfMsg.GetName()), builder.FieldTypeMessage(anyOfMsg))
+		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage(anyOfMsg))
 		msg.AddField(field)
 	}
 

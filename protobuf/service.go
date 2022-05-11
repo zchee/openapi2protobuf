@@ -25,6 +25,6 @@ func (sd *ServiceDescriptorProto) SetServiceOptions(options *descriptorpb.Servic
 	return sd
 }
 
-func (sd *ServiceDescriptorProto) Descriptor() *descriptorpb.ServiceDescriptorProto {
+func (sd *ServiceDescriptorProto) Build() *descriptorpb.ServiceDescriptorProto {
 	return sd.desc
 }
