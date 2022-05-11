@@ -13,7 +13,9 @@ import (
 
 type MessageDescriptorProto struct {
 	desc           *descriptorpb.DescriptorProto
-	nestedMessages map[string]struct{}
+	nestedMessages map[string]bool
+	field          map[string]bool
+	number         int32
 }
 
 func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
@@ -21,7 +23,9 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 		desc: &descriptorpb.DescriptorProto{
 			Name: proto.String(name),
 		},
-		nestedMessages: make(map[string]struct{}),
+		nestedMessages: make(map[string]bool),
+		field:          make(map[string]bool),
+		number:         int32(1),
 	}
 }
 
@@ -35,7 +39,13 @@ func (md *MessageDescriptorProto) SetName(name string) *MessageDescriptorProto {
 }
 
 func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *MessageDescriptorProto {
+	if md.field[field.GetName()] {
+		return md
+	}
+	field.desc.Number = proto.Int32(md.number)
 	md.desc.Field = append(md.desc.Field, field.Build())
+	md.number++
+	md.field[field.GetName()] = true // cast to string is allocation free
 	return md
 }
 
@@ -45,8 +55,11 @@ func (md *MessageDescriptorProto) AddExtension(ext *FieldDescriptorProto) *Messa
 }
 
 func (md *MessageDescriptorProto) AddNestedMessage(nested *MessageDescriptorProto) *MessageDescriptorProto {
+	if md.nestedMessages[nested.GetName()] {
+		return md
+	}
 	md.desc.NestedType = append(md.desc.NestedType, nested.Build())
-	md.nestedMessages[string(packStruct(nested))] = struct{}{} // cast to string is allocation free
+	md.nestedMessages[nested.GetName()] = true // cast to string is allocation free
 	return md
 }
 

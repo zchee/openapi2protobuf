@@ -1,0 +1,204 @@
+syntax = "proto3";
+
+package go.lsp.dev.textDocument;
+
+option cc_enable_arenas = true;
+
+option csharp_namespace = "Go.Lsp.Dev.TextDocument";
+
+option java_package = "dev.lsp.go";
+
+option java_outer_classname = "TextDocument";
+
+option go_package = "go.lsp.dev.textDocument;textDocument";
+
+message TextDocumentContentChangeEvent {
+  message TextDocumentContentChangeEvent_0 {
+    Range Range = 1;
+
+    RangeLength range_length = 2;
+
+    Text text = 3;
+
+    message Range {
+      Position Position = 1;
+
+      message Position {
+        Character character = 1;
+
+        Line line = 2;
+
+        message Character {
+          int32 character = 1;
+        }
+
+        message Line {
+          int32 line = 1;
+        }
+      }
+    }
+
+    message RangeLength {
+      int32 range_length = 1;
+    }
+
+    message Text {
+      string text = 1;
+    }
+  }
+
+  message TextDocumentContentChangeEvent_1 {
+    Text text = 1;
+
+    message Text {
+      string text = 1;
+    }
+  }
+}
+
+message TextEdit {
+  NewText new_text = 1;
+
+  Range Range = 2;
+
+  message NewText {
+    string new_text = 1;
+  }
+
+  message Range {
+    Position Position = 1;
+
+    message Position {
+      Character character = 1;
+
+      Line line = 2;
+
+      message Character {
+        int32 character = 1;
+      }
+
+      message Line {
+        int32 line = 1;
+      }
+    }
+  }
+}
+
+message CharCode {
+  double char_code = 1;
+}
+
+message DocumentUri {
+  string document_uri = 1;
+}
+
+message FullTextDocument {
+  LineCount line_count = 1;
+
+  LineOffsets _line_offsets = 2;
+
+  DocumentUri DocumentUri = 3;
+
+  LanguageId language_id = 4;
+
+  Uri uri = 5;
+
+  Version version = 6;
+
+  Content _content = 7;
+
+  LanguageId _language_id = 8;
+
+  Version _version = 9;
+
+  message LineCount {
+    int32 line_count = 1;
+  }
+
+  message LineOffsets {
+    repeated LineOffsets _line_offsets = 1;
+
+    message LineOffsets {
+      int32  = 1;
+    }
+  }
+
+  message DocumentUri {
+    string document_uri = 1;
+  }
+
+  message LanguageId {
+    string language_id = 1;
+  }
+
+  message Uri {
+    string uri = 1;
+  }
+
+  message Version {
+    int32 version = 1;
+  }
+
+  message Content {
+    string _content = 1;
+  }
+}
+
+message Position {
+  Character character = 1;
+
+  Line line = 2;
+
+  message Character {
+    int32 character = 1;
+  }
+
+  message Line {
+    int32 line = 1;
+  }
+}
+
+message Range {
+  Position Position = 1;
+
+  message Position {
+    Character character = 1;
+
+    Line line = 2;
+
+    message Character {
+      int32 character = 1;
+    }
+
+    message Line {
+      int32 line = 1;
+    }
+  }
+}
+
+message TextDocument {
+  LanguageId language_id = 1;
+
+  LineCount line_count = 2;
+
+  DocumentUri DocumentUri = 3;
+
+  Version version = 4;
+
+  message LanguageId {
+    string language_id = 1;
+  }
+
+  message LineCount {
+    int32 line_count = 1;
+  }
+
+  message DocumentUri {
+    string document_uri = 1;
+  }
+
+  message Version {
+    int32 version = 1;
+  }
+}
+

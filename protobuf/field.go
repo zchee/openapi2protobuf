@@ -4,7 +4,6 @@
 package protobuf
 
 import (
-	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -16,12 +15,19 @@ type FieldDescriptorProto struct {
 func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescriptorProto_Type) *FieldDescriptorProto {
 	fid := &FieldDescriptorProto{
 		desc: &descriptorpb.FieldDescriptorProto{
-			Name:     proto.String(name),
-			Type:     fieldType,
-			JsonName: proto.String(strcase.ToLowerCamel(name)),
+			Name: proto.String(name),
+			Type: fieldType,
 		},
 	}
 
+	return fid
+}
+
+func (fid *FieldDescriptorProto) GetName() string {
+	return fid.desc.GetName()
+}
+
+func (fid *FieldDescriptorProto) SetNumber() *FieldDescriptorProto {
 	return fid
 }
 
