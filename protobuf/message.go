@@ -4,9 +4,6 @@
 package protobuf
 
 import (
-	"reflect"
-	"unsafe"
-
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -130,12 +127,4 @@ func (md *MessageDescriptorProto) SetExtensionRange(ranges ...*descriptorpb.Desc
 
 func (md *MessageDescriptorProto) Build() *descriptorpb.DescriptorProto {
 	return md.desc
-}
-
-// packStruct returns a byte slice view of a struct.
-func packStruct(s interface{}) []byte {
-	v := reflect.ValueOf(s)
-	sz := int(v.Elem().Type().Size())
-
-	return unsafe.Slice((*byte)(unsafe.Pointer(v.Pointer())), sz)
 }

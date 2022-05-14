@@ -80,8 +80,8 @@ func WithWrapPrimitives(wrapPrimitives bool) Option {
 type lookupFunc func(token string) (interface{}, error)
 
 type compiler struct {
-	opt *option
-	d   *protobuf.FileDescriptorProto
+	opt   *option
+	fdesc *protobuf.FileDescriptorProto
 
 	schemasLookupFunc lookupFunc
 	pathLookupFunc    lookupFunc
@@ -102,46 +102,46 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	c := &compiler{
-		opt: opt,
-		d:   protobuf.NewFileDescriptorProto(pkgname),
+		opt:   opt,
+		fdesc: protobuf.NewFileDescriptorProto(pkgname),
 	}
 
 	// compile info object
-	if err := c.compileInfo(spec.Info); err != nil {
+	if err := c.CompileInfo(spec.Info); err != nil {
 		return nil, fmt.Errorf("could not compile info object: %w", err)
 	}
 
 	// compile servers object
-	if err := c.compileServers(spec.Servers); err != nil {
+	if err := c.CompileServers(spec.Servers); err != nil {
 		return nil, fmt.Errorf("could not compile servers object: %w", err)
 	}
 
 	// compile paths object
-	if err := c.compilePaths(spec.Paths); err != nil {
+	if err := c.CompilePaths(spec.Paths); err != nil {
 		return nil, fmt.Errorf("could not compile paths object: %w", err)
 	}
 
 	// compile all component objects
-	if err := c.compileComponents(spec.Components); err != nil {
+	if err := c.CompileComponents(spec.Components); err != nil {
 		return nil, fmt.Errorf("could not compile component objects: %w", err)
 	}
 
 	// compile security object
-	if err := c.compileSecurity(spec.Security); err != nil {
+	if err := c.CompileSecurity(spec.Security); err != nil {
 		return nil, fmt.Errorf("could not compile security object: %w", err)
 	}
 
 	// compile tags object
-	if err := c.compileTags(spec.Tags); err != nil {
+	if err := c.CompileTags(spec.Tags); err != nil {
 		return nil, fmt.Errorf("could not compile tags object: %w", err)
 	}
 
 	// compile external documentation object
-	if err := c.compileExternalDocs(spec.ExternalDocs); err != nil {
+	if err := c.CompileExternalDocs(spec.ExternalDocs); err != nil {
 		return nil, fmt.Errorf("could not compile external documentation object: %w", err)
 	}
 
-	fd := c.d.Build()
+	fd := c.fdesc.Build()
 	fdesc, err := desc.CreateFileDescriptor(fd)
 	if err != nil {
 		return nil, fmt.Errorf("could not convert to desc: %w", err)
@@ -157,13 +157,14 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	return fd, nil
 }
 
-func (c *compiler) compileInfo(info *openapi3.Info) error {
+// CompileInfo compiles info object.
+func (c *compiler) CompileInfo(info *openapi3.Info) error {
 	if info == nil {
 		return nil
 	}
 
 	if title := info.Title; title != "" {
-		c.d.SetPackage(normalizeFieldName(title))
+		c.fdesc.SetPackage(normalizeFieldName(title))
 	}
 
 	if description := info.Description; description != "" {
@@ -177,107 +178,104 @@ func (c *compiler) compileInfo(info *openapi3.Info) error {
 	return nil
 }
 
-func (c *compiler) compileServers(info openapi3.Servers) error { return nil }
+// CompileServers compiles servers object.
+func (c *compiler) CompileServers(info openapi3.Servers) error { return nil }
 
-func (c *compiler) compilePaths(paths openapi3.Paths) error { return nil }
+// CompilePaths compiles paths object.
+func (c *compiler) CompilePaths(paths openapi3.Paths) error { return nil }
 
-func (c *compiler) compileComponents(components openapi3.Components) error {
+// CompileComponents all component objects.
+func (c *compiler) CompileComponents(components openapi3.Components) error {
+	oldSchemasLookupFunc := c.schemasLookupFunc
 	c.schemasLookupFunc = components.Schemas.JSONLookup
+	defer func() {
+		c.schemasLookupFunc = oldSchemasLookupFunc
+	}()
 
 	for name, schema := range components.Schemas {
-		_, err := c.compileSchemaRef(name, schema)
+		msg, err := c.compileSchemaRef(name, schema)
 		if err != nil {
 			return err
 		}
-		// c.d.AddMessage(msg)
+		if len(msg.GetFields()) > 0 {
+			c.fdesc.AddMessage(msg)
+		}
 	}
 
 	return nil
 }
 
+// compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
 	msg := protobuf.NewMessageDescriptorProto(name)
 
 	if val := schemaRef.Value; val != nil {
+		// Enum, OneOf, AnyOf, AllOf
+		switch {
+		case isEnum(val):
+			return c.CompileEnum(msg, val)
+
+		case isOneOf(val):
+			// return c.CompileOneOf(msg, name, val)
+			return msg, nil
+
+		case isAnyOf(val):
+			// return c.CompileAnyOf(msg, name, val)
+			return msg, nil
+
+		case isAllOf(val):
+			return msg, nil
+		}
+
 		switch val.Type {
 		case openapi3.TypeBoolean:
-			return c.CompileBuiltin(msg, val, protobuf.FieldTypeBool()), nil
+			return c.compileBuiltin(val, protobuf.FieldTypeBool()), nil
 
 		case openapi3.TypeInteger:
-			return c.CompileBuiltin(msg, val, IntegerFieldType(val.Format)), nil
+			return c.compileBuiltin(val, IntegerFieldType(val.Format)), nil
 
 		case openapi3.TypeNumber:
-			return c.CompileBuiltin(msg, val, NumberFieldType(val.Format)), nil
+			return c.compileBuiltin(val, NumberFieldType(val.Format)), nil
 
 		case openapi3.TypeString:
-			return c.CompileBuiltin(msg, val, StringFieldType(val.Format)), nil
+			return c.compileBuiltin(val, StringFieldType(val.Format)), nil
 
 		case openapi3.TypeArray:
-			arrayMsg, err := c.CompileArray(msg, val)
-			if err != nil {
-				return nil, err
-			}
-			c.d.AddMessage(arrayMsg)
-			return arrayMsg, nil
+			return c.compileArray(msg, val)
 
 		case openapi3.TypeObject:
-			objMsg, err := c.CompileObject(msg, val)
-			if err != nil {
-				return nil, err
-			}
-			c.d.AddMessage(objMsg)
-			return objMsg, nil
+			return c.compileObject(val)
 
-		default: // Enum, OneOf, AnyOf, AllOf
-			switch {
-			case isEnum(val):
-				enumMsg, err := c.CompileEnum(msg, val)
-				if err != nil {
-					return nil, err
-				}
-				c.d.AddMessage(enumMsg)
-				return enumMsg, nil
-
-			case isOneOf(val):
-				return c.CompileOneOf(msg, name, val)
-
-			case isAnyOf(val):
-				return c.CompileAnyOf(msg, name, val)
-
-			case isAllOf(val):
-
-			default:
-				internal.Dump("val.Type", val.Type, "\nname", name)
-			}
+		default:
+			internal.Dump("val.Type", val.Type, "\nname", name)
 		}
 	}
 
 	return nil, fmt.Errorf("unreachable: %s -> %s", schemaRef.Value.Type, schemaRef.Value.Title)
 }
 
-func isEnum(schema *openapi3.Schema) bool { return len(schema.Enum) > 0 }
+func isEnum(schema *openapi3.Schema) bool { return schema.Enum != nil }
 
-func isOneOf(schema *openapi3.Schema) bool { return len(schema.OneOf) > 0 }
+func isOneOf(schema *openapi3.Schema) bool { return schema.OneOf != nil }
 
-func isAnyOf(schema *openapi3.Schema) bool { return len(schema.AnyOf) > 0 }
+func isAnyOf(schema *openapi3.Schema) bool { return schema.AnyOf != nil }
 
-func isAllOf(schema *openapi3.Schema) bool { return len(schema.AllOf) > 0 }
+func isAllOf(schema *openapi3.Schema) bool { return schema.AllOf != nil }
 
-func (c *compiler) CompileBuiltin(msg *protobuf.MessageDescriptorProto, schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) *protobuf.MessageDescriptorProto {
-	// field := builder.NewField(normalizeFieldName(schema.Title), fieldType)
-	// fieldMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(schema.Title))
-	// msg.AddNestedMessage(fieldMsg)
-	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(schema.Title), fieldType)
-	// field.SetTypeName(schema.Title)
+func (c *compiler) compileBuiltin(schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) *protobuf.MessageDescriptorProto {
+	fieldMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(schema.Title))
 	// if description := schema.Description; description != "" {
 	// 	msg.SetComments(normalizeComment(schema.Title, description))
 	// }
-	msg.AddField(field)
+	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(schema.Title), fieldType)
+	fieldMsg.AddField(field)
 
-	return msg
+	return fieldMsg
 }
 
-func (c *compiler) CompileArray(msg *protobuf.MessageDescriptorProto, array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) compileArray(msg *protobuf.MessageDescriptorProto, array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	arrayMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(array.Title))
+
 	if ref := array.Items.Ref; ref != "" {
 		refBase := path.Base(ref)
 		refObj, err := c.schemasLookupFunc(refBase)
@@ -287,30 +285,32 @@ func (c *compiler) CompileArray(msg *protobuf.MessageDescriptorProto, array *ope
 
 		switch refObj := refObj.(type) {
 		case *openapi3.Schema:
-			// TODO(zchee): implements protobuf.MessageDescriptorProto.HasMessage
 			// refMsg := c.compileSchemaRef(normalizeMessageName(refObj.Title), refObj.Properties)
 			field := protobuf.NewFieldDescriptorProto(normalizeFieldName(refObj.Title), protobuf.FieldTypeMessage(nil))
 			field.SetRepeated()
-			msg.AddField(field)
+			arrayMsg.AddField(field)
 		}
 
-		return msg, nil
+		return arrayMsg, nil
 	}
 
-	arrayMsg, err := c.compileSchemaRef(normalizeMessageName(array.Title), array.Items)
+	m, err := c.compileSchemaRef(normalizeMessageName(array.Title), array.Items)
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
-	msg.AddNestedMessage(arrayMsg)
-	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(array.Title), protobuf.FieldTypeMessage(arrayMsg))
-	field.SetRepeated()
-	field.SetTypeName(arrayMsg.GetName())
-	msg.AddField(field)
+	arrayMsg.AddNestedMessage(m)
 
-	return msg, nil
+	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(arrayMsg.GetName()), protobuf.FieldTypeMessage(arrayMsg))
+	field.SetRepeated()
+	field.SetTypeName(normalizeFieldName(m.GetName()))
+	arrayMsg.AddField(field)
+
+	return arrayMsg, nil
 }
 
-func (c *compiler) CompileObject(msg *protobuf.MessageDescriptorProto, object *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	objMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(object.Title))
+
 	for propName, prop := range object.Properties {
 		if ref := prop.Ref; ref != "" {
 			refBase := path.Base(ref)
@@ -321,17 +321,15 @@ func (c *compiler) CompileObject(msg *protobuf.MessageDescriptorProto, object *o
 
 			switch refObj := refObj.(type) {
 			case *openapi3.Schema:
-				_ = refObj
-				// refMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(refObj.Title))
 				refMsg, err := c.compileSchemaRef(normalizeMessageName(refObj.Title), prop)
 				if err != nil {
 					return nil, fmt.Errorf("compile object items: %w", err)
 				}
-				msg.AddNestedMessage(refMsg)
-				field := protobuf.NewFieldDescriptorProto(refObj.Title, protobuf.FieldTypeMessage(refMsg))
+
+				field := protobuf.NewFieldDescriptorProto(propName, protobuf.FieldTypeMessage(refMsg))
 				field.SetTypeName(refMsg.GetName())
 				field.SetNumber()
-				msg.AddField(field)
+				objMsg.AddField(field)
 			default:
 				fmt.Fprintf(os.Stderr, "refObj: %T: %#v\n", refObj, refObj)
 			}
@@ -342,45 +340,40 @@ func (c *compiler) CompileObject(msg *protobuf.MessageDescriptorProto, object *o
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
-		msg.AddNestedMessage(propMsg)
+		objMsg.AddNestedMessage(propMsg)
 
-		// TODO(zchee): implements protobuf.MessageDescriptorProto.HasNestedMessage
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), protobuf.FieldTypeMessage(propMsg))
 		field.SetTypeName(propMsg.GetName())
 
-		msg.AddField(field)
+		objMsg.AddField(field)
 	}
 
-	return msg, nil
+	return objMsg, nil
 }
 
 func (c *compiler) CompileEnum(msg *protobuf.MessageDescriptorProto, enum *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	msgName := normalizeMessageName(enum.Title)
-	field := protobuf.NewFieldDescriptorProto(normalizeMessageName(enum.Title), protobuf.FieldTypeEnum())
 
 	eb := protobuf.NewEnumDescriptorProto(msgName)
 	// if description := enum.Description; description != "" {
 	// 	msg.SetComments(normalizeComment(enum.Title, description))
 	// }
 	for i, e := range enum.Enum {
-		// enumVal := builder.NewEnumValue(msgName + "_" + strconv.Itoa(int(e.(float64))))
-		// enumVal.SetNumber(int32(i))
 		enumVal := protobuf.NewEnumValueDescriptorProto(msgName+"_"+strconv.Itoa(int(e.(float64))), int32(i+1))
 		eb.AddValue(enumVal)
 	}
-	// msg.AddNestedEnum(eb)
-	msg.AddEnumType(eb)
+	c.fdesc.AddEnum(eb)
 
-	msg.AddField(field)
+	// field := protobuf.NewFieldDescriptorProto(normalizeMessageName(enum.Title), protobuf.FieldTypeEnum())
+	// field.SetTypeName(eb.GetName())
+	// msg.AddField(field)
 
 	return msg, nil
 }
 
 // TODO(zchee): implements correctly
 func (c *compiler) CompileOneOf(msg *protobuf.MessageDescriptorProto, name string, oneof *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	// oneofMsgRoot := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))
-	// oneofMsgRoot.AddOneof(ob)
 
 	for i, ref := range oneof.OneOf {
 		oneOfMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref)
@@ -388,10 +381,6 @@ func (c *compiler) CompileOneOf(msg *protobuf.MessageDescriptorProto, name strin
 			return nil, fmt.Errorf("compile oneof ref: %w", err)
 		}
 		oneOfMsg.SetName(name + "_" + strconv.Itoa(i))
-		// oneofMsgRoot.AddNestedMessage(oneOfMsg)
-		// field := builder.NewField(normalizeFieldName(name+"_"+strconv.Itoa(i)), builder.FieldTypeMessage(oneOfMsg))
-		// field := protobuf.NewFieldDescriptorProto(normalizeFieldName(name+"_"+strconv.Itoa(i)), protobuf.FieldTypeMessage(oneOfMsg))
-		// ob.AddChoice(field)
 		msg.AddNestedMessage(oneOfMsg)
 	}
 	msg.AddOneof(ob)
@@ -407,15 +396,7 @@ func (c *compiler) CompileAnyOf(msg *protobuf.MessageDescriptorProto, name strin
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
 		anyOfMsg.SetName(normalizeMessageName(name + "_" + strconv.Itoa(i)))
-		// var field *builder.FieldBuilder
-		// if nested := msg.GetNestedMessage(normalizeMessageName(anyOfMsg.GetName())); nested != nil {
-		// 	field = builder.NewField(normalizeFieldName(nested.GetName()), builder.FieldTypeMessage(nested))
-		// } else {
-		// 	msg.AddNestedMessage(anyOfMsg)
-		// 	field = builder.NewField(normalizeFieldName(anyOfMsg.GetName()), builder.FieldTypeMessage(anyOfMsg))
-		// }
 		msg.AddNestedMessage(anyOfMsg)
-		// field = builder.NewField(normalizeFieldName(anyOfMsg.GetName()), builder.FieldTypeMessage(anyOfMsg))
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage(anyOfMsg))
 		field.SetTypeName(anyOfMsg.GetName())
 		msg.AddField(field)
@@ -424,19 +405,24 @@ func (c *compiler) CompileAnyOf(msg *protobuf.MessageDescriptorProto, name strin
 	return msg, nil
 }
 
-func (c *compiler) compileSecurity(security openapi3.SecurityRequirements) error { return nil }
+// CompileSecurity compiles security object.
+func (c *compiler) CompileSecurity(security openapi3.SecurityRequirements) error { return nil }
 
-func (c *compiler) compileTags(tags openapi3.Tags) error { return nil }
+// CompileTags compiles tags object.
+func (c *compiler) CompileTags(tags openapi3.Tags) error { return nil }
 
-func (c *compiler) compileExternalDocs(docs *openapi3.ExternalDocs) error { return nil }
+// CompileExternalDocs compiles externalDocs object.
+func (c *compiler) CompileExternalDocs(docs *openapi3.ExternalDocs) error { return nil }
 
 // IntegerFieldType returns the FieldType of the underlying type of integer from the format.
 func IntegerFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "", "int32":
 		return protobuf.FieldTypeInt32()
+
 	case "int64":
 		return protobuf.FieldTypeInt64()
+
 	default:
 		return protobuf.FieldTypeInt64()
 	}
@@ -447,10 +433,13 @@ func NumberFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "", "double":
 		return protobuf.FieldTypeDouble()
+
 	case "int64", "long":
 		return protobuf.FieldTypeInt64()
+
 	case "integer", "int32":
 		return protobuf.FieldTypeInt64()
+
 	default:
 		return protobuf.FieldTypeFloat()
 	}
@@ -461,6 +450,7 @@ func StringFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "byte":
 		return protobuf.FieldTypeBytes()
+
 	default:
 		return protobuf.FieldTypeString()
 	}

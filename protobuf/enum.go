@@ -25,6 +25,10 @@ func NewEnumDescriptorProto(name string, values ...*EnumValueDescriptorProto) *E
 	return ed
 }
 
+func (ed *EnumDescriptorProto) GetName() string {
+	return *ed.desc.Name
+}
+
 func (ed *EnumDescriptorProto) AddValue(value *EnumValueDescriptorProto) *EnumDescriptorProto {
 	ed.desc.Value = append(ed.desc.Value, value.Build())
 	return ed
