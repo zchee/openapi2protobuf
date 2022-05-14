@@ -141,12 +141,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		return nil, fmt.Errorf("could not compile external documentation object: %w", err)
 	}
 
-	// fdesc, err := c.fb.Build()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not build a file descriptor: %w", err)
-	// }
 	fd := c.d.Build()
-	fmt.Fprintln(os.Stderr, fd.String())
 	fdesc, err := desc.CreateFileDescriptor(fd)
 	if err != nil {
 		return nil, fmt.Errorf("could not convert to desc: %w", err)
@@ -190,11 +185,11 @@ func (c *compiler) compileComponents(components openapi3.Components) error {
 	c.schemasLookupFunc = components.Schemas.JSONLookup
 
 	for name, schema := range components.Schemas {
-		msg, err := c.compileSchemaRef(name, schema)
+		_, err := c.compileSchemaRef(name, schema)
 		if err != nil {
 			return err
 		}
-		c.d.AddMessage(msg)
+		// c.d.AddMessage(msg)
 	}
 
 	return nil
@@ -218,15 +213,31 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			return c.CompileBuiltin(msg, val, StringFieldType(val.Format)), nil
 
 		case openapi3.TypeArray:
-			return c.CompileArray(msg, val)
+			arrayMsg, err := c.CompileArray(msg, val)
+			if err != nil {
+				return nil, err
+			}
+			c.d.AddMessage(arrayMsg)
+			return arrayMsg, nil
 
 		case openapi3.TypeObject:
-			return c.CompileObject(msg, val)
+			objMsg, err := c.CompileObject(msg, val)
+			if err != nil {
+				return nil, err
+			}
+			c.d.AddMessage(objMsg)
+			return objMsg, nil
 
 		default: // Enum, OneOf, AnyOf, AllOf
 			switch {
 			case isEnum(val):
-				return c.CompileEnum(msg, val)
+				enumMsg, err := c.CompileEnum(msg, val)
+				if err != nil {
+					return nil, err
+				}
+				c.d.AddMessage(enumMsg)
+				return enumMsg, nil
+
 			case isOneOf(val):
 				return c.CompileOneOf(msg, name, val)
 
@@ -321,6 +332,8 @@ func (c *compiler) CompileObject(msg *protobuf.MessageDescriptorProto, object *o
 				field.SetTypeName(refMsg.GetName())
 				field.SetNumber()
 				msg.AddField(field)
+			default:
+				fmt.Fprintf(os.Stderr, "refObj: %T: %#v\n", refObj, refObj)
 			}
 			continue
 		}
@@ -344,22 +357,21 @@ func (c *compiler) CompileObject(msg *protobuf.MessageDescriptorProto, object *o
 func (c *compiler) CompileEnum(msg *protobuf.MessageDescriptorProto, enum *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	msgName := normalizeMessageName(enum.Title)
 	field := protobuf.NewFieldDescriptorProto(normalizeMessageName(enum.Title), protobuf.FieldTypeEnum())
-	msg.AddField(field)
 
+	eb := protobuf.NewEnumDescriptorProto(msgName)
 	// if description := enum.Description; description != "" {
 	// 	msg.SetComments(normalizeComment(enum.Title, description))
 	// }
-	enums := make([]*protobuf.EnumValueDescriptorProto, len(enum.Enum))
 	for i, e := range enum.Enum {
 		// enumVal := builder.NewEnumValue(msgName + "_" + strconv.Itoa(int(e.(float64))))
 		// enumVal.SetNumber(int32(i))
-		enumVal := protobuf.NewEnumValueDescriptorProto(msgName+"_"+strconv.Itoa(int(e.(float64))), int32(i))
-		enums[i] = enumVal
-		// eb.AddValue(enumVal)
+		enumVal := protobuf.NewEnumValueDescriptorProto(msgName+"_"+strconv.Itoa(int(e.(float64))), int32(i+1))
+		eb.AddValue(enumVal)
 	}
 	// msg.AddNestedEnum(eb)
-	eb := protobuf.NewEnumDescriptorProto(msgName, enums...)
 	msg.AddEnumType(eb)
+
+	msg.AddField(field)
 
 	return msg, nil
 }

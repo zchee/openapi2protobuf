@@ -15,6 +15,7 @@ import (
 
 type FileDescriptorProto struct {
 	desc *descriptorpb.FileDescriptorProto
+	msg  map[string]bool
 }
 
 func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
@@ -32,6 +33,7 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 			},
 			Syntax: proto.String(protoreflect.Proto3.String()),
 		},
+		msg: make(map[string]bool),
 	}
 }
 
@@ -94,42 +96,37 @@ func (fd *FileDescriptorProto) AddDependency(fdp *FileDescriptorProto) *FileDesc
 	return fd
 }
 
-func (fd *FileDescriptorProto) AddMessage(msgs ...*MessageDescriptorProto) *FileDescriptorProto {
-	ms := make([]*descriptorpb.DescriptorProto, len(msgs))
-	for i, msg := range msgs {
-		ms[i] = msg.Build()
+func (fd *FileDescriptorProto) AddMessage(msg *MessageDescriptorProto) *FileDescriptorProto {
+	if fd.msg[msg.GetName()] {
+		return fd
 	}
-	fd.desc.MessageType = append(fd.desc.MessageType, ms...)
+
+	for _, nested := range msg.GetNestedMessages() {
+		if nested == msg.GetName() {
+			return fd
+		}
+	}
+
+	fd.msg[msg.GetName()] = true
+	fd.desc.MessageType = append(fd.desc.MessageType, msg.Build())
 
 	return fd
 }
 
-func (fd *FileDescriptorProto) AddEnum(enums ...*EnumDescriptorProto) *FileDescriptorProto {
-	es := make([]*descriptorpb.EnumDescriptorProto, len(enums))
-	for i, enum := range enums {
-		es[i] = enum.Build()
-	}
-	fd.desc.EnumType = append(fd.desc.EnumType, es...)
+func (fd *FileDescriptorProto) AddEnum(enum *EnumDescriptorProto) *FileDescriptorProto {
+	fd.desc.EnumType = append(fd.desc.EnumType, enum.Build())
 
 	return fd
 }
 
-func (fd *FileDescriptorProto) AddService(servicses ...*ServiceDescriptorProto) *FileDescriptorProto {
-	svcs := make([]*descriptorpb.ServiceDescriptorProto, len(servicses))
-	for i, servicse := range servicses {
-		svcs[i] = servicse.Build()
-	}
-	fd.desc.Service = append(fd.desc.Service, svcs...)
+func (fd *FileDescriptorProto) AddService(servicse *ServiceDescriptorProto) *FileDescriptorProto {
+	fd.desc.Service = append(fd.desc.Service, servicse.Build())
 
 	return fd
 }
 
-func (fd *FileDescriptorProto) AddExtension(exts ...*FieldDescriptorProto) *FileDescriptorProto {
-	es := make([]*descriptorpb.FieldDescriptorProto, len(exts))
-	for i, ext := range exts {
-		es[i] = ext.Build()
-	}
-	fd.desc.Extension = append(fd.desc.Extension, es...)
+func (fd *FileDescriptorProto) AddExtension(ext *FieldDescriptorProto) *FileDescriptorProto {
+	fd.desc.Extension = append(fd.desc.Extension, ext.Build())
 
 	return fd
 }

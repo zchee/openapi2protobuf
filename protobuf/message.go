@@ -12,10 +12,10 @@ import (
 )
 
 type MessageDescriptorProto struct {
-	desc           *descriptorpb.DescriptorProto
-	nestedMessages map[string]bool
-	field          map[string]bool
-	number         int32
+	desc   *descriptorpb.DescriptorProto
+	nested map[string]bool
+	field  map[string]bool
+	number int32
 }
 
 func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
@@ -23,9 +23,9 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 		desc: &descriptorpb.DescriptorProto{
 			Name: proto.String(name),
 		},
-		nestedMessages: make(map[string]bool),
-		field:          make(map[string]bool),
-		number:         int32(1),
+		nested: make(map[string]bool),
+		field:  make(map[string]bool),
+		number: int32(1),
 	}
 }
 
@@ -42,11 +42,35 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 	if md.field[field.GetName()] {
 		return md
 	}
+
 	field.desc.Number = proto.Int32(md.number)
 	md.desc.Field = append(md.desc.Field, field.Build())
 	md.number++
 	md.field[field.GetName()] = true // cast to string is allocation free
+
 	return md
+}
+
+func (md *MessageDescriptorProto) GetFields() []*FieldDescriptorProto {
+	fields := make([]*FieldDescriptorProto, len(md.desc.Field))
+	for i, field := range md.desc.Field {
+		fields[i] = &FieldDescriptorProto{
+			desc: field,
+		}
+	}
+
+	return fields
+}
+
+func (md *MessageDescriptorProto) RemoveField(field *FieldDescriptorProto) bool {
+	fields := make([]*FieldDescriptorProto, len(md.desc.Field))
+	for i, field := range md.desc.Field {
+		fields[i] = &FieldDescriptorProto{
+			desc: field,
+		}
+	}
+
+	return false
 }
 
 func (md *MessageDescriptorProto) AddExtension(ext *FieldDescriptorProto) *MessageDescriptorProto {
@@ -54,12 +78,28 @@ func (md *MessageDescriptorProto) AddExtension(ext *FieldDescriptorProto) *Messa
 	return md
 }
 
+func (md *MessageDescriptorProto) GetNestedMessages() []string {
+	nesteds := make([]string, len(md.nested))
+	i := 0
+	for nested := range md.nested {
+		nesteds[i] = nested
+		i++
+	}
+
+	return nesteds
+}
+
+func (md *MessageDescriptorProto) HasNestedMessage(nested string) bool {
+	return md.nested[nested]
+}
+
 func (md *MessageDescriptorProto) AddNestedMessage(nested *MessageDescriptorProto) *MessageDescriptorProto {
-	if md.nestedMessages[nested.GetName()] {
+	if md.nested[nested.GetName()] {
 		return md
 	}
 	md.desc.NestedType = append(md.desc.NestedType, nested.Build())
-	md.nestedMessages[nested.GetName()] = true // cast to string is allocation free
+	md.nested[nested.GetName()] = true
+
 	return md
 }
 
