@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-openapi/jsonpointer"
 	"github.com/jhump/protoreflect/desc"
@@ -142,6 +143,8 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	fd := c.fdesc.Build()
+	// dumpFileDescriptor(fd)
+
 	fdesc, err := desc.CreateFileDescriptor(fd)
 	if err != nil {
 		return nil, fmt.Errorf("could not convert to desc: %w", err)
@@ -155,6 +158,45 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	fmt.Fprintln(os.Stdout, sb.String())
 
 	return fd, nil
+}
+
+func dumpFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
+	var sb strings.Builder
+
+	sb.WriteString("Dependency:\n")
+	for _, dep := range fd.Dependency {
+		sb.WriteString(fmt.Sprintf("%#v\n", dep))
+	}
+	sb.WriteString("\n")
+
+	sb.WriteString("MessageType:\n")
+	for _, msg := range fd.MessageType {
+		sb.WriteString(fmt.Sprintf("%#v\n", msg.GetName()))
+		if msg.GetName() == "TextDocument" {
+			sb.WriteString(spew.Sdump(msg) + "\n")
+		}
+	}
+	sb.WriteString("\n")
+
+	sb.WriteString("EnumType:\n")
+	for _, enum := range fd.EnumType {
+		sb.WriteString(fmt.Sprintf("%#v\n", enum.GetName()))
+	}
+	sb.WriteString("\n")
+
+	sb.WriteString("Service:\n")
+	for _, service := range fd.Service {
+		sb.WriteString(fmt.Sprintf("%#v\n", service.GetName()))
+	}
+	sb.WriteString("\n")
+
+	sb.WriteString("Extension:\n")
+	for _, ext := range fd.Extension {
+		sb.WriteString(fmt.Sprintf("%#v\n", ext.GetName()))
+	}
+	sb.WriteString("\n")
+
+	fmt.Fprintln(os.Stderr, sb.String())
 }
 
 // CompileInfo compiles info object.
@@ -241,7 +283,7 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			return c.compileBuiltin(val, StringFieldType(val.Format)), nil
 
 		case openapi3.TypeArray:
-			return c.compileArray(msg, val)
+			return c.compileArray(val)
 
 		case openapi3.TypeObject:
 			return c.compileObject(val)
@@ -270,10 +312,12 @@ func (c *compiler) compileBuiltin(schema *openapi3.Schema, fieldType *descriptor
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(schema.Title), fieldType)
 	fieldMsg.AddField(field)
 
+	fmt.Fprintf(os.Stderr, "fieldMsg: %#v\n", fieldMsg)
+
 	return fieldMsg
 }
 
-func (c *compiler) compileArray(msg *protobuf.MessageDescriptorProto, array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	arrayMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(array.Title))
 
 	if ref := array.Items.Ref; ref != "" {
@@ -294,15 +338,15 @@ func (c *compiler) compileArray(msg *protobuf.MessageDescriptorProto, array *ope
 		return arrayMsg, nil
 	}
 
-	m, err := c.compileSchemaRef(normalizeMessageName(array.Title), array.Items)
+	msg, err := c.compileSchemaRef(normalizeMessageName(array.Title), array.Items)
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
-	arrayMsg.AddNestedMessage(m)
+	arrayMsg.AddNestedMessage(msg)
 
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(arrayMsg.GetName()), protobuf.FieldTypeMessage(arrayMsg))
 	field.SetRepeated()
-	field.SetTypeName(normalizeFieldName(m.GetName()))
+	field.SetTypeName(normalizeFieldName(msg.GetName()))
 	arrayMsg.AddField(field)
 
 	return arrayMsg, nil
@@ -340,10 +384,25 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
+
+		// if fields := propMsg.GetFields(); len(fields) == 1 {
+		// 	typeName := fields[0].GetTypeName()
+		// 	if typeName != nil && *typeName != "" {
+		// 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propMsg.GetName()), protobuf.FieldTypeMessage(propMsg))
+		// 		fmt.Fprintf(os.Stderr, "typeName: %s\n", *typeName)
+		// 		field.SetTypeName(*typeName)
+		// 		objMsg.AddField(field)
+		//
+		// 		continue
+		// 	}
+		// }
+
+		// fmt.Fprintf(os.Stderr, "propMsg.GetName(): %s\n", propMsg.GetName())
 		objMsg.AddNestedMessage(propMsg)
 
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), protobuf.FieldTypeMessage(propMsg))
 		field.SetTypeName(propMsg.GetName())
+		field.SetNumber()
 
 		objMsg.AddField(field)
 	}
@@ -364,7 +423,7 @@ func (c *compiler) CompileEnum(msg *protobuf.MessageDescriptorProto, enum *opena
 	}
 	c.fdesc.AddEnum(eb)
 
-	// field := protobuf.NewFieldDescriptorProto(normalizeMessageName(enum.Title), protobuf.FieldTypeEnum())
+	// field := protobuf.NewFieldDescriptorProto(msgName, protobuf.FieldTypeEnum())
 	// field.SetTypeName(eb.GetName())
 	// msg.AddField(field)
 

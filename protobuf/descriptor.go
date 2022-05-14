@@ -28,7 +28,7 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 				JavaPackage:        proto.String(javaPackage(fqn)),
 				JavaOuterClassname: proto.String(strcase.ToCamel(splitByLastDot(fqn))),
 				CsharpNamespace:    proto.String(csharpNamespace(fqn)),
-				// ObjcClassPrefix:    proto.String(""), // TODO(zchee): split by dot and join only first letter
+				// ObjcClassPrefix:    proto.String(objcClassPrefix(fqn)),
 				CcEnableArenas: proto.Bool(true),
 			},
 			Syntax: proto.String(protoreflect.Proto3.String()),
@@ -76,6 +76,21 @@ func csharpNamespace(fqn string) string {
 	}
 
 	return strings.Join(ss, ".")
+}
+
+func objcClassPrefix(fqn string) string {
+	isUpper := func(s string) bool {
+		return "A" <= s && s >= "Z"
+	}
+	_ = isUpper
+
+	var b strings.Builder
+	ss := strings.Split(strcase.ToSnake(fqn), "_")
+	for _, s := range ss {
+		b.WriteByte(s[0])
+	}
+
+	return b.String()
 }
 
 func (fd *FileDescriptorProto) GetName() string {

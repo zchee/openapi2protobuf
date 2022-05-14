@@ -22,7 +22,6 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 		},
 		nested: make(map[string]bool),
 		field:  make(map[string]bool),
-		number: int32(1),
 	}
 }
 
@@ -40,10 +39,10 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 		return md
 	}
 
-	field.desc.Number = proto.Int32(md.number)
-	md.desc.Field = append(md.desc.Field, field.Build())
 	md.number++
-	md.field[field.GetName()] = true // cast to string is allocation free
+	field.desc.Number = proto.Int32(md.number)
+	md.field[field.GetName()] = true
+	md.desc.Field = append(md.desc.Field, field.Build())
 
 	return md
 }
@@ -57,17 +56,6 @@ func (md *MessageDescriptorProto) GetFields() []*FieldDescriptorProto {
 	}
 
 	return fields
-}
-
-func (md *MessageDescriptorProto) RemoveField(field *FieldDescriptorProto) bool {
-	fields := make([]*FieldDescriptorProto, len(md.desc.Field))
-	for i, field := range md.desc.Field {
-		fields[i] = &FieldDescriptorProto{
-			desc: field,
-		}
-	}
-
-	return false
 }
 
 func (md *MessageDescriptorProto) AddExtension(ext *FieldDescriptorProto) *MessageDescriptorProto {

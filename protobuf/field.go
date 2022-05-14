@@ -19,7 +19,6 @@ func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescripto
 			Name: proto.String(name),
 			Type: fieldType,
 		},
-		number: int32(1),
 	}
 
 	return fid
@@ -30,9 +29,13 @@ func (fid *FieldDescriptorProto) GetName() string {
 }
 
 func (fid *FieldDescriptorProto) SetNumber() *FieldDescriptorProto {
-	fid.desc.Number = proto.Int32(fid.number)
 	fid.number++
+	fid.desc.Number = proto.Int32(fid.number)
 	return fid
+}
+
+func (fid *FieldDescriptorProto) GetTypeName() *string {
+	return fid.desc.TypeName
 }
 
 func (fid *FieldDescriptorProto) SetTypeName(name string) *FieldDescriptorProto {

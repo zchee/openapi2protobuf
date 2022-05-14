@@ -2,24 +2,34 @@ syntax = "proto3";
 
 package go.lsp.dev.textDocument;
 
-option go_package = "go.lsp.dev.textDocument;textDocument";
-
-option cc_enable_arenas = true;
-
 option csharp_namespace = "Go.Lsp.Dev.TextDocument";
 
 option java_package = "dev.lsp.go";
 
 option java_outer_classname = "TextDocument";
 
-message TextDocument {
-  LanguageId language_id = 1;
+option go_package = "go.lsp.dev.textDocument;textDocument";
 
-  LineCount line_count = 2;
+option cc_enable_arenas = true;
 
-  DocumentUri uri = 3;
+message FullTextDocument {
+  DocumentUri _uri = 1;
 
-  Version version = 4;
+  LanguageId language_id = 2;
+
+  LineCount line_count = 3;
+
+  Version _version = 4;
+
+  Uri uri = 5;
+
+  Version version = 6;
+
+  Content _content = 7;
+
+  LanguageId _language_id = 8;
+
+  LineOffsets _line_offsets = 9;
 
   message LanguageId {
     string language_id = 1;
@@ -30,7 +40,65 @@ message TextDocument {
   }
 
   message Version {
+    int32 _version = 1;
+  }
+
+  message Uri {
+    string uri = 1;
+  }
+
+  message Content {
+    string _content = 1;
+  }
+
+  message LineOffsets {
+    repeated  line_offsets = 1;
+
+    message  {
+      int32  = 1;
+    }
+  }
+}
+
+message Position {
+  Line line = 1;
+
+  Character character = 2;
+
+  message Line {
+    int32 line = 1;
+  }
+
+  message Character {
+    int32 character = 1;
+  }
+}
+
+message Range {
+  Position start = 1;
+
+  Position end = 2;
+}
+
+message TextDocument {
+  LineCount line_count = 1;
+
+  DocumentUri uri = 2;
+
+  Version version = 3;
+
+  LanguageId language_id = 4;
+
+  message LineCount {
+    int32 line_count = 1;
+  }
+
+  message Version {
     int32 version = 1;
+  }
+
+  message LanguageId {
+    string language_id = 1;
   }
 }
 
@@ -46,74 +114,6 @@ message TextEdit {
 
 message DocumentUri {
   string document_uri = 1;
-}
-
-message FullTextDocument {
-  Version version = 1;
-
-  Content _content = 2;
-
-  LanguageId _language_id = 3;
-
-  LineOffsets _line_offsets = 4;
-
-  DocumentUri _uri = 5;
-
-  Version _version = 6;
-
-  LanguageId language_id = 7;
-
-  LineCount line_count = 8;
-
-  Uri uri = 9;
-
-  message Version {
-    int32 version = 1;
-  }
-
-  message Content {
-    string _content = 1;
-  }
-
-  message LanguageId {
-    string _language_id = 1;
-  }
-
-  message LineOffsets {
-    repeated  line_offsets = 1;
-
-    message  {
-      int32  = 1;
-    }
-  }
-
-  message LineCount {
-    int32 line_count = 1;
-  }
-
-  message Uri {
-    string uri = 1;
-  }
-}
-
-message Position {
-  Character character = 1;
-
-  Line line = 2;
-
-  message Character {
-    int32 character = 1;
-  }
-
-  message Line {
-    int32 line = 1;
-  }
-}
-
-message Range {
-  Position start = 1;
-
-  Position end = 2;
 }
 
 enum CharCode {

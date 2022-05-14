@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/Code-Hex/dd v1.1.0
 	github.com/alecthomas/chroma v0.10.1-0.20220126230913-d491f1b5c1d2
+	github.com/davecgh/go-spew v1.1.1
 	github.com/getkin/kin-openapi v0.94.1-0.20220403132454-ebcbb7269761
 	github.com/go-openapi/jsonpointer v0.19.5
 	github.com/iancoleman/strcase v0.2.0
