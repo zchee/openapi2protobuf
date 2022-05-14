@@ -81,8 +81,8 @@ func WithWrapPrimitives(wrapPrimitives bool) Option {
 type lookupFunc func(token string) (interface{}, error)
 
 type compiler struct {
-	opt   *option
 	fdesc *protobuf.FileDescriptorProto
+	opt   *option
 
 	schemasLookupFunc lookupFunc
 	pathLookupFunc    lookupFunc
@@ -103,8 +103,8 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	c := &compiler{
-		opt:   opt,
 		fdesc: protobuf.NewFileDescriptorProto(pkgname),
+		opt:   opt,
 	}
 
 	// compile info object
@@ -255,11 +255,10 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 		// Enum, OneOf, AnyOf, AllOf
 		switch {
 		case isEnum(val):
-			return c.CompileEnum(msg, val)
+			return msg, c.CompileEnum(val)
 
 		case isOneOf(val):
-			// return c.CompileOneOf(msg, name, val)
-			return msg, nil
+			return msg, c.CompileOneOf(name, val)
 
 		case isAnyOf(val):
 			// return c.CompileAnyOf(msg, name, val)
@@ -306,13 +305,10 @@ func isAllOf(schema *openapi3.Schema) bool { return schema.AllOf != nil }
 
 func (c *compiler) compileBuiltin(schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) *protobuf.MessageDescriptorProto {
 	fieldMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(schema.Title))
-	// if description := schema.Description; description != "" {
-	// 	msg.SetComments(normalizeComment(schema.Title, description))
-	// }
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(schema.Title), fieldType)
 	fieldMsg.AddField(field)
 
-	fmt.Fprintf(os.Stderr, "fieldMsg: %#v\n", fieldMsg)
+	// fmt.Fprintf(os.Stderr, "fieldMsg: %#v\n", fieldMsg)
 
 	return fieldMsg
 }
@@ -329,7 +325,6 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 
 		switch refObj := refObj.(type) {
 		case *openapi3.Schema:
-			// refMsg := c.compileSchemaRef(normalizeMessageName(refObj.Title), refObj.Properties)
 			field := protobuf.NewFieldDescriptorProto(normalizeFieldName(refObj.Title), protobuf.FieldTypeMessage(nil))
 			field.SetRepeated()
 			arrayMsg.AddField(field)
@@ -377,6 +372,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 			default:
 				fmt.Fprintf(os.Stderr, "refObj: %T: %#v\n", refObj, refObj)
 			}
+
 			continue
 		}
 
@@ -385,23 +381,22 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
 
-		// if fields := propMsg.GetFields(); len(fields) == 1 {
-		// 	typeName := fields[0].GetTypeName()
-		// 	if typeName != nil && *typeName != "" {
-		// 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propMsg.GetName()), protobuf.FieldTypeMessage(propMsg))
-		// 		fmt.Fprintf(os.Stderr, "typeName: %s\n", *typeName)
-		// 		field.SetTypeName(*typeName)
-		// 		objMsg.AddField(field)
-		//
-		// 		continue
-		// 	}
-		// }
+		var typeName string
+		fieldType := propMsg.GetFieldType()
+		switch fieldType {
+		case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum():
+			objMsg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
+			typeName = propMsg.GetName()
 
-		// fmt.Fprintf(os.Stderr, "propMsg.GetName(): %s\n", propMsg.GetName())
-		objMsg.AddNestedMessage(propMsg)
+		default:
+			typeName = fieldType.String()
+			if typeName == "TYPE_MESSAGE" {
+				continue // Enum
+			}
+		}
 
-		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), protobuf.FieldTypeMessage(propMsg))
-		field.SetTypeName(propMsg.GetName())
+		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), fieldType)
+		field.SetTypeName(typeName)
 		field.SetNumber()
 
 		objMsg.AddField(field)
@@ -410,50 +405,48 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 	return objMsg, nil
 }
 
-func (c *compiler) CompileEnum(msg *protobuf.MessageDescriptorProto, enum *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) CompileEnum(enum *openapi3.Schema) error {
 	msgName := normalizeMessageName(enum.Title)
 
 	eb := protobuf.NewEnumDescriptorProto(msgName)
-	// if description := enum.Description; description != "" {
-	// 	msg.SetComments(normalizeComment(enum.Title, description))
-	// }
 	for i, e := range enum.Enum {
 		enumVal := protobuf.NewEnumValueDescriptorProto(msgName+"_"+strconv.Itoa(int(e.(float64))), int32(i+1))
 		eb.AddValue(enumVal)
 	}
 	c.fdesc.AddEnum(eb)
 
-	// field := protobuf.NewFieldDescriptorProto(msgName, protobuf.FieldTypeEnum())
-	// field.SetTypeName(eb.GetName())
-	// msg.AddField(field)
-
-	return msg, nil
+	return nil
 }
 
 // TODO(zchee): implements correctly
-func (c *compiler) CompileOneOf(msg *protobuf.MessageDescriptorProto, name string, oneof *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))
+func (c *compiler) CompileOneOf(name string, oneof *openapi3.Schema) error {
+	msg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 
+	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))
 	for i, ref := range oneof.OneOf {
 		oneOfMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref)
 		if err != nil {
-			return nil, fmt.Errorf("compile oneof ref: %w", err)
+			return fmt.Errorf("compile oneof ref: %w", err)
 		}
+
 		oneOfMsg.SetName(name + "_" + strconv.Itoa(i))
 		msg.AddNestedMessage(oneOfMsg)
 	}
 	msg.AddOneof(ob)
-	// msg.AddNestedMessage(oneofMsgRoot)
 
-	return msg, nil
+	c.fdesc.AddMessage(msg)
+
+	return nil
 }
 
+// TODO(zchee): implements correctly
 func (c *compiler) CompileAnyOf(msg *protobuf.MessageDescriptorProto, name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	for i, ref := range anyOf.AnyOf {
 		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(name+"_"+strconv.Itoa(i)), ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
+
 		anyOfMsg.SetName(normalizeMessageName(name + "_" + strconv.Itoa(i)))
 		msg.AddNestedMessage(anyOfMsg)
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage(anyOfMsg))

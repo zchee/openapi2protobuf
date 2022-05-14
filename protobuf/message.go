@@ -47,6 +47,14 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 	return md
 }
 
+func (md *MessageDescriptorProto) GetFieldType() *descriptorpb.FieldDescriptorProto_Type {
+	if len(md.desc.Field) == 1 {
+		return md.desc.Field[0].GetType().Enum()
+	}
+
+	return descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum()
+}
+
 func (md *MessageDescriptorProto) GetFields() []*FieldDescriptorProto {
 	fields := make([]*FieldDescriptorProto, len(md.desc.Field))
 	for i, field := range md.desc.Field {

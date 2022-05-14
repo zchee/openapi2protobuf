@@ -2,118 +2,80 @@ syntax = "proto3";
 
 package go.lsp.dev.textDocument;
 
-option csharp_namespace = "Go.Lsp.Dev.TextDocument";
-
-option java_package = "dev.lsp.go";
-
 option java_outer_classname = "TextDocument";
+
+option java_multiple_files = true;
 
 option go_package = "go.lsp.dev.textDocument;textDocument";
 
 option cc_enable_arenas = true;
 
+option csharp_namespace = "Go.Lsp.Dev.TextDocument";
+
+option java_package = "dev.lsp.go";
+
+message DocumentUri {
+  string document_uri = 1;
+}
+
 message FullTextDocument {
-  DocumentUri _uri = 1;
+  int32 _version = 1;
 
-  LanguageId language_id = 2;
+  string uri = 2;
 
-  LineCount line_count = 3;
+  string _content = 3;
 
-  Version _version = 4;
+  string _language_id = 4;
 
-  Uri uri = 5;
+  DocumentUri _uri = 5;
 
-  Version version = 6;
+  string language_id = 6;
 
-  Content _content = 7;
+  int32 line_count = 7;
 
-  LanguageId _language_id = 8;
-
-  LineOffsets _line_offsets = 9;
-
-  message LanguageId {
-    string language_id = 1;
-  }
-
-  message LineCount {
-    int32 line_count = 1;
-  }
-
-  message Version {
-    int32 _version = 1;
-  }
-
-  message Uri {
-    string uri = 1;
-  }
-
-  message Content {
-    string _content = 1;
-  }
-
-  message LineOffsets {
-    repeated  line_offsets = 1;
-
-    message  {
-      int32  = 1;
-    }
-  }
+  int32 version = 8;
 }
 
 message Position {
-  Line line = 1;
+  int32 character = 1;
 
-  Character character = 2;
-
-  message Line {
-    int32 line = 1;
-  }
-
-  message Character {
-    int32 character = 1;
-  }
+  int32 line = 2;
 }
 
 message Range {
-  Position start = 1;
+  Position end = 1;
 
-  Position end = 2;
+  Position start = 2;
 }
 
 message TextDocument {
-  LineCount line_count = 1;
+  string language_id = 1;
 
-  DocumentUri uri = 2;
+  int32 line_count = 2;
 
-  Version version = 3;
+  DocumentUri uri = 3;
 
-  LanguageId language_id = 4;
+  int32 version = 4;
+}
 
-  message LineCount {
-    int32 line_count = 1;
+message TextDocumentContentChangeEvent {
+  message TextDocumentContentChangeEvent_0 {
+    Range range = 1;
+
+    int32 range_length = 2;
+
+    string text = 3;
   }
 
-  message Version {
-    int32 version = 1;
-  }
-
-  message LanguageId {
-    string language_id = 1;
+  message TextDocumentContentChangeEvent_1 {
+    string text = 1;
   }
 }
 
 message TextEdit {
-  NewText new_text = 1;
+  string new_text = 1;
 
   Range range = 2;
-
-  message NewText {
-    string new_text = 1;
-  }
-}
-
-message DocumentUri {
-  string document_uri = 1;
 }
 
 enum CharCode {

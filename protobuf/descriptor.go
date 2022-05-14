@@ -27,6 +27,7 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 				GoPackage:          proto.String(goPackage(fqn)),
 				JavaPackage:        proto.String(javaPackage(fqn)),
 				JavaOuterClassname: proto.String(strcase.ToCamel(splitByLastDot(fqn))),
+				JavaMultipleFiles:  proto.Bool(true),
 				CsharpNamespace:    proto.String(csharpNamespace(fqn)),
 				// ObjcClassPrefix:    proto.String(objcClassPrefix(fqn)),
 				CcEnableArenas: proto.Bool(true),

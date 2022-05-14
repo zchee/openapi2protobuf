@@ -101,64 +101,6 @@ components:
       - range
       title: TextEdit
       type: object
-    FullTextDocument:
-      defaultProperties: []
-      properties:
-        _content:
-          title: _content
-          type: string
-        _languageId:
-          title: _languageId
-          type: string
-        _lineOffsets:
-          items:
-            type: integer
-          title: _lineOffsets
-          type: array
-        _uri:
-          $ref: '#/components/schemas/DocumentUri'
-          title: _uri
-        _version:
-          title: _version
-          type: integer
-        languageId:
-          title: languageId
-          type: string
-        lineCount:
-          title: lineCount
-          type: integer
-        uri:
-          title: uri
-          type: string
-        version:
-          title: version
-          type: integer
-      propertyOrder:
-      - _uri
-      - _languageId
-      - _version
-      - _content
-      - _lineOffsets
-      - uri
-      - languageId
-      - version
-      - getText
-      - update
-      - getLineOffsets
-      - positionAt
-      - offsetAt
-      - lineCount
-      required:
-      - _content
-      - _languageId
-      - _uri
-      - _version
-      - languageId
-      - lineCount
-      - uri
-      - version
-      title: FullTextDocument
-      type: object
     TextDocument:
       defaultProperties: []
       description: |-
@@ -239,3 +181,61 @@ components:
       description: |-
         An event describing a change to a text document. If range and rangeLength are omitted
         the new text is considered to be the full content of the document.
+    FullTextDocument:
+      defaultProperties: []
+      properties:
+        _content:
+          title: _content
+          type: string
+        _languageId:
+          title: _languageId
+          type: string
+        _lineOffsets:
+          items:
+            type: integer
+          title: _lineOffsets
+          type: array
+        _uri:
+          $ref: '#/components/schemas/DocumentUri'
+          title: _uri
+        _version:
+          title: _version
+          type: integer
+        languageId:
+          title: languageId
+          type: string
+        lineCount:
+          title: lineCount
+          type: integer
+        uri:
+          title: uri
+          type: string
+        version:
+          title: version
+          type: integer
+      propertyOrder:
+      - _uri
+      - _languageId
+      - _version
+      - _content
+      - _lineOffsets
+      - uri
+      - languageId
+      - version
+      - getText
+      - update
+      - getLineOffsets
+      - positionAt
+      - offsetAt
+      - lineCount
+      required:
+      - _content
+      - _languageId
+      - _uri
+      - _version
+      - languageId
+      - lineCount
+      - uri
+      - version
+      title: FullTextDocument
+      type: object
