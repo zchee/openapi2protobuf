@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package go.lsp.dev.textDocument;
 
+option csharp_namespace = "Go.Lsp.Dev.TextDocument";
+
 option java_package = "dev.lsp.go";
 
 option java_outer_classname = "TextDocument";
@@ -12,33 +14,79 @@ option go_package = "go.lsp.dev.textDocument;textDocument";
 
 option cc_enable_arenas = true;
 
-option csharp_namespace = "Go.Lsp.Dev.TextDocument";
-
 message DocumentUri {
   string document_uri = 1;
 }
 
 message FullTextDocument {
-  string language_id = 1;
+  DocumentUri _uri = 1;
+
+  int32 _version = 2;
+
+  string uri = 3;
+
+  string language_id = 4;
+
+  int32 line_count = 5;
+
+  int32 version = 6;
+
+  string _content = 7;
+
+  string _language_id = 8;
+
+  repeated int32 _line_offsets = 9;
+}
+
+message Position {
+  int32 character = 1;
+
+  int32 line = 2;
+}
+
+message Range {
+  Position end = 1;
+
+  Position start = 2;
+}
+
+message TextDocument {
+  DocumentUri uri = 1;
 
   int32 version = 2;
 
-  string _content = 3;
+  string language_id = 3;
 
-  string _language_id = 4;
+  int32 line_count = 4;
+}
 
-  repeated LineOffsets _line_offsets = 5;
+message TextDocumentContentChangeEvent {
+  TextDocumentContentChangeEvent_0 text_document_content_change_event_0 = 1;
 
-  DocumentUri _uri = 6;
+  TextDocumentContentChangeEvent_1 text_document_content_change_event_1 = 2;
 
-  int32 _version = 7;
+  message TextDocumentContentChangeEvent_0 {
+    Range range = 1;
 
-  int32 line_count = 8;
+    int32 range_length = 2;
 
-  string uri = 9;
-
-  message LineOffsets {
-    FullTextDocument _line_offsets = 1;
+    string text = 3;
   }
+
+  message TextDocumentContentChangeEvent_1 {
+    string text = 1;
+  }
+}
+
+message TextEdit {
+  string new_text = 1;
+
+  Range range = 2;
+}
+
+enum CharCode {
+  CharCode_10 = 1;
+
+  CharCode_13 = 2;
 }
 

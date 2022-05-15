@@ -35,6 +35,7 @@ func (md *MessageDescriptorProto) SetName(name string) *MessageDescriptorProto {
 }
 
 func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *MessageDescriptorProto {
+	// fmt.Fprintf(os.Stderr, "MessageDescriptorProto: md.field: %#v\n", md.field)
 	if md.field[field.GetName()] {
 		return md
 	}
@@ -59,15 +60,8 @@ func (md *MessageDescriptorProto) GetFieldType() *descriptorpb.FieldDescriptorPr
 	return descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum()
 }
 
-func (md *MessageDescriptorProto) GetFields() []*FieldDescriptorProto {
-	fields := make([]*FieldDescriptorProto, len(md.desc.Field))
-	for i, field := range md.desc.Field {
-		fields[i] = &FieldDescriptorProto{
-			desc: field,
-		}
-	}
-
-	return fields
+func (md *MessageDescriptorProto) IsEmptyField() bool {
+	return len(md.desc.Field) == 0
 }
 
 func (md *MessageDescriptorProto) AddExtension(ext *FieldDescriptorProto) *MessageDescriptorProto {

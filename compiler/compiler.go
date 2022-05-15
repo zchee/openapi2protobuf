@@ -11,11 +11,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-openapi/jsonpointer"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoprint"
+	"google.golang.org/protobuf/encoding/prototext"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	"go.lsp.dev/openapi2protobuf/internal"
@@ -27,6 +28,7 @@ var _ = jsonpointer.GetForToken
 var _ = descriptorpb.Default_EnumOptions_Deprecated
 var _ desc.Descriptor
 var _ protoprint.Printer
+var _ = prototext.Format
 
 // Option represents an idiomatic functional option pattern to compile the Protocol Buffers structure from the OpenAPI schema.
 type Option func(o *option)
@@ -139,7 +141,6 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	fd := c.fdesc.Build()
-	// dumpFileDescriptor(fd)
 
 	fdesc, err := desc.CreateFileDescriptor(fd)
 	if err != nil {
@@ -168,9 +169,11 @@ func dumpFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
 	sb.WriteString("MessageType:\n")
 	for _, msg := range fd.MessageType {
 		sb.WriteString(fmt.Sprintf("%#v\n", msg.GetName()))
-		if msg.GetName() == "TextDocument" {
-			sb.WriteString(spew.Sdump(msg) + "\n")
+		for _, field := range msg.GetField() {
+			sb.WriteString(fmt.Sprintf("%#v\n", field))
 		}
+		sb.WriteString(fmt.Sprintf("%#v\n", msg.GetEnumType()))
+		sb.WriteString(fmt.Sprintf("%#v\n", msg.GetNestedType()))
 	}
 	sb.WriteString("\n")
 
@@ -235,9 +238,10 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		if err != nil {
 			return err
 		}
-		if len(msg.GetFields()) > 0 {
-			c.fdesc.AddMessage(msg)
+		if msg.IsEmptyField() {
+			continue
 		}
+		c.fdesc.AddMessage(msg)
 	}
 
 	return nil
@@ -278,7 +282,7 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			return c.compileBuiltin(val, StringFieldType(val.Format)), nil
 
 		case openapi3.TypeArray:
-			return c.compileArray(msg, val)
+			return c.compileArray(val)
 
 		case openapi3.TypeObject:
 			return c.compileObject(val)
@@ -307,12 +311,10 @@ func (c *compiler) compileBuiltin(schema *openapi3.Schema, fieldType *descriptor
 	return fieldMsg
 }
 
-func (c *compiler) compileArray(msg *protobuf.MessageDescriptorProto, array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	fmt.Fprintf(os.Stderr, "compileArray: array.Title: %s\n", array.Title)
+func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	arrayMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(array.Title))
 
 	if ref := array.Items.Ref; ref != "" {
-		fmt.Println("compileArray: in the array.Items.Ref")
 		refBase := path.Base(ref)
 		refObj, err := c.schemasLookupFunc(refBase)
 		if err != nil {
@@ -324,6 +326,9 @@ func (c *compiler) compileArray(msg *protobuf.MessageDescriptorProto, array *ope
 			field := protobuf.NewFieldDescriptorProto(normalizeFieldName(refObj.Title), protobuf.FieldTypeMessage())
 			field.SetRepeated()
 			arrayMsg.AddField(field)
+
+		default:
+			fmt.Fprintf(os.Stderr, "refObj: %T: %#v\n", refObj, refObj)
 		}
 
 		return arrayMsg, nil
@@ -335,26 +340,15 @@ func (c *compiler) compileArray(msg *protobuf.MessageDescriptorProto, array *ope
 	}
 
 	fieldType := itemsMsg.GetFieldType()
-	fmt.Fprintf(os.Stderr, "compileArray: fieldType: %s\n", fieldType)
-	// field := protobuf.NewFieldDescriptorProto(normalizeFieldName(arrayMsg.GetName()), fieldType)
-	// field.SetNumber()
-	// field.SetRepeated()
-	// fmt.Fprintf(os.Stderr, "compileArray: field: %s\n", field.GetName())
+	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(arrayMsg.GetName()), fieldType)
+	field.SetNumber()
 
 	switch fieldType {
 	case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum():
 		arrayMsg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
-		// field.SetTypeName(arrayMsg.GetName())
-
-	default:
-		// field.SetTypeName(fieldType.String())
 	}
-	// itemsMsg.AddField(field)
 
-	// arrayMsg.AddField(field)
-	// arrayMsg.AddNestedMessage(itemsMsg)
-	// msg.AddNestedMessage(itemsMsg)
-	// msg.AddField(field)
+	arrayMsg.AddField(field)
 
 	return arrayMsg, nil
 }
@@ -381,6 +375,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 				field.SetTypeName(refMsg.GetName())
 				field.SetNumber()
 				objMsg.AddField(field)
+
 			default:
 				fmt.Fprintf(os.Stderr, "refObj: %T: %#v\n", refObj, refObj)
 			}
@@ -396,31 +391,17 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		fieldType := propMsg.GetFieldType()
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), fieldType)
 		field.SetNumber()
+		if prop.Value.Type == openapi3.TypeArray {
+			field.SetRepeated()
+		}
 
-		switch fieldType {
-		case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum():
+		switch fieldType.Number() {
+		case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
 			objMsg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
 			field.SetTypeName(propMsg.GetName())
 
 		default:
-			typeName := fieldType.String()
-
-			if typeName == "TYPE_MESSAGE" { // repeated
-				field2 := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), propMsg.GetFieldType())
-				field2.SetNumber()
-				field2.SetTypeName(objMsg.GetName()) // TODO(zchee): repeated(LineOffsets) message field type
-				propMsg.AddField(field2)
-
-				objMsg.AddNestedMessage(propMsg)
-
-				field.SetTypeName(propMsg.GetName())
-				field.SetRepeated()
-				objMsg.AddField(field)
-
-				continue
-			}
-
-			field.SetTypeName(typeName)
+			field.SetTypeName(fieldType.String())
 		}
 
 		objMsg.AddField(field)
@@ -446,14 +427,17 @@ func (c *compiler) CompileEnum(enum *openapi3.Schema) error {
 //
 // TODO(zchee): implements correctly.
 //
-// oneof document_changes {
-//   TextDocumentEdits text_document_edits = 2;
+// message FileResourceChange {
+//   oneof file {
+//     // CreateFile create file operation.
+//     CreateFile create_file = 1;
 //
-//   CreateFiles create_files = 3;
+//     // RenameFile rename file operation.
+//     RenameFile rename_file = 2;
 //
-//   RenameFiles rename_files = 4;
-//
-//   DeleteFiles delete_files = 5;
+//     // DeleteFile delete file operation.
+//     DeleteFile delete_file = 3;
+//   }
 // }
 //
 // message TextDocumentContentChangeEvent {
