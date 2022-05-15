@@ -48,6 +48,10 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 }
 
 func (md *MessageDescriptorProto) GetFieldType() *descriptorpb.FieldDescriptorProto_Type {
+	if len(md.desc.EnumType) > 1 {
+		return descriptorpb.FieldDescriptorProto_TYPE_ENUM.Enum()
+	}
+
 	if len(md.desc.Field) == 1 {
 		return md.desc.Field[0].GetType().Enum()
 	}

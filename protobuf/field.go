@@ -43,6 +43,11 @@ func (fid *FieldDescriptorProto) SetTypeName(name string) *FieldDescriptorProto 
 	return fid
 }
 
+func (fid *FieldDescriptorProto) SetOneofIndex(idx int32) *FieldDescriptorProto {
+	fid.desc.OneofIndex = proto.Int32(idx)
+	return fid
+}
+
 func (fid *FieldDescriptorProto) SetRepeated() *FieldDescriptorProto {
 	fid.desc.Label = descriptorpb.FieldDescriptorProto_LABEL_REPEATED.Enum()
 	return fid
@@ -103,7 +108,7 @@ func FieldTypeString() *descriptorpb.FieldDescriptorProto_Type {
 	return descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum()
 }
 
-func FieldTypeMessage(msg *MessageDescriptorProto) *descriptorpb.FieldDescriptorProto_Type {
+func FieldTypeMessage() *descriptorpb.FieldDescriptorProto_Type {
 	return descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum()
 }
 
