@@ -98,10 +98,6 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	pkgname := opt.packageName
-	if pkgname == "" && spec.Info != nil && spec.Info.Title != "" {
-		pkgname = spec.Info.Title
-	}
-
 	c := &compiler{
 		fdesc: protobuf.NewFileDescriptorProto(pkgname),
 		opt:   opt,
@@ -226,12 +222,12 @@ func (c *compiler) CompileServers(info openapi3.Servers) error { return nil }
 // CompilePaths compiles paths object.
 func (c *compiler) CompilePaths(paths openapi3.Paths) error { return nil }
 
-// CompileComponents all component objects.
+// CompileComponents compiles all component objects.
 func (c *compiler) CompileComponents(components openapi3.Components) error {
-	oldSchemasLookupFunc := c.schemasLookupFunc
+	schemasLookupFunc := c.schemasLookupFunc
 	c.schemasLookupFunc = components.Schemas.JSONLookup
 	defer func() {
-		c.schemasLookupFunc = oldSchemasLookupFunc
+		c.schemasLookupFunc = schemasLookupFunc
 	}()
 
 	for name, schema := range components.Schemas {
@@ -312,6 +308,7 @@ func (c *compiler) compileBuiltin(schema *openapi3.Schema, fieldType *descriptor
 }
 
 func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	fmt.Fprintf(os.Stdout, "compileArray: array.Title: %s\n", array.Title)
 	arrayMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(array.Title))
 
 	if ref := array.Items.Ref; ref != "" {
@@ -332,28 +329,30 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 		return arrayMsg, nil
 	}
 
-	items, err := c.compileSchemaRef(normalizeMessageName(arrayMsg.GetName()), array.Items)
+	itemsMsg, err := c.compileSchemaRef(normalizeMessageName(arrayMsg.GetName()), array.Items)
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
 
-	fieldType := items.GetFieldType()
+	fieldType := itemsMsg.GetFieldType()
+	fmt.Fprintf(os.Stdout, "compileArray: fieldType: %s\n", fieldType)
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(arrayMsg.GetName()), fieldType)
 	field.SetNumber()
 	field.SetRepeated()
+	fmt.Fprintf(os.Stderr, "compileArray: field: %s\n", field.GetName())
 
 	switch fieldType {
 	case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum():
-		arrayMsg.AddNestedMessage(items) // add nested message only MESSAGE type
+		arrayMsg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
 		field.SetTypeName(arrayMsg.GetName())
 
 	default:
-		field.SetTypeName(fieldType.String())
+		// field.SetTypeName(fieldType.String())
 	}
-	items.AddField(field)
+	// itemsMsg.AddField(field)
 
-	// fmt.Fprintf(os.Stderr, "items: %s\n", items.GetName())
-	// arrayMsg.AddNestedMessage(items)
+	// arrayMsg.AddField(field)
+	arrayMsg.AddNestedMessage(itemsMsg)
 
 	return arrayMsg, nil
 }
@@ -412,11 +411,11 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 				// fmt.Fprintf(os.Stderr, "propName: %s, field: %s, field2.GeTType\n", normalizeMessageName(propName), *field2.GetTypeName())
 				field2.SetNumber()
 				field2.SetTypeName(propMsg.GetName())
-				propMsg.AddField(field2)
+				// propMsg.AddField(field2)
 
 				objMsg.AddNestedMessage(propMsg)
 				field.SetTypeName(propMsg.GetName())
-				field.SetRepeated()
+				// field.SetRepeated()
 				objMsg.AddField(field)
 
 				continue // Array
@@ -444,7 +443,10 @@ func (c *compiler) CompileEnum(enum *openapi3.Schema) error {
 	return nil
 }
 
-// TODO(zchee): implements correctly
+// CompileOneOf compiles OneOf component objects.
+//
+// TODO(zchee): implements correctly.
+//
 // oneof document_changes {
 //   TextDocumentEdits text_document_edits = 2;
 //
@@ -518,7 +520,9 @@ func (c *compiler) CompileOneOf(name string, oneof *openapi3.Schema) error {
 	return nil
 }
 
-// TODO(zchee): implements correctly
+// CompileAnyOf compiles AnyOf component objects.
+//
+// TODO(zchee): implements correctly.
 func (c *compiler) CompileAnyOf(msg *protobuf.MessageDescriptorProto, name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	for i, ref := range anyOf.AnyOf {
 		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(name+"_"+strconv.Itoa(i)), ref)
