@@ -19,29 +19,29 @@ message DocumentUri {
 }
 
 message FullTextDocument {
-  DocumentUri _uri = 1;
+  string _language_id = 1;
 
-  int32 _version = 2;
+  repeated int32 _line_offsets = 2;
 
-  string uri = 3;
+  int32 _version = 3;
 
   string language_id = 4;
 
   int32 line_count = 5;
 
-  int32 version = 6;
+  string _content = 6;
 
-  string _content = 7;
+  DocumentUri _uri = 7;
 
-  string _language_id = 8;
+  string uri = 8;
 
-  repeated int32 _line_offsets = 9;
+  int32 version = 9;
 }
 
 message Position {
-  int32 character = 1;
+  int32 line = 1;
 
-  int32 line = 2;
+  int32 character = 2;
 }
 
 message Range {
@@ -51,19 +51,21 @@ message Range {
 }
 
 message TextDocument {
-  DocumentUri uri = 1;
+  string language_id = 1;
 
-  int32 version = 2;
+  int32 line_count = 2;
 
-  string language_id = 3;
+  DocumentUri uri = 3;
 
-  int32 line_count = 4;
+  int32 version = 4;
 }
 
 message TextDocumentContentChangeEvent {
-  TextDocumentContentChangeEvent_0 text_document_content_change_event_0 = 1;
+  oneof text_document_content_change_event {
+    TextDocumentContentChangeEvent_0 text_document_content_change_event_0 = 1;
 
-  TextDocumentContentChangeEvent_1 text_document_content_change_event_1 = 2;
+    TextDocumentContentChangeEvent_1 text_document_content_change_event_1 = 2;
+  }
 
   message TextDocumentContentChangeEvent_0 {
     Range range = 1;

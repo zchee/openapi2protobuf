@@ -5,6 +5,7 @@ package compiler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -19,7 +20,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 
-	"go.lsp.dev/openapi2protobuf/internal"
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 )
@@ -258,11 +258,10 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			return msg, c.CompileEnum(val)
 
 		case isOneOf(val):
-			return msg, c.CompileOneOf(name, val)
+			return c.CompileOneOf(name, val)
 
 		case isAnyOf(val):
-			// return c.CompileAnyOf(msg, name, val)
-			return msg, nil
+			return c.CompileAnyOf(name, val)
 
 		case isAllOf(val):
 			return msg, nil
@@ -270,25 +269,22 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 
 		switch val.Type {
 		case openapi3.TypeBoolean:
-			return c.compileBuiltin(val, protobuf.FieldTypeBool()), nil
+			return c.compileBuiltin(val, protobuf.FieldTypeBool())
 
 		case openapi3.TypeInteger:
-			return c.compileBuiltin(val, IntegerFieldType(val.Format)), nil
+			return c.compileBuiltin(val, IntegerFieldType(val.Format))
 
 		case openapi3.TypeNumber:
-			return c.compileBuiltin(val, NumberFieldType(val.Format)), nil
+			return c.compileBuiltin(val, NumberFieldType(val.Format))
 
 		case openapi3.TypeString:
-			return c.compileBuiltin(val, StringFieldType(val.Format)), nil
+			return c.compileBuiltin(val, StringFieldType(val.Format))
 
 		case openapi3.TypeArray:
 			return c.compileArray(val)
 
 		case openapi3.TypeObject:
 			return c.compileObject(val)
-
-		default:
-			internal.Dump("val.Type", val.Type, "\nname", name)
 		}
 	}
 
@@ -303,12 +299,16 @@ func isAnyOf(schema *openapi3.Schema) bool { return schema.AnyOf != nil }
 
 func isAllOf(schema *openapi3.Schema) bool { return schema.AllOf != nil }
 
-func (c *compiler) compileBuiltin(schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) *protobuf.MessageDescriptorProto {
+func (c *compiler) compileBuiltin(schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) (*protobuf.MessageDescriptorProto, error) {
+	if fieldType == nil {
+		return nil, errors.New("should fieldType is non-nil")
+	}
+
 	fieldMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(schema.Title))
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(fieldMsg.GetName()), fieldType)
 	fieldMsg.AddField(field)
 
-	return fieldMsg
+	return fieldMsg, nil
 }
 
 func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
@@ -343,8 +343,8 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(arrayMsg.GetName()), fieldType)
 	field.SetNumber()
 
-	switch fieldType {
-	case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum():
+	switch fieldType.Number() {
+	case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
 		arrayMsg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
 	}
 
@@ -410,6 +410,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 	return objMsg, nil
 }
 
+// CompileEnum compiles enum objects.
 func (c *compiler) CompileEnum(enum *openapi3.Schema) error {
 	msgName := normalizeMessageName(enum.Title)
 
@@ -423,90 +424,38 @@ func (c *compiler) CompileEnum(enum *openapi3.Schema) error {
 	return nil
 }
 
-// CompileOneOf compiles OneOf component objects.
-//
-// TODO(zchee): implements correctly.
-//
-// message FileResourceChange {
-//   oneof file {
-//     // CreateFile create file operation.
-//     CreateFile create_file = 1;
-//
-//     // RenameFile rename file operation.
-//     RenameFile rename_file = 2;
-//
-//     // DeleteFile delete file operation.
-//     DeleteFile delete_file = 3;
-//   }
-// }
-//
-// message TextDocumentContentChangeEvent {
-//   TextDocumentContentChangeEvent_0 text_document_content_change_event_0 = 1;
-//
-//   TextDocumentContentChangeEvent_1 text_document_content_change_event_1 = 2;
-//
-//   message TextDocumentContentChangeEvent_0 {
-//     string text = 1;
-//
-//     Range range = 2;
-//
-//     int32 range_length = 3;
-//   }
-//
-//   message TextDocumentContentChangeEvent_1 {
-//     string text = 1;
-//   }
-// }
-//
-// oneof text_document_content_change_event {
-//   TextDocumentContentChangeEvent_0 text_document_content_change_event_0 = 1;
-//   TextDocumentContentChangeEvent_1 text_document_content_change_event_1 = 1;
-//
-//   message TextDocumentContentChangeEvent_0 {
-//     string text = 1;
-//
-//     Range range = 2;
-//
-//     int32 range_length = 3;
-//   }
-//
-//   message TextDocumentContentChangeEvent_1 {
-//     string text = 1;
-//   }
-// }
-func (c *compiler) CompileOneOf(name string, oneof *openapi3.Schema) error {
-	msg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
+// CompileOneOf compiles oneOf objects.
+func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	oneOfMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 
 	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))
-	for i, ref := range oneof.OneOf {
-		oneOfMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref)
+	oneOfMsg.AddOneof(ob)
+
+	for i, ref := range oneOf.OneOf {
+		nestedMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref)
 		if err != nil {
-			return fmt.Errorf("compile oneof ref: %w", err)
+			return nil, fmt.Errorf("compile oneOf ref: %w", err)
 		}
 
-		oneOfMsg.SetName(name + "_" + strconv.Itoa(i))
-		msg.AddNestedMessage(oneOfMsg)
+		nestedMsg.SetName(name + "_" + strconv.Itoa(i))
+		oneOfMsg.AddNestedMessage(nestedMsg)
 
-		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(oneOfMsg.GetName()), protobuf.FieldTypeMessage())
-		// field.SetOneofIndex(int32(i))
-		field.SetTypeName(oneOfMsg.GetName())
-		msg.AddField(field)
+		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(nestedMsg.GetName()), protobuf.FieldTypeMessage())
+		field.SetNumber()
+		field.SetOneofIndex(oneOfMsg.GetOneofIndex())
+		field.SetTypeName(nestedMsg.GetName())
+		oneOfMsg.AddField(field)
 	}
-	msg.AddOneof(ob)
 
-	// field := protobuf.NewFieldDescriptorProto(normalizeFieldName(name), protobuf.FieldTypeMessage(msg))
-	// field.SetOneofIndex(int32(len(oneof.OneOf)))
-	// msg.AddField(field)
-
-	c.fdesc.AddMessage(msg)
-
-	return nil
+	return oneOfMsg, nil
 }
 
-// CompileAnyOf compiles AnyOf component objects.
+// CompileAnyOf compiles anyOf objects.
 //
 // TODO(zchee): implements correctly.
-func (c *compiler) CompileAnyOf(msg *protobuf.MessageDescriptorProto, name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	anyOfMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
+
 	for i, ref := range anyOf.AnyOf {
 		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(name+"_"+strconv.Itoa(i)), ref)
 		if err != nil {
@@ -514,13 +463,14 @@ func (c *compiler) CompileAnyOf(msg *protobuf.MessageDescriptorProto, name strin
 		}
 
 		anyOfMsg.SetName(normalizeMessageName(name + "_" + strconv.Itoa(i)))
-		msg.AddNestedMessage(anyOfMsg)
+		anyOfMsg.AddNestedMessage(anyOfMsg)
+
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage())
 		field.SetTypeName(anyOfMsg.GetName())
-		msg.AddField(field)
+		anyOfMsg.AddField(field)
 	}
 
-	return msg, nil
+	return anyOfMsg, nil
 }
 
 // CompileSecurity compiles security object.

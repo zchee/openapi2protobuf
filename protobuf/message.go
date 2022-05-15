@@ -9,10 +9,11 @@ import (
 )
 
 type MessageDescriptorProto struct {
-	desc   *descriptorpb.DescriptorProto
-	nested map[string]bool
-	field  map[string]bool
-	number int32
+	desc     *descriptorpb.DescriptorProto
+	nested   map[string]bool
+	field    map[string]bool
+	number   int32
+	oneOfIdx int32
 }
 
 func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
@@ -102,6 +103,10 @@ func (md *MessageDescriptorProto) AddEnumType(enum *EnumDescriptorProto) *Messag
 func (md *MessageDescriptorProto) AddOneof(oneof *OneofDescriptorProto) *MessageDescriptorProto {
 	md.desc.OneofDecl = append(md.desc.OneofDecl, oneof.Build())
 	return md
+}
+
+func (md *MessageDescriptorProto) GetOneofIndex() int32 {
+	return int32(len(md.desc.OneofDecl) - 1)
 }
 
 func (md *MessageDescriptorProto) SetMessageOptions(options *descriptorpb.MessageOptions) *MessageDescriptorProto {
