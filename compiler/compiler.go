@@ -350,11 +350,10 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	default:
 		field.SetTypeName(fieldType.String())
 	}
-	arrayMsg.AddField(field)
+	items.AddField(field)
 
 	// fmt.Fprintf(os.Stderr, "items: %s\n", items.GetName())
 	// arrayMsg.AddNestedMessage(items)
-	// _ = items
 
 	return arrayMsg, nil
 }
@@ -404,10 +403,17 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 			// fmt.Fprintf(os.Stderr, "field: %s, propMsg: %#v\n", field.GetName(), propMsg.GetName())
 
 		default:
+			fmt.Fprintf(os.Stderr, "compileObject: fieldType: %s, propMsg.GetName(): %s\n", fieldType, propMsg.GetName())
+			// objMsg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
 			typeName := fieldType.String()
 
 			if typeName == "TYPE_MESSAGE" { // repeated
-				// fmt.Fprintf(os.Stderr, "propName: %s, propMsg: %#v\n", normalizeMessageName(propName), propMsg.GetName())
+				field2 := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), propMsg.GetFieldType())
+				// fmt.Fprintf(os.Stderr, "propName: %s, field: %s, field2.GeTType\n", normalizeMessageName(propName), *field2.GetTypeName())
+				field2.SetNumber()
+				field2.SetTypeName(propMsg.GetName())
+				propMsg.AddField(field2)
+
 				objMsg.AddNestedMessage(propMsg)
 				field.SetTypeName(propMsg.GetName())
 				field.SetRepeated()
