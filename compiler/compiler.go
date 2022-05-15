@@ -92,8 +92,6 @@ type compiler struct {
 
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.
 func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*descriptorpb.FileDescriptorProto, error) {
-	spec.InternalizeRefs(ctx, openapi3.DefaultRefNameResolver)
-
 	opt := new(option)
 	for _, o := range options {
 		o(opt)
@@ -238,9 +236,10 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		if err != nil {
 			return err
 		}
-		if msg.IsEmptyField() {
+		if msg == nil || msg.IsEmptyField() {
 			continue
 		}
+
 		c.fdesc.AddMessage(msg)
 	}
 
@@ -255,7 +254,7 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 		// Enum, OneOf, AnyOf, AllOf
 		switch {
 		case isEnum(val):
-			return msg, c.CompileEnum(val)
+			return c.CompileEnum(val)
 
 		case isOneOf(val):
 			return c.CompileOneOf(name, val)
@@ -411,17 +410,19 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 }
 
 // CompileEnum compiles enum objects.
-func (c *compiler) CompileEnum(enum *openapi3.Schema) error {
+func (c *compiler) CompileEnum(enum *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	msgName := normalizeMessageName(enum.Title)
+	fmt.Fprintf(os.Stderr, "CompileEnum: msgName: %s\n", msgName)
+	enmuMsg := protobuf.NewMessageDescriptorProto(msgName)
 
 	eb := protobuf.NewEnumDescriptorProto(msgName)
 	for i, e := range enum.Enum {
-		enumVal := protobuf.NewEnumValueDescriptorProto(msgName+"_"+strconv.Itoa(int(e.(float64))), int32(i+1))
+		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+strconv.Itoa(int(e.(float64))), int32(i+1))
 		eb.AddValue(enumVal)
 	}
-	c.fdesc.AddEnum(eb)
+	enmuMsg.AddEnumType(eb)
 
-	return nil
+	return enmuMsg, nil
 }
 
 // CompileOneOf compiles oneOf objects.
@@ -454,6 +455,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 //
 // TODO(zchee): implements correctly.
 func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	fmt.Fprintf(os.Stderr, "CompileAnyOf: normalizeMessageName(name): %s\n", normalizeMessageName(name))
 	anyOfMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 
 	for i, ref := range anyOf.AnyOf {

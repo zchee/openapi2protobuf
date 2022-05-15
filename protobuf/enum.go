@@ -12,14 +12,11 @@ type EnumDescriptorProto struct {
 	desc *descriptorpb.EnumDescriptorProto
 }
 
-func NewEnumDescriptorProto(name string, values ...*EnumValueDescriptorProto) *EnumDescriptorProto {
+func NewEnumDescriptorProto(name string) *EnumDescriptorProto {
 	ed := &EnumDescriptorProto{
 		desc: &descriptorpb.EnumDescriptorProto{
 			Name: proto.String(name),
 		},
-	}
-	if len(values) > 0 {
-		ed.desc.Value = EnumValues(values).Build()
 	}
 
 	return ed

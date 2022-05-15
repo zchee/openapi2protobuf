@@ -1,0 +1,3123 @@
+components:
+  schemas:
+    AnnotatedTextEdit:
+      defaultProperties: []
+      description: A special text edit with an additional change annotation.
+      properties:
+        annotationId:
+          $ref: '#/components/schemas/ChangeAnnotationIdentifier'
+          description: The actual identifier of the change annotation
+          title: annotationId
+        newText:
+          description: |-
+            The string to be inserted. For delete operations use an
+            empty string.
+          title: newText
+          type: string
+        range:
+          $ref: '#/components/schemas/Range'
+          description: |-
+            The range of the text document to be manipulated. To insert
+            text into a document create a range where start === end.
+          title: range
+      propertyOrder:
+      - annotationId
+      - range
+      - newText
+      required:
+      - annotationId
+      - newText
+      - range
+      title: AnnotatedTextEdit
+      type: object
+    CallHierarchyIncomingCall:
+      defaultProperties: []
+      description: Represents an incoming call, e.g. a caller of a method or constructor.
+      properties:
+        from:
+          $ref: '#/components/schemas/CallHierarchyItem'
+          description: The item that makes the call.
+          title: from
+        fromRanges:
+          description: |-
+            The ranges at which the calls appear. This is relative to the caller
+            denoted by [`this.from`](#CallHierarchyIncomingCall.from).
+          items:
+            $ref: '#/components/schemas/Range'
+          title: fromRanges
+          type: array
+      propertyOrder:
+      - from
+      - fromRanges
+      required:
+      - from
+      - fromRanges
+      title: CallHierarchyIncomingCall
+      type: object
+    CallHierarchyItem:
+      defaultProperties: []
+      description: |-
+        Represents programming constructs like functions or constructors in the context
+        of call hierarchy.
+      properties:
+        data:
+          $ref: '#/components/schemas/LSPAny_1'
+          description: |-
+            A data entry field that is preserved between a call hierarchy prepare and
+            incoming calls or outgoing calls requests.
+          title: data
+        detail:
+          description: More detail for this item, e.g. the signature of a function.
+          title: detail
+          type: string
+        kind:
+          $ref: '#/components/schemas/SymbolKind'
+          description: The kind of this item.
+          title: kind
+        name:
+          description: The name of this item.
+          title: name
+          type: string
+        range:
+          $ref: '#/components/schemas/Range'
+          description: The range enclosing this symbol not including leading/trailing
+            whitespace but everything else, e.g. comments and code.
+          title: range
+        selectionRange:
+          $ref: '#/components/schemas/Range'
+          description: |-
+            The range that should be selected and revealed when this symbol is being picked, e.g. the name of a function.
+            Must be contained by the [`range`](#CallHierarchyItem.range).
+          title: selectionRange
+        tags:
+          description: Tags for this item.
+          items:
+            enum:
+            - 1
+            type: number
+          title: tags
+          type: array
+        uri:
+          $ref: '#/components/schemas/DocumentUri'
+          description: The resource identifier of this item.
+          title: uri
+      propertyOrder:
+      - name
+      - kind
+      - tags
+      - detail
+      - uri
+      - range
+      - selectionRange
+      - data
+      required:
+      - kind
+      - name
+      - range
+      - selectionRange
+      - uri
+      title: CallHierarchyItem
+      type: object
+    CallHierarchyOutgoingCall:
+      defaultProperties: []
+      description: Represents an outgoing call, e.g. calling a getter from a method
+        or a method from a constructor etc.
+      properties:
+        fromRanges:
+          description: |-
+            The range at which this item is called. This is the range relative to the caller, e.g the item
+            passed to [`provideCallHierarchyOutgoingCalls`](#CallHierarchyItemProvider.provideCallHierarchyOutgoingCalls)
+            and not [`this.to`](#CallHierarchyOutgoingCall.to).
+          items:
+            $ref: '#/components/schemas/Range'
+          title: fromRanges
+          type: array
+        to:
+          $ref: '#/components/schemas/CallHierarchyItem'
+          description: The item that is called.
+          title: to
+      propertyOrder:
+      - to
+      - fromRanges
+      required:
+      - fromRanges
+      - to
+      title: CallHierarchyOutgoingCall
+      type: object
+    ChangeAnnotation:
+      defaultProperties: []
+      description: Additional information that describes document changes.
+      properties:
+        description:
+          description: |-
+            A human-readable string which is rendered less prominent in
+            the user interface.
+          title: description
+          type: string
+        label:
+          description: |-
+            A human-readable string describing the actual change. The string
+            is rendered prominent in the user interface.
+          title: label
+          type: string
+        needsConfirmation:
+          description: |-
+            A flag which indicates that user confirmation is needed
+            before applying the change.
+          title: needsConfirmation
+          type: boolean
+      propertyOrder:
+      - label
+      - needsConfirmation
+      - description
+      required:
+      - label
+      title: ChangeAnnotation
+      type: object
+    ChangeAnnotationIdentifier:
+      description: An identifier to refer to a change annotation stored with a workspace
+        edit.
+      title: ChangeAnnotationIdentifier
+      type: string
+    ChangeAnnotationIdentifier_1:
+      description: An identifier to refer to a change annotation stored with a workspace
+        edit.
+      title: ChangeAnnotationIdentifier_1
+      type: string
+    ChangeAnnotations:
+      defaultProperties: []
+      description: A helper class
+      properties:
+        _annotations:
+          additionalProperties:
+            $ref: '#/components/schemas/ChangeAnnotation'
+          defaultProperties: []
+          propertyOrder: []
+          title: _annotations
+          type: object
+        _counter:
+          title: _counter
+          type: integer
+        _size:
+          title: _size
+          type: integer
+        size:
+          title: size
+          type: integer
+      propertyOrder:
+      - _annotations
+      - _counter
+      - _size
+      - all
+      - size
+      - manage
+      - nextId
+      required:
+      - _annotations
+      - _counter
+      - _size
+      - size
+      title: ChangeAnnotations
+      type: object
+    # CodeAction:
+    #   defaultProperties: []
+    #   description: |-
+    #     A code action represents a change that can be performed in code, e.g. to fix a problem or
+    #     to refactor code.
+    #
+    #     A CodeAction must set either `edit` and/or a `command`. If both are supplied, the `edit` is applied first, then the `command` is executed.
+    #   properties:
+    #     command:
+    #       $ref: '#/components/schemas/Command_1'
+    #       description: |-
+    #         A command this code action executes. If a code action
+    #         provides a edit and a command, first the edit is
+    #         executed and then the command.
+    #       title: command
+    #     data:
+    #       $ref: '#/components/schemas/LSPAny_1'
+    #       description: |-
+    #         A data entry field that is preserved on a code action between
+    #         a `textDocument/codeAction` and a `codeAction/resolve` request.
+    #       title: data
+    #     diagnostics:
+    #       description: The diagnostics that this code action resolves.
+    #       items:
+    #         $ref: '#/components/schemas/Diagnostic'
+    #       title: diagnostics
+    #       type: array
+    #     disabled:
+    #       defaultProperties: []
+    #       description: |-
+    #         Marks that the code action cannot currently be applied.
+    #
+    #         Clients should follow the following guidelines regarding disabled code actions:
+    #
+    #           - Disabled code actions are not shown in automatic [lightbulb](https://code.visualstudio.com/docs/editor/editingevolved#_code-action)
+    #             code action menu.
+    #
+    #           - Disabled actions are shown as faded out in the code action menu when the user request a more specific type
+    #             of code action, such as refactorings.
+    #
+    #           - If the user has a [keybinding](https://code.visualstudio.com/docs/editor/refactoring#_keybindings-for-code-actions)
+    #             that auto applies a code action and only a disabled code actions are returned, the client should show the user an
+    #             error message with `reason` in the editor.
+    #       properties:
+    #         reason:
+    #           description: |-
+    #             Human readable description of why the code action is currently disabled.
+    #
+    #             This is displayed in the code actions UI.
+    #           title: reason
+    #           type: string
+    #       propertyOrder:
+    #       - reason
+    #       required:
+    #       - reason
+    #       title: disabled
+    #       type: object
+    #     edit:
+    #       $ref: '#/components/schemas/WorkspaceEdit_1'
+    #       description: The workspace edit this code action performs.
+    #       title: edit
+    #     isPreferred:
+    #       description: |-
+    #         Marks this as a preferred action. Preferred actions are used by the `auto fix` command and can be targeted
+    #         by keybindings.
+    #
+    #         A quick fix should be marked preferred if it properly addresses the underlying error.
+    #         A refactoring should be marked preferred if it is the most reasonable choice of actions to take.
+    #       title: isPreferred
+    #       type: boolean
+    #     kind:
+    #       $ref: '#/components/schemas/CodeActionKind'
+    #       description: |-
+    #         The kind of the code action.
+    #
+    #         Used to filter code actions.
+    #       title: kind
+    #     title:
+    #       description: A short, human-readable, title for this code action.
+    #       title: title
+    #       type: string
+    #   propertyOrder:
+    #   - title
+    #   - kind
+    #   - diagnostics
+    #   - isPreferred
+    #   - disabled
+    #   - edit
+    #   - command
+    #   - data
+    #   required:
+    #   - title
+    #   title: CodeAction
+    #   type: object
+    # CodeActionContext:
+    #   defaultProperties: []
+    #   description: |-
+    #     Contains additional diagnostic information about the context in which
+    #     a [code action](#CodeActionProvider.provideCodeActions) is run.
+    #     The CodeActionContext namespace provides helper functions to work with
+    #     [CodeActionContext](#CodeActionContext) literals.
+    #   properties:
+    #     diagnostics:
+    #       description: |-
+    #         An array of diagnostics known on the client side overlapping the range provided to the
+    #         `textDocument/codeAction` request. They are provided so that the server knows which
+    #         errors are currently presented to the user for the given range. There is no guarantee
+    #         that these accurately reflect the error state of the resource. The primary parameter
+    #         to compute code actions is the provided range.
+    #       items:
+    #         $ref: '#/components/schemas/Diagnostic'
+    #       title: diagnostics
+    #       type: array
+    #     only:
+    #       description: |-
+    #         Requested kind of actions to return.
+    #
+    #         Actions not of this kind are filtered out by the client before being shown. So servers
+    #         can omit computing them.
+    #       items:
+    #         type: string
+    #       title: only
+    #       type: array
+    #     triggerKind:
+    #       $ref: '#/components/schemas/CodeActionTriggerKind_1'
+    #       description: The reason why code actions were requested.
+    #       title: triggerKind
+    #   propertyOrder:
+    #   - diagnostics
+    #   - only
+    #   - triggerKind
+    #   required:
+    #   - diagnostics
+    #   title: CodeActionContext
+    #   type: object
+    # CodeActionKind:
+    #   description: |-
+    #     The kind of a code action.
+    #
+    #     Kinds are a hierarchical list of identifiers separated by `.`, e.g. `"refactor.extract.function"`.
+    #
+    #     The set of kinds is open and client needs to announce the kinds it supports to the server during
+    #     initialization.
+    #     A set of predefined code action kinds
+    #   title: CodeActionKind
+    #   type: string
+    # CodeActionTriggerKind:
+    #   description: The reason why code actions were requested.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   type: number
+    # CodeActionTriggerKind_1:
+    #   description: The reason why code actions were requested.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   title: CodeActionTriggerKind_1
+    #   type: number
+    # CodeDescription:
+    #   defaultProperties: []
+    #   description: |-
+    #     Structure to capture a description for an error code.
+    #     The CodeDescription namespace provides functions to deal with descriptions for diagnostic codes.
+    #   properties:
+    #     href:
+    #       $ref: '#/components/schemas/URI'
+    #       description: An URI to open with more information about the diagnostic error.
+    #       title: href
+    #   propertyOrder:
+    #   - href
+    #   required:
+    #   - href
+    #   title: CodeDescription
+    #   type: object
+    # CodeDescription_1:
+    #   $ref: '#/components/schemas/CodeDescription'
+    #   description: |-
+    #     Structure to capture a description for an error code.
+    #     The CodeDescription namespace provides functions to deal with descriptions for diagnostic codes.
+    #   title: CodeDescription_1
+    # CodeLens:
+    #   defaultProperties: []
+    #   description: |-
+    #     A code lens represents a [command](#Command) that should be shown along with
+    #     source text, like the number of references, a way to run tests, etc.
+    #
+    #     A code lens is _unresolved_ when no command is associated to it. For performance
+    #     reasons the creation of a code lens and resolving should be done to two stages.
+    #     The CodeLens namespace provides helper functions to work with
+    #     [CodeLens](#CodeLens) literals.
+    #   properties:
+    #     command:
+    #       $ref: '#/components/schemas/Command_1'
+    #       description: The command this code lens represents.
+    #       title: command
+    #     data:
+    #       $ref: '#/components/schemas/LSPAny_1'
+    #       description: |-
+    #         A data entry field that is preserved on a code lens item between
+    #         a [CodeLensRequest](#CodeLensRequest) and a [CodeLensResolveRequest]
+    #         (#CodeLensResolveRequest)
+    #       title: data
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The range in which this code lens is valid. Should only span
+    #         a single line.
+    #       title: range
+    #   propertyOrder:
+    #   - range
+    #   - command
+    #   - data
+    #   required:
+    #   - range
+    #   title: CodeLens
+    #   type: object
+    # Color:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents a color in RGBA space.
+    #     The Color namespace provides helper functions to work with
+    #     [Color](#Color) literals.
+    #   properties:
+    #     alpha:
+    #       $ref: '#/components/schemas/decimal'
+    #       description: The alpha component of this color in the range [0-1].
+    #       title: alpha
+    #     blue:
+    #       $ref: '#/components/schemas/decimal'
+    #       description: The blue component of this color in the range [0-1].
+    #       title: blue
+    #     green:
+    #       $ref: '#/components/schemas/decimal'
+    #       description: The green component of this color in the range [0-1].
+    #       title: green
+    #     red:
+    #       $ref: '#/components/schemas/decimal'
+    #       description: The red component of this color in the range [0-1].
+    #       title: red
+    #   propertyOrder:
+    #   - red
+    #   - green
+    #   - blue
+    #   - alpha
+    #   required:
+    #   - alpha
+    #   - blue
+    #   - green
+    #   - red
+    #   title: Color
+    #   type: object
+    # ColorInformation:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents a color range from a document.
+    #     The ColorInformation namespace provides helper functions to work with
+    #     [ColorInformation](#ColorInformation) literals.
+    #   properties:
+    #     color:
+    #       $ref: '#/components/schemas/Color'
+    #       description: The actual color value for this color range.
+    #       title: color
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The range in the document where this color appears.
+    #       title: range
+    #   propertyOrder:
+    #   - range
+    #   - color
+    #   required:
+    #   - color
+    #   - range
+    #   title: ColorInformation
+    #   type: object
+    # ColorPresentation:
+    #   defaultProperties: []
+    #   description: |-
+    #     The Color namespace provides helper functions to work with
+    #     [ColorPresentation](#ColorPresentation) literals.
+    #   properties:
+    #     additionalTextEdits:
+    #       description: |-
+    #         An optional array of additional [text edits](#TextEdit) that are applied when
+    #         selecting this color presentation. Edits must not overlap with the main [edit](#ColorPresentation.textEdit) nor with themselves.
+    #       items:
+    #         $ref: '#/components/schemas/TextEdit_1'
+    #       title: additionalTextEdits
+    #       type: array
+    #     label:
+    #       description: |-
+    #         The label of this color presentation. It will be shown on the color
+    #         picker header. By default this is also the text that is inserted when selecting
+    #         this color presentation.
+    #       title: label
+    #       type: string
+    #     textEdit:
+    #       $ref: '#/components/schemas/TextEdit'
+    #       description: |-
+    #         An [edit](#TextEdit) which is applied to a document when selecting
+    #         this presentation for the color.  When `falsy` the [label](#ColorPresentation.label)
+    #         is used.
+    #       title: textEdit
+    #   propertyOrder:
+    #   - label
+    #   - textEdit
+    #   - additionalTextEdits
+    #   required:
+    #   - label
+    #   title: ColorPresentation
+    #   type: object
+    # Command:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents a reference to a command. Provides a title which
+    #     will be used to represent a command in the UI and, optionally,
+    #     an array of arguments which will be passed to the command handler
+    #     function when invoked.
+    #     The Command namespace provides helper functions to work with
+    #     [Command](#Command) literals.
+    #   properties:
+    #     arguments:
+    #       description: |-
+    #         Arguments that the command handler should be
+    #         invoked with.
+    #       items:
+    #         $ref: '#/components/schemas/LSPAny'
+    #         description: The LSP any type
+    #       title: arguments
+    #       type: array
+    #     command:
+    #       description: The identifier of the actual command handler.
+    #       title: command
+    #       type: string
+    #     title:
+    #       description: Title of the command, like `save`.
+    #       title: title
+    #       type: string
+    #   propertyOrder:
+    #   - title
+    #   - command
+    #   - arguments
+    #   required:
+    #   - command
+    #   - title
+    #   title: Command
+    #   type: object
+    # Command_1:
+    #   $ref: '#/components/schemas/Command'
+    #   description: |-
+    #     Represents a reference to a command. Provides a title which
+    #     will be used to represent a command in the UI and, optionally,
+    #     an array of arguments which will be passed to the command handler
+    #     function when invoked.
+    #     The Command namespace provides helper functions to work with
+    #     [Command](#Command) literals.
+    #   title: Command_1
+    # CompletionItem:
+    #   defaultProperties: []
+    #   description: |-
+    #     A completion item represents a text snippet that is
+    #     proposed to complete text that is being typed.
+    #     The CompletionItem namespace provides functions to deal with
+    #     completion items.
+    #   properties:
+    #     additionalTextEdits:
+    #       description: |-
+    #         An optional array of additional [text edits](#TextEdit) that are applied when
+    #         selecting this completion. Edits must not overlap (including the same insert position)
+    #         with the main [edit](#CompletionItem.textEdit) nor with themselves.
+    #
+    #         Additional text edits should be used to change text unrelated to the current cursor position
+    #         (for example adding an import statement at the top of the file if the completion item will
+    #         insert an unqualified type).
+    #       items:
+    #         $ref: '#/components/schemas/TextEdit_1'
+    #       title: additionalTextEdits
+    #       type: array
+    #     command:
+    #       $ref: '#/components/schemas/Command_1'
+    #       description: |-
+    #         An optional [command](#Command) that is executed *after* inserting this completion. *Note* that
+    #         additional modifications to the current document should be described with the
+    #         [additionalTextEdits](#CompletionItem.additionalTextEdits)-property.
+    #       title: command
+    #     commitCharacters:
+    #       description: |-
+    #         An optional set of characters that when pressed while this completion is active will accept it first and
+    #         then type that character. *Note* that all commit characters should have `length=1` and that superfluous
+    #         characters will be ignored.
+    #       items:
+    #         type: string
+    #       title: commitCharacters
+    #       type: array
+    #     data:
+    #       $ref: '#/components/schemas/LSPAny_1'
+    #       description: |-
+    #         A data entry field that is preserved on a completion item between a
+    #         [CompletionRequest](#CompletionRequest) and a [CompletionResolveRequest](#CompletionResolveRequest).
+    #       title: data
+    #     deprecated:
+    #       description: Indicates if this item is deprecated.
+    #       title: deprecated
+    #       type: boolean
+    #     detail:
+    #       description: |-
+    #         A human-readable string with additional information
+    #         about this item, like type or symbol information.
+    #       title: detail
+    #       type: string
+    #     documentation:
+    #       anyOf:
+    #       - $ref: '#/components/schemas/MarkupContent'
+    #       - type: string
+    #       description: A human-readable string that represents a doc-comment.
+    #       title: documentation
+    #     filterText:
+    #       description: |-
+    #         A string that should be used when filtering a set of
+    #         completion items. When `falsy` the [label](#CompletionItem.label)
+    #         is used.
+    #       title: filterText
+    #       type: string
+    #     insertText:
+    #       description: |-
+    #         A string that should be inserted into a document when selecting
+    #         this completion. When `falsy` the [label](#CompletionItem.label)
+    #         is used.
+    #
+    #         The `insertText` is subject to interpretation by the client side.
+    #         Some tools might not take the string literally. For example
+    #         VS Code when code complete is requested in this example `con<cursor position>`
+    #         and a completion item with an `insertText` of `console` is provided it
+    #         will only insert `sole`. Therefore it is recommended to use `textEdit` instead
+    #         since it avoids additional client side interpretation.
+    #       title: insertText
+    #       type: string
+    #     insertTextFormat:
+    #       $ref: '#/components/schemas/InsertTextFormat_1'
+    #       description: |-
+    #         The format of the insert text. The format applies to both the `insertText` property
+    #         and the `newText` property of a provided `textEdit`. If omitted defaults to
+    #         `InsertTextFormat.PlainText`.
+    #
+    #         Please note that the insertTextFormat doesn't apply to `additionalTextEdits`.
+    #       title: insertTextFormat
+    #     insertTextMode:
+    #       $ref: '#/components/schemas/InsertTextMode_1'
+    #       description: |-
+    #         How whitespace and indentation is handled during completion
+    #         item insertion. If ignored the clients default value depends on
+    #         the `textDocument.completion.insertTextMode` client capability.
+    #       title: insertTextMode
+    #     kind:
+    #       $ref: '#/components/schemas/CompletionItemKind_1'
+    #       description: |-
+    #         The kind of this completion item. Based of the kind
+    #         an icon is chosen by the editor.
+    #       title: kind
+    #     label:
+    #       description: |-
+    #         The label of this completion item.
+    #
+    #         The label property is also by default the text that
+    #         is inserted when selecting this completion.
+    #
+    #         If label details are provided the label itself should
+    #         be an unqualified name of the completion item.
+    #       title: label
+    #       type: string
+    #     labelDetails:
+    #       $ref: '#/components/schemas/CompletionItemLabelDetails_1'
+    #       description: Additional details for the label
+    #       title: labelDetails
+    #     preselect:
+    #       description: |-
+    #         Select this item when showing.
+    #
+    #         *Note* that only one completion item can be selected and that the
+    #         tool / client decides which item that is. The rule is that the *first*
+    #         item of those that match best is selected.
+    #       title: preselect
+    #       type: boolean
+    #     sortText:
+    #       description: |-
+    #         A string that should be used when comparing this item
+    #         with other items. When `falsy` the [label](#CompletionItem.label)
+    #         is used.
+    #       title: sortText
+    #       type: string
+    #     tags:
+    #       description: Tags for this completion item.
+    #       items:
+    #         enum:
+    #         - 1
+    #         type: number
+    #       title: tags
+    #       type: array
+    #     textEdit:
+    #       anyOf:
+    #       - $ref: '#/components/schemas/TextEdit_1'
+    #       - $ref: '#/components/schemas/InsertReplaceEdit'
+    #       description: |-
+    #         An [edit](#TextEdit) which is applied to a document when selecting
+    #         this completion. When an edit is provided the value of
+    #         [insertText](#CompletionItem.insertText) is ignored.
+    #
+    #         Most editors support two different operation when accepting a completion item. One is to insert a
+    #         completion text and the other is to replace an existing text with a completion text. Since this can
+    #         usually not predetermined by a server it can report both ranges. Clients need to signal support for
+    #         `InsertReplaceEdits` via the `textDocument.completion.insertReplaceSupport` client capability
+    #         property.
+    #
+    #         *Note 1:* The text edit's range as well as both ranges from a insert replace edit must be a
+    #         [single line] and they must contain the position at which completion has been requested.
+    #         *Note 2:* If an `InsertReplaceEdit` is returned the edit's insert range must be a prefix of
+    #         the edit's replace range, that means it must be contained and starting at the same position.
+    #       title: textEdit
+    #   propertyOrder:
+    #   - label
+    #   - labelDetails
+    #   - kind
+    #   - tags
+    #   - detail
+    #   - documentation
+    #   - deprecated
+    #   - preselect
+    #   - sortText
+    #   - filterText
+    #   - insertText
+    #   - insertTextFormat
+    #   - insertTextMode
+    #   - textEdit
+    #   - additionalTextEdits
+    #   - commitCharacters
+    #   - command
+    #   - data
+    #   required:
+    #   - label
+    #   title: CompletionItem
+    #   type: object
+    # CompletionItemKind:
+    #   description: The kind of a completion entry.
+    #   enum:
+    #   - 1
+    #   - 10
+    #   - 11
+    #   - 12
+    #   - 13
+    #   - 14
+    #   - 15
+    #   - 16
+    #   - 17
+    #   - 18
+    #   - 19
+    #   - 2
+    #   - 20
+    #   - 21
+    #   - 22
+    #   - 23
+    #   - 24
+    #   - 25
+    #   - 3
+    #   - 4
+    #   - 5
+    #   - 6
+    #   - 7
+    #   - 8
+    #   - 9
+    #   type: number
+    # CompletionItemKind_1:
+    #   description: The kind of a completion entry.
+    #   enum:
+    #   - 1
+    #   - 10
+    #   - 11
+    #   - 12
+    #   - 13
+    #   - 14
+    #   - 15
+    #   - 16
+    #   - 17
+    #   - 18
+    #   - 19
+    #   - 2
+    #   - 20
+    #   - 21
+    #   - 22
+    #   - 23
+    #   - 24
+    #   - 25
+    #   - 3
+    #   - 4
+    #   - 5
+    #   - 6
+    #   - 7
+    #   - 8
+    #   - 9
+    #   title: CompletionItemKind_1
+    #   type: number
+    # CompletionItemLabelDetails:
+    #   defaultProperties: []
+    #   description: Additional details for a completion item label.
+    #   properties:
+    #     description:
+    #       description: |-
+    #         An optional string which is rendered less prominently after{@linkCompletionItem.detail}. Should be used
+    #         for fully qualified names or file path.
+    #       title: description
+    #       type: string
+    #     detail:
+    #       description: |-
+    #         An optional string which is rendered less prominently directly after{@linkCompletionItem.labellabel},
+    #         without any spacing. Should be used for function signatures or type annotations.
+    #       title: detail
+    #       type: string
+    #   propertyOrder:
+    #   - detail
+    #   - description
+    #   title: CompletionItemLabelDetails
+    #   type: object
+    # CompletionItemLabelDetails_1:
+    #   $ref: '#/components/schemas/CompletionItemLabelDetails'
+    #   description: Additional details for a completion item label.
+    #   title: CompletionItemLabelDetails_1
+    # CompletionItemTag:
+    #   description: |-
+    #     Completion item tags are extra annotations that tweak the rendering of a completion
+    #     item.
+    #   enum:
+    #   - 1
+    #   type: number
+    # CompletionList:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents a collection of [completion items](#CompletionItem) to be presented
+    #     in the editor.
+    #     The CompletionList namespace provides functions to deal with
+    #     completion lists.
+    #   properties:
+    #     isIncomplete:
+    #       description: This list it not complete. Further typing results in recomputing
+    #         this list.
+    #       title: isIncomplete
+    #       type: boolean
+    #     itemDefaults:
+    #       defaultProperties: []
+    #       description: |-
+    #         In many cases the items of an actual completion result share the same
+    #         value for properties like `commitCharacters` or the range of a text
+    #         edit. A completion list can therefore define item defaults which will
+    #         be used if a completion item itself doesn't specify the value.
+    #
+    #         If a completion list specifies a default value and a completion item
+    #         also specifies a corresponding value the one from the item is used.
+    #
+    #         Servers are only allowed to return default values if the client
+    #         signals support for this via the `completionList.itemDefaults`
+    #         capability.
+    #       properties:
+    #         commitCharacters:
+    #           description: A default commit character set.
+    #           items:
+    #             type: string
+    #           title: commitCharacters
+    #           type: array
+    #         editRange:
+    #           anyOf:
+    #           - $ref: '#/components/schemas/Range'
+    #           - defaultProperties: []
+    #             properties:
+    #               insert:
+    #                 $ref: '#/components/schemas/Range'
+    #                 title: insert
+    #               replace:
+    #                 $ref: '#/components/schemas/Range'
+    #                 title: replace
+    #             propertyOrder:
+    #             - insert
+    #             - replace
+    #             required:
+    #             - insert
+    #             - replace
+    #             type: object
+    #           description: A default edit range
+    #           title: editRange
+    #         insertTextFormat:
+    #           $ref: '#/components/schemas/InsertTextFormat_1'
+    #           description: A default insert text format
+    #           title: insertTextFormat
+    #         insertTextMode:
+    #           $ref: '#/components/schemas/InsertTextMode_1'
+    #           description: A default insert text mode
+    #           title: insertTextMode
+    #       propertyOrder:
+    #       - commitCharacters
+    #       - editRange
+    #       - insertTextFormat
+    #       - insertTextMode
+    #       title: itemDefaults
+    #       type: object
+    #     items:
+    #       description: The completion items.
+    #       items:
+    #         $ref: '#/components/schemas/CompletionItem'
+    #       title: items
+    #       type: array
+    #   propertyOrder:
+    #   - isIncomplete
+    #   - itemDefaults
+    #   - items
+    #   required:
+    #   - isIncomplete
+    #   - items
+    #   title: CompletionList
+    #   type: object
+    # CreateFile:
+    #   defaultProperties: []
+    #   description: Create file operation.
+    #   properties:
+    #     annotationId:
+    #       $ref: '#/components/schemas/ChangeAnnotationIdentifier_1'
+    #       description: An optional annotation identifier describing the operation.
+    #       title: annotationId
+    #     kind:
+    #       description: A create
+    #       enum:
+    #       - create
+    #       title: kind
+    #       type: string
+    #     options:
+    #       $ref: '#/components/schemas/CreateFileOptions_1'
+    #       description: Additional options
+    #       title: options
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The resource to create.
+    #       title: uri
+    #   propertyOrder:
+    #   - kind
+    #   - uri
+    #   - options
+    #   - annotationId
+    #   required:
+    #   - kind
+    #   - uri
+    #   title: CreateFile
+    #   type: object
+    # CreateFileOptions:
+    #   defaultProperties: []
+    #   description: Options to create a file.
+    #   properties:
+    #     ignoreIfExists:
+    #       description: Ignore if exists.
+    #       title: ignoreIfExists
+    #       type: boolean
+    #     overwrite:
+    #       description: Overwrite existing file. Overwrite wins over `ignoreIfExists`
+    #       title: overwrite
+    #       type: boolean
+    #   propertyOrder:
+    #   - overwrite
+    #   - ignoreIfExists
+    #   title: CreateFileOptions
+    #   type: object
+    # CreateFileOptions_1:
+    #   $ref: '#/components/schemas/CreateFileOptions'
+    #   description: Options to create a file.
+    #   title: CreateFileOptions_1
+    # Declaration:
+    #   anyOf:
+    #   - $ref: '#/components/schemas/Location'
+    #   - items:
+    #       $ref: '#/components/schemas/Location'
+    #     type: array
+    #   description: The declaration of a symbol representation as one or many [locations](#Location).
+    # DeclarationLink:
+    #   $ref: '#/components/schemas/LocationLink'
+    # Definition:
+    #   anyOf:
+    #   - $ref: '#/components/schemas/Location'
+    #   - items:
+    #       $ref: '#/components/schemas/Location'
+    #     type: array
+    #   description: |-
+    #     The definition of a symbol represented as one or many [locations](#Location).
+    #     For most programming languages there is only one location at which a symbol is
+    #     defined.
+    #
+    #     Servers should prefer returning `DefinitionLink` over `Definition` if supported
+    #     by the client.
+    # DefinitionLink:
+    #   $ref: '#/components/schemas/LocationLink'
+    # DeleteFile:
+    #   defaultProperties: []
+    #   description: Delete file operation
+    #   properties:
+    #     annotationId:
+    #       $ref: '#/components/schemas/ChangeAnnotationIdentifier_1'
+    #       description: An optional annotation identifier describing the operation.
+    #       title: annotationId
+    #     kind:
+    #       description: A delete
+    #       enum:
+    #       - delete
+    #       title: kind
+    #       type: string
+    #     options:
+    #       $ref: '#/components/schemas/DeleteFileOptions_1'
+    #       description: Delete options.
+    #       title: options
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The file to delete.
+    #       title: uri
+    #   propertyOrder:
+    #   - kind
+    #   - uri
+    #   - options
+    #   - annotationId
+    #   required:
+    #   - kind
+    #   - uri
+    #   title: DeleteFile
+    #   type: object
+    # DeleteFileOptions:
+    #   defaultProperties: []
+    #   description: Delete file options
+    #   properties:
+    #     ignoreIfNotExists:
+    #       description: Ignore the operation if the file doesn't exist.
+    #       title: ignoreIfNotExists
+    #       type: boolean
+    #     recursive:
+    #       description: Delete the content recursively if a folder is denoted.
+    #       title: recursive
+    #       type: boolean
+    #   propertyOrder:
+    #   - recursive
+    #   - ignoreIfNotExists
+    #   title: DeleteFileOptions
+    #   type: object
+    # DeleteFileOptions_1:
+    #   $ref: '#/components/schemas/DeleteFileOptions'
+    #   description: Delete file options
+    #   title: DeleteFileOptions_1
+    # Diagnostic:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents a diagnostic, such as a compiler error or warning. Diagnostic objects
+    #     are only valid in the scope of a resource.
+    #     The Diagnostic namespace provides helper functions to work with
+    #     [Diagnostic](#Diagnostic) literals.
+    #   properties:
+    #     code:
+    #       description: The diagnostic's code, which usually appear in the user interface.
+    #       title: code
+    #       type:
+    #       - string
+    #       - integer
+    #     codeDescription:
+    #       $ref: '#/components/schemas/CodeDescription_1'
+    #       description: |-
+    #         An optional property to describe the error code.
+    #         Requires the code field (above) to be present/not null.
+    #       title: codeDescription
+    #     data:
+    #       $ref: '#/components/schemas/LSPAny_1'
+    #       description: |-
+    #         A data entry field that is preserved between a `textDocument/publishDiagnostics`
+    #         notification and `textDocument/codeAction` request.
+    #       title: data
+    #     message:
+    #       description: The diagnostic's message. It usually appears in the user interface
+    #       title: message
+    #       type: string
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The range at which the message applies
+    #       title: range
+    #     relatedInformation:
+    #       description: |-
+    #         An array of related diagnostic information, e.g. when symbol-names within
+    #         a scope collide all components can be marked via this property.
+    #       items:
+    #         $ref: '#/components/schemas/DiagnosticRelatedInformation'
+    #       title: relatedInformation
+    #       type: array
+    #     severity:
+    #       $ref: '#/components/schemas/DiagnosticSeverity_1'
+    #       description: |-
+    #         The diagnostic's severity. Can be omitted. If omitted it is up to the
+    #         client to interpret diagnostics as error, warning, info or hint.
+    #       title: severity
+    #     source:
+    #       description: |-
+    #         A human-readable string describing the source of this
+    #         diagnostic, e.g. 'typescript' or 'super lint'. It usually
+    #         appears in the user interface.
+    #       title: source
+    #       type: string
+    #     tags:
+    #       description: Additional metadata about the diagnostic.
+    #       items:
+    #         description: The diagnostic tags.
+    #         enum:
+    #         - 1
+    #         - 2
+    #         type: number
+    #       title: tags
+    #       type: array
+    #   propertyOrder:
+    #   - range
+    #   - severity
+    #   - code
+    #   - codeDescription
+    #   - source
+    #   - message
+    #   - tags
+    #   - relatedInformation
+    #   - data
+    #   required:
+    #   - message
+    #   - range
+    #   title: Diagnostic
+    #   type: object
+    # DiagnosticRelatedInformation:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents a related message and source code location for a diagnostic. This should be
+    #     used to point to code locations that cause or related to a diagnostics, e.g when duplicating
+    #     a symbol in a scope.
+    #     The DiagnosticRelatedInformation namespace provides helper functions to work with
+    #     [DiagnosticRelatedInformation](#DiagnosticRelatedInformation) literals.
+    #   properties:
+    #     location:
+    #       $ref: '#/components/schemas/Location'
+    #       description: The location of this related diagnostic information.
+    #       title: location
+    #     message:
+    #       description: The message of this related diagnostic information.
+    #       title: message
+    #       type: string
+    #   propertyOrder:
+    #   - location
+    #   - message
+    #   required:
+    #   - location
+    #   - message
+    #   title: DiagnosticRelatedInformation
+    #   type: object
+    # DiagnosticSeverity:
+    #   description: The diagnostic's severity.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   - 3
+    #   - 4
+    #   type: number
+    # DiagnosticSeverity_1:
+    #   description: The diagnostic's severity.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   - 3
+    #   - 4
+    #   title: DiagnosticSeverity_1
+    #   type: number
+    # DiagnosticTag:
+    #   description: The diagnostic tags.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   type: number
+    # DocumentHighlight:
+    #   defaultProperties: []
+    #   description: |-
+    #     A document highlight is a range inside a text document which deserves
+    #     special attention. Usually a document highlight is visualized by changing
+    #     the background color of its range.
+    #     DocumentHighlight namespace to provide helper functions to work with
+    #     [DocumentHighlight](#DocumentHighlight) literals.
+    #   properties:
+    #     kind:
+    #       $ref: '#/components/schemas/DocumentHighlightKind_1'
+    #       description: The highlight kind, default is [text](#DocumentHighlightKind.Text).
+    #       title: kind
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The range this highlight applies to.
+    #       title: range
+    #   propertyOrder:
+    #   - range
+    #   - kind
+    #   required:
+    #   - range
+    #   title: DocumentHighlight
+    #   type: object
+    # DocumentHighlightKind:
+    #   description: A document highlight kind.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   - 3
+    #   type: number
+    # DocumentHighlightKind_1:
+    #   description: A document highlight kind.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   - 3
+    #   title: DocumentHighlightKind_1
+    #   type: number
+    # DocumentLink:
+    #   defaultProperties: []
+    #   description: |-
+    #     A document link is a range in a text document that links to an internal or external resource, like another
+    #     text document or a web site.
+    #     The DocumentLink namespace provides helper functions to work with
+    #     [DocumentLink](#DocumentLink) literals.
+    #   properties:
+    #     data:
+    #       $ref: '#/components/schemas/LSPAny_1'
+    #       description: |-
+    #         A data entry field that is preserved on a document link between a
+    #         DocumentLinkRequest and a DocumentLinkResolveRequest.
+    #       title: data
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The range this link applies to.
+    #       title: range
+    #     target:
+    #       description: The uri this link points to.
+    #       title: target
+    #       type: string
+    #     tooltip:
+    #       description: |-
+    #         The tooltip text when you hover over this link.
+    #
+    #         If a tooltip is provided, is will be displayed in a string that includes instructions on how to
+    #         trigger the link, such as `{0} (ctrl + click)`. The specific instructions vary depending on OS,
+    #         user settings, and localization.
+    #       title: tooltip
+    #       type: string
+    #   propertyOrder:
+    #   - range
+    #   - target
+    #   - tooltip
+    #   - data
+    #   required:
+    #   - range
+    #   title: DocumentLink
+    #   type: object
+    # DocumentSymbol:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents programming constructs like variables, classes, interfaces etc.
+    #     that appear in a document. Document symbols can be hierarchical and they
+    #     have two ranges: one that encloses its definition and one that points to
+    #     its most interesting range, e.g. the range of an identifier.
+    #   properties:
+    #     children:
+    #       description: Children of this symbol, e.g. properties of a class.
+    #       items:
+    #         $ref: '#/components/schemas/DocumentSymbol'
+    #       title: children
+    #       type: array
+    #     deprecated:
+    #       description: Indicates if this symbol is deprecated.
+    #       title: deprecated
+    #       type: boolean
+    #     detail:
+    #       description: More detail for this symbol, e.g the signature of a function.
+    #       title: detail
+    #       type: string
+    #     kind:
+    #       $ref: '#/components/schemas/SymbolKind'
+    #       description: The kind of this symbol.
+    #       title: kind
+    #     name:
+    #       description: |-
+    #         The name of this symbol. Will be displayed in the user interface and therefore must not be
+    #         an empty string or a string only consisting of white spaces.
+    #       title: name
+    #       type: string
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The range enclosing this symbol not including leading/trailing whitespace but everything else
+    #         like comments. This information is typically used to determine if the the clients cursor is
+    #         inside the symbol to reveal in the symbol in the UI.
+    #       title: range
+    #     selectionRange:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The range that should be selected and revealed when this symbol is being picked, e.g the name of a function.
+    #         Must be contained by the the `range`.
+    #       title: selectionRange
+    #     tags:
+    #       description: Tags for this document symbol.
+    #       items:
+    #         enum:
+    #         - 1
+    #         type: number
+    #       title: tags
+    #       type: array
+    #   propertyOrder:
+    #   - name
+    #   - detail
+    #   - kind
+    #   - tags
+    #   - deprecated
+    #   - range
+    #   - selectionRange
+    #   - children
+    #   required:
+    #   - kind
+    #   - name
+    #   - range
+    #   - selectionRange
+    #   title: DocumentSymbol
+    #   type: object
+    DocumentUri:
+      description: A tagging type for string properties that are actually document URIs.
+      title: DocumentUri
+      type: string
+    # FoldingRange:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents a folding range. To be valid, start and end line must be bigger than zero and smaller
+    #     than the number of lines in the document. Clients are free to ignore invalid ranges.
+    #     The folding range namespace provides helper functions to work with
+    #     [FoldingRange](#FoldingRange) literals.
+    #   properties:
+    #     endCharacter:
+    #       $ref: '#/components/schemas/uinteger_1'
+    #       description: The zero-based character offset before the folded range ends.
+    #         If not defined, defaults to the length of the end line.
+    #       title: endCharacter
+    #     endLine:
+    #       $ref: '#/components/schemas/uinteger'
+    #       description: |-
+    #         The zero-based end line of the range to fold. The folded area ends with the line's last character.
+    #         To be valid, the end must be zero or larger and smaller than the number of lines in the document.
+    #       title: endLine
+    #     kind:
+    #       description: |-
+    #         Describes the kind of the folding range such as `comment' or 'region'. The kind
+    #         is used to categorize folding ranges and used by commands like 'Fold all comments'. See
+    #         [FoldingRangeKind](#FoldingRangeKind) for an enumeration of standardized kinds.
+    #       title: kind
+    #       type: string
+    #     startCharacter:
+    #       $ref: '#/components/schemas/uinteger_1'
+    #       description: The zero-based character offset from where the folded range starts.
+    #         If not defined, defaults to the length of the start line.
+    #       title: startCharacter
+    #     startLine:
+    #       $ref: '#/components/schemas/uinteger'
+    #       description: |-
+    #         The zero-based start line of the range to fold. The folded area starts after the line's last character.
+    #         To be valid, the end must be zero or larger and smaller than the number of lines in the document.
+    #       title: startLine
+    #   propertyOrder:
+    #   - startLine
+    #   - startCharacter
+    #   - endLine
+    #   - endCharacter
+    #   - kind
+    #   required:
+    #   - endLine
+    #   - startLine
+    #   title: FoldingRange
+    #   type: object
+    # FoldingRangeKind:
+    #   description: Enum of known range kinds
+    #   enum:
+    #   - comment
+    #   - imports
+    #   - region
+    #   type: string
+    # FormattingOptions:
+    #   additionalProperties:
+    #     type:
+    #     - string
+    #     - integer
+    #     - boolean
+    #   defaultProperties: []
+    #   description: |-
+    #     Value-object describing what options formatting should use.
+    #     The FormattingOptions namespace provides helper functions to work with
+    #     [FormattingOptions](#FormattingOptions) literals.
+    #   properties:
+    #     insertFinalNewline:
+    #       description: Insert a newline character at the end of the file if one does
+    #         not exist.
+    #       title: insertFinalNewline
+    #       type: boolean
+    #     insertSpaces:
+    #       description: Prefer spaces over tabs.
+    #       title: insertSpaces
+    #       type: boolean
+    #     tabSize:
+    #       $ref: '#/components/schemas/uinteger'
+    #       description: Size of a tab in spaces.
+    #       title: tabSize
+    #     trimFinalNewlines:
+    #       description: Trim all newlines after the final newline at the end of the file.
+    #       title: trimFinalNewlines
+    #       type: boolean
+    #     trimTrailingWhitespace:
+    #       description: Trim trailing whitespaces on a line.
+    #       title: trimTrailingWhitespace
+    #       type: boolean
+    #   propertyOrder:
+    #   - tabSize
+    #   - insertSpaces
+    #   - trimTrailingWhitespace
+    #   - insertFinalNewline
+    #   - trimFinalNewlines
+    #   required:
+    #   - insertSpaces
+    #   - tabSize
+    #   title: FormattingOptions
+    #   type: object
+    # FullTextDocument:
+    #   defaultProperties: []
+    #   properties:
+    #     _content:
+    #       title: _content
+    #       type: string
+    #     _languageId:
+    #       title: _languageId
+    #       type: string
+    #     _lineOffsets:
+    #       items:
+    #         type: integer
+    #       title: _lineOffsets
+    #       type: array
+    #     _uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       title: _uri
+    #     _version:
+    #       $ref: '#/components/schemas/integer'
+    #       title: _version
+    #     languageId:
+    #       title: languageId
+    #       type: string
+    #     lineCount:
+    #       title: lineCount
+    #       type: integer
+    #     uri:
+    #       title: uri
+    #       type: string
+    #     version:
+    #       $ref: '#/components/schemas/integer'
+    #       title: version
+    #   propertyOrder:
+    #   - _uri
+    #   - _languageId
+    #   - _version
+    #   - _content
+    #   - _lineOffsets
+    #   - uri
+    #   - languageId
+    #   - version
+    #   - getText
+    #   - update
+    #   - getLineOffsets
+    #   - positionAt
+    #   - offsetAt
+    #   - lineCount
+    #   required:
+    #   - _content
+    #   - _languageId
+    #   - _uri
+    #   - _version
+    #   - languageId
+    #   - lineCount
+    #   - uri
+    #   - version
+    #   title: FullTextDocument
+    #   type: object
+    # Hover:
+    #   defaultProperties: []
+    #   description: The result of a hover request.
+    #   properties:
+    #     contents:
+    #       anyOf:
+    #       - $ref: '#/components/schemas/MarkupContent'
+    #       - defaultProperties: []
+    #         properties:
+    #           language:
+    #             title: language
+    #             type: string
+    #           value:
+    #             title: value
+    #             type: string
+    #         propertyOrder:
+    #         - language
+    #         - value
+    #         required:
+    #         - language
+    #         - value
+    #         type: object
+    #       - items:
+    #           anyOf:
+    #           - defaultProperties: []
+    #             properties:
+    #               language:
+    #                 title: language
+    #                 type: string
+    #               value:
+    #                 title: value
+    #                 type: string
+    #             propertyOrder:
+    #             - language
+    #             - value
+    #             required:
+    #             - language
+    #             - value
+    #             type: object
+    #           - type: string
+    #           description: |-
+    #             MarkedString can be used to render human readable text. It is either a markdown string
+    #             or a code-block that provides a language and a code snippet. The language identifier
+    #             is semantically equal to the optional language identifier in fenced code blocks in GitHub
+    #             issues. See https://help.github.com/articles/creating-and-highlighting-code-blocks/#syntax-highlighting
+    #
+    #             The pair of a language and a value is an equivalent to markdown:
+    #             ```${language}
+    #             ${value}
+    #             ```
+    #
+    #             Note that markdown strings will be sanitized - that means html will be escaped.
+    #         type: array
+    #       - type: string
+    #       description: The hover's content
+    #       title: contents
+    #     range:
+    #       $ref: '#/components/schemas/Range_1'
+    #       description: An optional range
+    #       title: range
+    #   propertyOrder:
+    #   - contents
+    #   - range
+    #   required:
+    #   - contents
+    #   title: Hover
+    #   type: object
+    # InlineValue:
+    #   anyOf:
+    #   - defaultProperties: []
+    #     description: |-
+    #       Provide inline value as text.
+    #       The InlineValueText namespace provides functions to deal with InlineValueTexts.
+    #     properties:
+    #       range:
+    #         $ref: '#/components/schemas/Range'
+    #         description: The document range for which the inline value applies.
+    #         title: range
+    #       text:
+    #         description: The text of the inline value.
+    #         title: text
+    #         type: string
+    #     propertyOrder:
+    #     - range
+    #     - text
+    #     required:
+    #     - range
+    #     - text
+    #     type: object
+    #   - defaultProperties: []
+    #     description: |-
+    #       Provide inline value through a variable lookup.
+    #       If only a range is specified, the variable name will be extracted from the underlying document.
+    #       An optional variable name can be used to override the extracted name.
+    #       The InlineValueVariableLookup namespace provides functions to deal with InlineValueVariableLookups.
+    #     properties:
+    #       caseSensitiveLookup:
+    #         description: How to perform the lookup.
+    #         title: caseSensitiveLookup
+    #         type: boolean
+    #       range:
+    #         $ref: '#/components/schemas/Range'
+    #         description: |-
+    #           The document range for which the inline value applies.
+    #           The range is used to extract the variable name from the underlying document.
+    #         title: range
+    #       variableName:
+    #         description: If specified the name of the variable to look up.
+    #         title: variableName
+    #         type: string
+    #     propertyOrder:
+    #     - range
+    #     - variableName
+    #     - caseSensitiveLookup
+    #     required:
+    #     - caseSensitiveLookup
+    #     - range
+    #     type: object
+    #   - defaultProperties: []
+    #     description: |-
+    #       Provide an inline value through an expression evaluation.
+    #       If only a range is specified, the expression will be extracted from the underlying document.
+    #       An optional expression can be used to override the extracted expression.
+    #       The InlineValueEvaluatableExpression namespace provides functions to deal with InlineValueEvaluatableExpression.
+    #     properties:
+    #       expression:
+    #         description: If specified the expression overrides the extracted expression.
+    #         title: expression
+    #         type: string
+    #       range:
+    #         $ref: '#/components/schemas/Range'
+    #         description: |-
+    #           The document range for which the inline value applies.
+    #           The range is used to extract the evaluatable expression from the underlying document.
+    #         title: range
+    #     propertyOrder:
+    #     - range
+    #     - expression
+    #     required:
+    #     - range
+    #     type: object
+    #   description: |-
+    #     Inline value information can be provided by different means:
+    #     - directly as a text value (class InlineValueText).
+    #     - as a name to use for a variable lookup (class InlineValueVariableLookup)
+    #     - as an evaluatable expression (class InlineValueEvaluatableExpression)
+    #     The InlineValue types combines all inline value types into one type.
+    # InlineValueEvaluatableExpression:
+    #   defaultProperties: []
+    #   description: |-
+    #     Provide an inline value through an expression evaluation.
+    #     If only a range is specified, the expression will be extracted from the underlying document.
+    #     An optional expression can be used to override the extracted expression.
+    #     The InlineValueEvaluatableExpression namespace provides functions to deal with InlineValueEvaluatableExpression.
+    #   properties:
+    #     expression:
+    #       description: If specified the expression overrides the extracted expression.
+    #       title: expression
+    #       type: string
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The document range for which the inline value applies.
+    #         The range is used to extract the evaluatable expression from the underlying document.
+    #       title: range
+    #   propertyOrder:
+    #   - range
+    #   - expression
+    #   required:
+    #   - range
+    #   type: object
+    # InlineValueText:
+    #   defaultProperties: []
+    #   description: |-
+    #     Provide inline value as text.
+    #     The InlineValueText namespace provides functions to deal with InlineValueTexts.
+    #   properties:
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The document range for which the inline value applies.
+    #       title: range
+    #     text:
+    #       description: The text of the inline value.
+    #       title: text
+    #       type: string
+    #   propertyOrder:
+    #   - range
+    #   - text
+    #   required:
+    #   - range
+    #   - text
+    #   type: object
+    # InlineValueVariableLookup:
+    #   defaultProperties: []
+    #   description: |-
+    #     Provide inline value through a variable lookup.
+    #     If only a range is specified, the variable name will be extracted from the underlying document.
+    #     An optional variable name can be used to override the extracted name.
+    #     The InlineValueVariableLookup namespace provides functions to deal with InlineValueVariableLookups.
+    #   properties:
+    #     caseSensitiveLookup:
+    #       description: How to perform the lookup.
+    #       title: caseSensitiveLookup
+    #       type: boolean
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The document range for which the inline value applies.
+    #         The range is used to extract the variable name from the underlying document.
+    #       title: range
+    #     variableName:
+    #       description: If specified the name of the variable to look up.
+    #       title: variableName
+    #       type: string
+    #   propertyOrder:
+    #   - range
+    #   - variableName
+    #   - caseSensitiveLookup
+    #   required:
+    #   - caseSensitiveLookup
+    #   - range
+    #   type: object
+    # InlineValuesContext:
+    #   defaultProperties: []
+    #   description: |-
+    #     The InlineValuesContext namespace provides helper functions to work with
+    #     [InlineValuesContext](#InlineValuesContext) literals.
+    #   properties:
+    #     stoppedLocation:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The document range where execution has stopped.
+    #         Typically the end position of the range denotes the line where the inline values are shown.
+    #       title: stoppedLocation
+    #   propertyOrder:
+    #   - stoppedLocation
+    #   required:
+    #   - stoppedLocation
+    #   type: object
+    # InsertReplaceEdit:
+    #   defaultProperties: []
+    #   description: |-
+    #     A special text edit to provide an insert and a replace operation.
+    #     The InsertReplaceEdit namespace provides functions to deal with insert / replace edits.
+    #   properties:
+    #     insert:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The range if the insert is requested
+    #       title: insert
+    #     newText:
+    #       description: The string to be inserted.
+    #       title: newText
+    #       type: string
+    #     replace:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The range if the replace is requested.
+    #       title: replace
+    #   propertyOrder:
+    #   - newText
+    #   - insert
+    #   - replace
+    #   required:
+    #   - insert
+    #   - newText
+    #   - replace
+    #   title: InsertReplaceEdit
+    #   type: object
+    # InsertTextFormat:
+    #   description: |-
+    #     Defines whether the insert text in a completion item should be interpreted as
+    #     plain text or a snippet.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   type: number
+    # InsertTextFormat_1:
+    #   description: |-
+    #     Defines whether the insert text in a completion item should be interpreted as
+    #     plain text or a snippet.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   title: InsertTextFormat_1
+    #   type: number
+    # InsertTextMode:
+    #   description: |-
+    #     How whitespace and indentation is handled during completion
+    #     item insertion.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   type: number
+    # InsertTextMode_1:
+    #   description: |-
+    #     How whitespace and indentation is handled during completion
+    #     item insertion.
+    #   enum:
+    #   - 1
+    #   - 2
+    #   title: InsertTextMode_1
+    #   type: number
+    LSPAny:
+      anyOf:
+      - $ref: '#/components/schemas/LSPObject'
+      - description: LSP arrays.
+        items:
+          $ref: '#/components/schemas/LSPAny'
+        type: array
+      # - type:
+      #   - "null"
+      #   - string
+      #   - integer
+      #   - boolean
+      description: The LSP any type
+      title: LSPAny
+    LSPAny_1:
+      anyOf:
+      - $ref: '#/components/schemas/LSPObject'
+        description: LSP object definition.
+      - $ref: '#/components/schemas/LSPArray'
+        description: LSP arrays.
+      # - type:
+      #   - "null"
+      #   - string
+      #   - integer
+      #   - boolean
+      description: The LSP any type
+      title: LSPAny_1
+    LSPArray:
+      description: LSP arrays.
+      items:
+        $ref: '#/components/schemas/LSPAny'
+      title: LSPArray
+      type: array
+    LSPObject:
+      additionalProperties:
+        $ref: '#/components/schemas/LSPAny'
+      defaultProperties: []
+      description: LSP object definition.
+      propertyOrder: []
+      title: LSPObject
+      type: object
+    # Location:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents a location inside a resource, such as a line
+    #     inside a text file.
+    #     The Location namespace provides helper functions to work with
+    #     [Location](#Location) literals.
+    #   properties:
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       title: range
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       title: uri
+    #   propertyOrder:
+    #   - uri
+    #   - range
+    #   required:
+    #   - range
+    #   - uri
+    #   title: Location
+    #   type: object
+    # LocationLink:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents the connection of two locations. Provides additional metadata over normal [locations](#Location),
+    #     including an origin range.
+    #     The LocationLink namespace provides helper functions to work with
+    #     [LocationLink](#LocationLink) literals.
+    #   properties:
+    #     originSelectionRange:
+    #       $ref: '#/components/schemas/Range_1'
+    #       description: |-
+    #         Span of the origin of this link.
+    #
+    #         Used as the underlined span for mouse definition hover. Defaults to the word range at
+    #         the definition position.
+    #       title: originSelectionRange
+    #     targetRange:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The full target range of this link. If the target for example is a symbol then target range is the
+    #         range enclosing this symbol not including leading/trailing whitespace but everything else
+    #         like comments. This information is typically used to highlight the range in the editor.
+    #       title: targetRange
+    #     targetSelectionRange:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The range that should be selected and revealed when this link is being followed, e.g the name of a function.
+    #         Must be contained by the the `targetRange`. See also `DocumentSymbol#range`
+    #       title: targetSelectionRange
+    #     targetUri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The target resource identifier of this link.
+    #       title: targetUri
+    #   propertyOrder:
+    #   - originSelectionRange
+    #   - targetUri
+    #   - targetRange
+    #   - targetSelectionRange
+    #   required:
+    #   - targetRange
+    #   - targetSelectionRange
+    #   - targetUri
+    #   title: LocationLink
+    #   type: object
+    # MarkedString:
+    #   anyOf:
+    #   - defaultProperties: []
+    #     properties:
+    #       language:
+    #         title: language
+    #         type: string
+    #       value:
+    #         title: value
+    #         type: string
+    #     propertyOrder:
+    #     - language
+    #     - value
+    #     required:
+    #     - language
+    #     - value
+    #     type: object
+    #   - type: string
+    #   description: |-
+    #     MarkedString can be used to render human readable text. It is either a markdown string
+    #     or a code-block that provides a language and a code snippet. The language identifier
+    #     is semantically equal to the optional language identifier in fenced code blocks in GitHub
+    #     issues. See https://help.github.com/articles/creating-and-highlighting-code-blocks/#syntax-highlighting
+    #
+    #     The pair of a language and a value is an equivalent to markdown:
+    #     ```${language}
+    #     ${value}
+    #     ```
+    #
+    #     Note that markdown strings will be sanitized - that means html will be escaped.
+    # MarkupContent:
+    #   defaultProperties: []
+    #   description: "A `MarkupContent` literal represents a string value which content
+    #     is interpreted base on its\nkind flag. Currently the protocol supports `plaintext`
+    #     and `markdown` as markup kinds.\n\nIf the kind is `markdown` then the value
+    #     can contain fenced code blocks like in GitHub issues.\nSee https://help.github.com/articles/creating-and-highlighting-code-blocks/#syntax-highlighting\n\nHere
+    #     is an example how such a string can be constructed using JavaScript / TypeScript:\n```ts\nlet
+    #     markdown: MarkdownContent = {\n kind: MarkupKind.Markdown,\nvalue: [\n\t'# Header',\n\t'Some
+    #     text',\n\t'```typescript',\n\t'someCode();',\n\t'```'\n].join('\\n')\n};\n```\n\n*Please
+    #     Note* that clients might sanitize the return markdown. A client could decide
+    #     to\nremove HTML from the markdown to avoid script execution."
+    #   properties:
+    #     kind:
+    #       $ref: '#/components/schemas/MarkupKind'
+    #       description: The type of the Markup
+    #       title: kind
+    #     value:
+    #       description: The content itself
+    #       title: value
+    #       type: string
+    #   propertyOrder:
+    #   - kind
+    #   - value
+    #   required:
+    #   - kind
+    #   - value
+    #   title: MarkupContent
+    #   type: object
+    # MarkupKind:
+    #   description: |-
+    #     Describes the content type that a client supports in various
+    #     result literals like `Hover`, `ParameterInfo` or `CompletionItem`.
+    #
+    #     Please note that `MarkupKinds` must not start with a `$`. This kinds
+    #     are reserved for internal usage.
+    #   enum:
+    #   - markdown
+    #   - plaintext
+    #   title: MarkupKind
+    #   type: string
+    # OptionalVersionedTextDocumentIdentifier:
+    #   defaultProperties: []
+    #   description: |-
+    #     A text document identifier to optionally denote a specific version of a text document.
+    #     The OptionalVersionedTextDocumentIdentifier namespace provides helper functions to work with
+    #     [OptionalVersionedTextDocumentIdentifier](#OptionalVersionedTextDocumentIdentifier) literals.
+    #   properties:
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The text document's uri.
+    #       title: uri
+    #     version:
+    #       description: |-
+    #         The version number of this document. If a versioned text document identifier
+    #         is sent from the server to the client and the file is not open in the editor
+    #         (the server has not received an open notification before) the server can send
+    #         `null` to indicate that the version is unknown and the content on disk is the
+    #         truth (as specified with document content ownership).
+    #       title: version
+    #       type:
+    #       - "null"
+    #       - integer
+    #   propertyOrder:
+    #   - version
+    #   - uri
+    #   required:
+    #   - uri
+    #   - version
+    #   title: OptionalVersionedTextDocumentIdentifier
+    #   type: object
+    # ParameterInformation:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents a parameter of a callable-signature. A parameter can
+    #     have a label and a doc-comment.
+    #     The ParameterInformation namespace provides helper functions to work with
+    #     [ParameterInformation](#ParameterInformation) literals.
+    #   properties:
+    #     documentation:
+    #       anyOf:
+    #       - $ref: '#/components/schemas/MarkupContent'
+    #       - type: string
+    #       description: |-
+    #         The human-readable doc-comment of this signature. Will be shown
+    #         in the UI but can be omitted.
+    #       title: documentation
+    #     label:
+    #       anyOf:
+    #       - items:
+    #         - type: integer
+    #         - type: integer
+    #         maxItems: 2
+    #         minItems: 2
+    #         type: array
+    #       - type: string
+    #       description: |-
+    #         The label of this parameter information.
+    #
+    #         Either a string or an inclusive start and exclusive end offsets within its containing
+    #         signature label. (see SignatureInformation.label). The offsets are based on a UTF-16
+    #         string representation as `Position` and `Range` does.
+    #
+    #         *Note*: a label of type string should be a substring of its containing signature label.
+    #         Its intended use case is to highlight the parameter label part in the `SignatureInformation.label`.
+    #       title: label
+    #   propertyOrder:
+    #   - label
+    #   - documentation
+    #   required:
+    #   - label
+    #   title: ParameterInformation
+    #   type: object
+    Position:
+      defaultProperties: []
+      description: "Position in a text document expressed as zero-based line and character
+        offset.\nThe offsets are based on a UTF-16 string representation. So a string
+        of the form\n`a\U00010400b` the character offset of the character `a` is 0,
+        the character offset of `\U00010400`\nis 1 and the character offset of b is
+        3 since `\U00010400` is represented using two code\nunits in UTF-16.\n\nPositions
+        are line end character agnostic. So you can not specify a position that\ndenotes
+        `\\r|\\n` or `\\n|` where `|` represents the character offset.\nThe Position
+        namespace provides helper functions to work with\n[Position](#Position) literals."
+      properties:
+        character:
+          $ref: '#/components/schemas/uinteger'
+          description: |-
+            Character offset on a line in a document (zero-based). Assuming that the line is
+            represented as a string, the `character` value represents the gap between the
+            `character` and `character + 1`.
+
+            If the character value is greater than the line length it defaults back to the
+            line length.
+          title: character
+        line:
+          $ref: '#/components/schemas/uinteger'
+          description: Line position in a document (zero-based).
+          title: line
+      propertyOrder:
+      - line
+      - character
+      required:
+      - character
+      - line
+      title: Position
+      type: object
+    Range:
+      defaultProperties: []
+      description: |-
+        A range in a text document expressed as (zero-based) start and end positions.
+
+        If you want to specify a range that contains a line including the line ending
+        character(s) then use an end position denoting the start of the next line.
+        For example:
+        ```ts
+        {
+            start: { line: 5, character: 23 }
+            end : { line 6, character : 0 }
+        }
+        ```
+        The Range namespace provides helper functions to work with
+        [Range](#Range) literals.
+      properties:
+        end:
+          $ref: '#/components/schemas/Position'
+          description: The range's end position.
+          title: end
+        start:
+          $ref: '#/components/schemas/Position'
+          description: The range's start position
+          title: start
+      propertyOrder:
+      - start
+      - end
+      required:
+      - end
+      - start
+      title: Range
+      type: object
+    # Range_1:
+    #   $ref: '#/components/schemas/Range'
+    #   description: |-
+    #     A range in a text document expressed as (zero-based) start and end positions.
+    #
+    #     If you want to specify a range that contains a line including the line ending
+    #     character(s) then use an end position denoting the start of the next line.
+    #     For example:
+    #     ```ts
+    #     {
+    #         start: { line: 5, character: 23 }
+    #         end : { line 6, character : 0 }
+    #     }
+    #     ```
+    #     The Range namespace provides helper functions to work with
+    #     [Range](#Range) literals.
+    #   title: Range_1
+    # ReferenceContext:
+    #   defaultProperties: []
+    #   description: |-
+    #     Value-object that contains additional information when
+    #     requesting references.
+    #   properties:
+    #     includeDeclaration:
+    #       description: Include the declaration of the current symbol.
+    #       title: includeDeclaration
+    #       type: boolean
+    #   propertyOrder:
+    #   - includeDeclaration
+    #   required:
+    #   - includeDeclaration
+    #   title: ReferenceContext
+    #   type: object
+    # RenameFile:
+    #   defaultProperties: []
+    #   description: Rename file operation
+    #   properties:
+    #     annotationId:
+    #       $ref: '#/components/schemas/ChangeAnnotationIdentifier_1'
+    #       description: An optional annotation identifier describing the operation.
+    #       title: annotationId
+    #     kind:
+    #       description: A rename
+    #       enum:
+    #       - rename
+    #       title: kind
+    #       type: string
+    #     newUri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The new location.
+    #       title: newUri
+    #     oldUri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The old (existing) location.
+    #       title: oldUri
+    #     options:
+    #       $ref: '#/components/schemas/RenameFileOptions_1'
+    #       description: Rename options.
+    #       title: options
+    #   propertyOrder:
+    #   - kind
+    #   - oldUri
+    #   - newUri
+    #   - options
+    #   - annotationId
+    #   required:
+    #   - kind
+    #   - newUri
+    #   - oldUri
+    #   title: RenameFile
+    #   type: object
+    # RenameFileOptions:
+    #   defaultProperties: []
+    #   description: Rename file options
+    #   properties:
+    #     ignoreIfExists:
+    #       description: Ignores if target exists.
+    #       title: ignoreIfExists
+    #       type: boolean
+    #     overwrite:
+    #       description: Overwrite target if existing. Overwrite wins over `ignoreIfExists`
+    #       title: overwrite
+    #       type: boolean
+    #   propertyOrder:
+    #   - overwrite
+    #   - ignoreIfExists
+    #   title: RenameFileOptions
+    #   type: object
+    # RenameFileOptions_1:
+    #   $ref: '#/components/schemas/RenameFileOptions'
+    #   description: Rename file options
+    #   title: RenameFileOptions_1
+    # ResourceOperation:
+    #   defaultProperties: []
+    #   description: A generic resource operation.
+    #   properties:
+    #     annotationId:
+    #       $ref: '#/components/schemas/ChangeAnnotationIdentifier_1'
+    #       description: An optional annotation identifier describing the operation.
+    #       title: annotationId
+    #     kind:
+    #       description: The resource operation kind.
+    #       title: kind
+    #       type: string
+    #   propertyOrder:
+    #   - kind
+    #   - annotationId
+    #   required:
+    #   - kind
+    #   title: ResourceOperation
+    #   type: object
+    # SelectionRange:
+    #   defaultProperties: []
+    #   description: |-
+    #     A selection range represents a part of a selection hierarchy. A selection range
+    #     may have a parent selection range that contains it.
+    #     The SelectionRange namespace provides helper function to work with
+    #     SelectionRange literals.
+    #   properties:
+    #     parent:
+    #       $ref: '#/components/schemas/SelectionRange_1'
+    #       description: The parent selection range containing this range. Therefore `parent.range`
+    #         must contain `this.range`.
+    #       title: parent
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The [range](#Range) of this selection range.
+    #       title: range
+    #   propertyOrder:
+    #   - range
+    #   - parent
+    #   required:
+    #   - range
+    #   title: SelectionRange
+    #   type: object
+    # SelectionRange_1:
+    #   $ref: '#/components/schemas/SelectionRange'
+    #   description: |-
+    #     A selection range represents a part of a selection hierarchy. A selection range
+    #     may have a parent selection range that contains it.
+    #     The SelectionRange namespace provides helper function to work with
+    #     SelectionRange literals.
+    #   title: SelectionRange_1
+    # SemanticTokenModifiers:
+    #   description: |-
+    #     A set of predefined token modifiers. This set is not fixed
+    #     an clients can specify additional token types via the
+    #     corresponding client capabilities.
+    #   enum:
+    #   - abstract
+    #   - async
+    #   - declaration
+    #   - defaultLibrary
+    #   - definition
+    #   - deprecated
+    #   - documentation
+    #   - modification
+    #   - readonly
+    #   - static
+    #   type: string
+    # SemanticTokenTypes:
+    #   description: |-
+    #     A set of predefined token types. This set is not fixed
+    #     an clients can specify additional token types via the
+    #     corresponding client capabilities.
+    #   enum:
+    #   - class
+    #   - comment
+    #   - decorator
+    #   - enum
+    #   - enumMember
+    #   - event
+    #   - function
+    #   - interface
+    #   - keyword
+    #   - macro
+    #   - method
+    #   - modifier
+    #   - namespace
+    #   - number
+    #   - operator
+    #   - parameter
+    #   - property
+    #   - regexp
+    #   - string
+    #   - struct
+    #   - type
+    #   - typeParameter
+    #   - variable
+    #   type: string
+    # SemanticTokens:
+    #   defaultProperties: []
+    #   properties:
+    #     data:
+    #       description: The actual tokens.
+    #       items:
+    #         type: integer
+    #       title: data
+    #       type: array
+    #     resultId:
+    #       description: |-
+    #         An optional result id. If provided and clients support delta updating
+    #         the client will include the result id in the next semantic token request.
+    #         A server can then instead of computing all semantic tokens again simply
+    #         send a delta.
+    #       title: resultId
+    #       type: string
+    #   propertyOrder:
+    #   - resultId
+    #   - data
+    #   required:
+    #   - data
+    #   title: SemanticTokens
+    #   type: object
+    # SemanticTokensDelta:
+    #   defaultProperties: []
+    #   properties:
+    #     edits:
+    #       description: The semantic token edits to transform a previous result into
+    #         a new result.
+    #       items:
+    #         $ref: '#/components/schemas/SemanticTokensEdit'
+    #       title: edits
+    #       type: array
+    #     resultId:
+    #       title: resultId
+    #       type: string
+    #   propertyOrder:
+    #   - resultId
+    #   - edits
+    #   required:
+    #   - edits
+    #   title: SemanticTokensDelta
+    #   type: object
+    # SemanticTokensEdit:
+    #   defaultProperties: []
+    #   properties:
+    #     data:
+    #       description: The elements to insert.
+    #       items:
+    #         type: integer
+    #       title: data
+    #       type: array
+    #     deleteCount:
+    #       $ref: '#/components/schemas/uinteger'
+    #       description: The count of elements to remove.
+    #       title: deleteCount
+    #     start:
+    #       $ref: '#/components/schemas/uinteger'
+    #       description: The start offset of the edit.
+    #       title: start
+    #   propertyOrder:
+    #   - start
+    #   - deleteCount
+    #   - data
+    #   required:
+    #   - deleteCount
+    #   - start
+    #   title: SemanticTokensEdit
+    #   type: object
+    # SemanticTokensLegend:
+    #   defaultProperties: []
+    #   properties:
+    #     tokenModifiers:
+    #       description: The token modifiers a server uses.
+    #       items:
+    #         type: string
+    #       title: tokenModifiers
+    #       type: array
+    #     tokenTypes:
+    #       description: The token types a server uses.
+    #       items:
+    #         type: string
+    #       title: tokenTypes
+    #       type: array
+    #   propertyOrder:
+    #   - tokenTypes
+    #   - tokenModifiers
+    #   required:
+    #   - tokenModifiers
+    #   - tokenTypes
+    #   title: SemanticTokensLegend
+    #   type: object
+    # SignatureHelp:
+    #   defaultProperties: []
+    #   description: |-
+    #     Signature help represents the signature of something
+    #     callable. There can be multiple signature but only one
+    #     active and only one active parameter.
+    #   properties:
+    #     activeParameter:
+    #       $ref: '#/components/schemas/uinteger_1'
+    #       description: |-
+    #         The active parameter of the active signature. If omitted or the value
+    #         lies outside the range of `signatures[activeSignature].parameters`
+    #         defaults to 0 if the active signature has parameters. If
+    #         the active signature has no parameters it is ignored.
+    #         In future version of the protocol this property might become
+    #         mandatory to better express the active parameter if the
+    #         active signature does have any.
+    #       title: activeParameter
+    #     activeSignature:
+    #       $ref: '#/components/schemas/uinteger_1'
+    #       description: |-
+    #         The active signature. If omitted or the value lies outside the
+    #         range of `signatures` the value defaults to zero or is ignored if
+    #         the `SignatureHelp` has no signatures.
+    #
+    #         Whenever possible implementors should make an active decision about
+    #         the active signature and shouldn't rely on a default value.
+    #
+    #         In future version of the protocol this property might become
+    #         mandatory to better express this.
+    #       title: activeSignature
+    #     signatures:
+    #       description: One or more signatures.
+    #       items:
+    #         $ref: '#/components/schemas/SignatureInformation'
+    #       title: signatures
+    #       type: array
+    #   propertyOrder:
+    #   - signatures
+    #   - activeSignature
+    #   - activeParameter
+    #   required:
+    #   - signatures
+    #   title: SignatureHelp
+    #   type: object
+    # SignatureInformation:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents the signature of something callable. A signature
+    #     can have a label, like a function-name, a doc-comment, and
+    #     a set of parameters.
+    #     The SignatureInformation namespace provides helper functions to work with
+    #     [SignatureInformation](#SignatureInformation) literals.
+    #   properties:
+    #     activeParameter:
+    #       $ref: '#/components/schemas/uinteger_1'
+    #       description: |-
+    #         The index of the active parameter.
+    #
+    #         If provided, this is used in place of `SignatureHelp.activeParameter`.
+    #       title: activeParameter
+    #     documentation:
+    #       anyOf:
+    #       - $ref: '#/components/schemas/MarkupContent'
+    #       - type: string
+    #       description: |-
+    #         The human-readable doc-comment of this signature. Will be shown
+    #         in the UI but can be omitted.
+    #       title: documentation
+    #     label:
+    #       description: |-
+    #         The label of this signature. Will be shown in
+    #         the UI.
+    #       title: label
+    #       type: string
+    #     parameters:
+    #       description: The parameters of this signature.
+    #       items:
+    #         $ref: '#/components/schemas/ParameterInformation'
+    #       title: parameters
+    #       type: array
+    #   propertyOrder:
+    #   - label
+    #   - documentation
+    #   - parameters
+    #   - activeParameter
+    #   required:
+    #   - label
+    #   title: SignatureInformation
+    #   type: object
+    # SymbolInformation:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents information about programming constructs like variables, classes,
+    #     interfaces etc.
+    #   properties:
+    #     containerName:
+    #       description: |-
+    #         The name of the symbol containing this symbol. This information is for
+    #         user interface purposes (e.g. to render a qualifier in the user interface
+    #         if necessary). It can't be used to re-infer a hierarchy for the document
+    #         symbols.
+    #       title: containerName
+    #       type: string
+    #     deprecated:
+    #       description: Indicates if this symbol is deprecated.
+    #       title: deprecated
+    #       type: boolean
+    #     kind:
+    #       $ref: '#/components/schemas/SymbolKind'
+    #       description: The kind of this symbol.
+    #       title: kind
+    #     location:
+    #       $ref: '#/components/schemas/Location'
+    #       description: |-
+    #         The location of this symbol. The location's range is used by a tool
+    #         to reveal the location in the editor. If the symbol is selected in the
+    #         tool the range's start information is used to position the cursor. So
+    #         the range usually spans more than the actual symbol's name and does
+    #         normally include thinks like visibility modifiers.
+    #
+    #         The range doesn't have to denote a node range in the sense of a abstract
+    #         syntax tree. It can therefore not be used to re-construct a hierarchy of
+    #         the symbols.
+    #       title: location
+    #     name:
+    #       description: The name of this symbol.
+    #       title: name
+    #       type: string
+    #     tags:
+    #       description: Tags for this completion item.
+    #       items:
+    #         enum:
+    #         - 1
+    #         type: number
+    #       title: tags
+    #       type: array
+    #   propertyOrder:
+    #   - name
+    #   - kind
+    #   - tags
+    #   - deprecated
+    #   - location
+    #   - containerName
+    #   required:
+    #   - kind
+    #   - location
+    #   - name
+    #   title: SymbolInformation
+    #   type: object
+    SymbolKind:
+      description: A symbol kind.
+      enum:
+      - 1
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+      - 17
+      - 18
+      - 19
+      - 2
+      - 20
+      - 21
+      - 22
+      - 23
+      - 24
+      - 25
+      - 26
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      title: SymbolKind
+      type: number
+    # SymbolTag:
+    #   description: Symbol tags are extra annotations that tweak the rendering of a symbol.
+    #   enum:
+    #   - 1
+    #   type: number
+    # TextDocument:
+    #   defaultProperties: []
+    #   description: |-
+    #     A simple text document. Not to be implemented. The document keeps the content
+    #     as string.
+    #   properties:
+    #     languageId:
+    #       description: The identifier of the language associated with this document.
+    #       title: languageId
+    #       type: string
+    #     lineCount:
+    #       $ref: '#/components/schemas/uinteger'
+    #       description: The number of lines in this document.
+    #       title: lineCount
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: |-
+    #         The associated URI for this document. Most documents have the __file__-scheme, indicating that they
+    #         represent files on disk. However, some documents may have other schemes indicating that they are not
+    #         available on disk.
+    #       title: uri
+    #     version:
+    #       $ref: '#/components/schemas/integer'
+    #       description: |-
+    #         The version number of this document (it will increase after each
+    #         change, including undo/redo).
+    #       title: version
+    #   propertyOrder:
+    #   - uri
+    #   - languageId
+    #   - version
+    #   - getText
+    #   - positionAt
+    #   - offsetAt
+    #   - lineCount
+    #   required:
+    #   - languageId
+    #   - lineCount
+    #   - uri
+    #   - version
+    #   title: TextDocument
+    #   type: object
+    # TextDocumentContentChangeEvent:
+    #   anyOf:
+    #   - defaultProperties: []
+    #     properties:
+    #       range:
+    #         $ref: '#/components/schemas/Range'
+    #         description: The range of the document that changed.
+    #         title: range
+    #       rangeLength:
+    #         $ref: '#/components/schemas/uinteger_1'
+    #         description: The optional length of the range that got replaced.
+    #         title: rangeLength
+    #       text:
+    #         description: The new text for the provided range.
+    #         title: text
+    #         type: string
+    #     propertyOrder:
+    #     - range
+    #     - rangeLength
+    #     - text
+    #     required:
+    #     - range
+    #     - text
+    #     type: object
+    #   - defaultProperties: []
+    #     properties:
+    #       text:
+    #         description: The new text of the whole document.
+    #         title: text
+    #         type: string
+    #     propertyOrder:
+    #     - text
+    #     required:
+    #     - text
+    #     type: object
+    #   description: |-
+    #     An event describing a change to a text document. If range and rangeLength are omitted
+    #     the new text is considered to be the full content of the document.
+    # TextDocumentEdit:
+    #   defaultProperties: []
+    #   description: |-
+    #     Describes textual changes on a text document. A TextDocumentEdit describes all changes
+    #     on a document version Si and after they are applied move the document to version Si+1.
+    #     So the creator of a TextDocumentEdit doesn't need to sort the array of edits or do any
+    #     kind of ordering. However the edits must be non overlapping.
+    #     The TextDocumentEdit namespace provides helper function to create
+    #     an edit that manipulates a text document.
+    #   properties:
+    #     edits:
+    #       description: The edits to be applied.
+    #       items:
+    #         anyOf:
+    #         - $ref: '#/components/schemas/TextEdit_1'
+    #         - $ref: '#/components/schemas/AnnotatedTextEdit'
+    #       title: edits
+    #       type: array
+    #     textDocument:
+    #       $ref: '#/components/schemas/OptionalVersionedTextDocumentIdentifier'
+    #       description: The text document to change.
+    #       title: textDocument
+    #   propertyOrder:
+    #   - textDocument
+    #   - edits
+    #   required:
+    #   - edits
+    #   - textDocument
+    #   title: TextDocumentEdit
+    #   type: object
+    # TextDocumentIdentifier:
+    #   defaultProperties: []
+    #   description: |-
+    #     A literal to identify a text document in the client.
+    #     The TextDocumentIdentifier namespace provides helper functions to work with
+    #     [TextDocumentIdentifier](#TextDocumentIdentifier) literals.
+    #   properties:
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The text document's uri.
+    #       title: uri
+    #   propertyOrder:
+    #   - uri
+    #   required:
+    #   - uri
+    #   title: TextDocumentIdentifier
+    #   type: object
+    # TextDocumentItem:
+    #   defaultProperties: []
+    #   description: |-
+    #     An item to transfer a text document from the client to the
+    #     server.
+    #     The TextDocumentItem namespace provides helper functions to work with
+    #     [TextDocumentItem](#TextDocumentItem) literals.
+    #   properties:
+    #     languageId:
+    #       description: The text document's language identifier
+    #       title: languageId
+    #       type: string
+    #     text:
+    #       description: The content of the opened text document.
+    #       title: text
+    #       type: string
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The text document's uri.
+    #       title: uri
+    #     version:
+    #       $ref: '#/components/schemas/integer'
+    #       description: |-
+    #         The version number of this document (it will increase after each
+    #         change, including undo/redo).
+    #       title: version
+    #   propertyOrder:
+    #   - uri
+    #   - languageId
+    #   - version
+    #   - text
+    #   required:
+    #   - languageId
+    #   - text
+    #   - uri
+    #   - version
+    #   title: TextDocumentItem
+    #   type: object
+    # TextEdit:
+    #   $ref: '#/components/schemas/TextEdit_1'
+    #   description: |-
+    #     A text edit applicable to a text document.
+    #     The TextEdit namespace provides helper function to create replace,
+    #     insert and delete edits more easily.
+    #   title: TextEdit
+    # TextEdit_1:
+    #   defaultProperties: []
+    #   description: |-
+    #     A text edit applicable to a text document.
+    #     The TextEdit namespace provides helper function to create replace,
+    #     insert and delete edits more easily.
+    #   properties:
+    #     newText:
+    #       description: |-
+    #         The string to be inserted. For delete operations use an
+    #         empty string.
+    #       title: newText
+    #       type: string
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The range of the text document to be manipulated. To insert
+    #         text into a document create a range where start === end.
+    #       title: range
+    #   propertyOrder:
+    #   - range
+    #   - newText
+    #   required:
+    #   - newText
+    #   - range
+    #   title: TextEdit_1
+    #   type: object
+    # TextEditChange:
+    #   defaultProperties: []
+    #   description: A change to capture text edits for existing resources.
+    #   propertyOrder:
+    #   - all
+    #   - clear
+    #   - add
+    #   - insert
+    #   - replace
+    #   - delete
+    #   title: TextEditChange
+    #   type: object
+    # TextEditChangeImpl:
+    #   defaultProperties: []
+    #   properties:
+    #     changeAnnotations:
+    #       $ref: '#/components/schemas/ChangeAnnotations'
+    #       title: changeAnnotations
+    #     edits:
+    #       items:
+    #         anyOf:
+    #         - $ref: '#/components/schemas/TextEdit_1'
+    #         - $ref: '#/components/schemas/AnnotatedTextEdit'
+    #       title: edits
+    #       type: array
+    #   propertyOrder:
+    #   - edits
+    #   - changeAnnotations
+    #   - insert
+    #   - replace
+    #   - delete
+    #   - add
+    #   - all
+    #   - clear
+    #   - assertChangeAnnotations
+    #   required:
+    #   - edits
+    #   title: TextEditChangeImpl
+    #   type: object
+    # TypeHierarchyItem:
+    #   defaultProperties: []
+    #   properties:
+    #     data:
+    #       $ref: '#/components/schemas/LSPAny_1'
+    #       description: |-
+    #         A data entry field that is preserved between a type hierarchy prepare and
+    #         supertypes or subtypes requests. It could also be used to identify the
+    #         type hierarchy in the server, helping improve the performance on
+    #         resolving supertypes and subtypes.
+    #       title: data
+    #     detail:
+    #       description: More detail for this item, e.g. the signature of a function.
+    #       title: detail
+    #       type: string
+    #     kind:
+    #       $ref: '#/components/schemas/SymbolKind'
+    #       description: The kind of this item.
+    #       title: kind
+    #     name:
+    #       description: The name of this item.
+    #       title: name
+    #       type: string
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The range enclosing this symbol not including leading/trailing whitespace
+    #         but everything else, e.g. comments and code.
+    #       title: range
+    #     selectionRange:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The range that should be selected and revealed when this symbol is being
+    #         picked, e.g. the name of a function. Must be contained by the
+    #         [`range`](#TypeHierarchyItem.range).
+    #       title: selectionRange
+    #     tags:
+    #       description: Tags for this item.
+    #       items:
+    #         enum:
+    #         - 1
+    #         type: number
+    #       title: tags
+    #       type: array
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The resource identifier of this item.
+    #       title: uri
+    #   propertyOrder:
+    #   - name
+    #   - kind
+    #   - tags
+    #   - detail
+    #   - uri
+    #   - range
+    #   - selectionRange
+    #   - data
+    #   required:
+    #   - kind
+    #   - name
+    #   - range
+    #   - selectionRange
+    #   - uri
+    #   type: object
+    # URI:
+    #   description: A tagging type for string properties that are actually URIs
+    #   title: URI
+    #   type: string
+    # VersionedTextDocumentIdentifier:
+    #   defaultProperties: []
+    #   description: |-
+    #     A text document identifier to denote a specific version of a text document.
+    #     The VersionedTextDocumentIdentifier namespace provides helper functions to work with
+    #     [VersionedTextDocumentIdentifier](#VersionedTextDocumentIdentifier) literals.
+    #   properties:
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The text document's uri.
+    #       title: uri
+    #     version:
+    #       $ref: '#/components/schemas/integer'
+    #       description: The version number of this document.
+    #       title: version
+    #   propertyOrder:
+    #   - version
+    #   - uri
+    #   required:
+    #   - uri
+    #   - version
+    #   title: VersionedTextDocumentIdentifier
+    #   type: object
+    # WorkspaceChange:
+    #   defaultProperties: []
+    #   description: A workspace change helps constructing changes to a workspace.
+    #   properties:
+    #     _changeAnnotations:
+    #       $ref: '#/components/schemas/ChangeAnnotations'
+    #       title: _changeAnnotations
+    #     _textEditChanges:
+    #       additionalProperties:
+    #         $ref: '#/components/schemas/TextEditChange'
+    #       defaultProperties: []
+    #       propertyOrder: []
+    #       title: _textEditChanges
+    #       type: object
+    #     _workspaceEdit:
+    #       $ref: '#/components/schemas/WorkspaceEdit'
+    #       title: _workspaceEdit
+    #     edit:
+    #       $ref: '#/components/schemas/WorkspaceEdit'
+    #       description: |-
+    #         Returns the underlying [WorkspaceEdit](#WorkspaceEdit) literal
+    #         use to be returned from a workspace edit operation like rename.
+    #       title: edit
+    #   propertyOrder:
+    #   - _workspaceEdit
+    #   - _textEditChanges
+    #   - _changeAnnotations
+    #   - edit
+    #   - getTextEditChange
+    #   - initDocumentChanges
+    #   - initChanges
+    #   - createFile
+    #   - renameFile
+    #   - deleteFile
+    #   required:
+    #   - _textEditChanges
+    #   - _workspaceEdit
+    #   - edit
+    #   title: WorkspaceChange
+    #   type: object
+    # WorkspaceEdit:
+    #   defaultProperties: []
+    #   description: |-
+    #     A workspace edit represents changes to many resources managed in the workspace. The edit
+    #     should either provide `changes` or `documentChanges`. If documentChanges are present
+    #     they are preferred over `changes` if the client can handle versioned document edits.
+    #
+    #     Since version 3.13.0 a workspace edit can contain resource operations as well. If resource
+    #     operations are present clients need to execute the operations in the order in which they
+    #     are provided. So a workspace edit for example can consist of the following two changes:
+    #     (1) a create file a.txt and (2) a text document edit which insert text into file a.txt.
+    #
+    #     An invalid sequence (e.g. (1) delete file a.txt and (2) insert text into file a.txt) will
+    #     cause failure of the operation. How the client recovers from the failure is described by
+    #     the client capability: `workspace.workspaceEdit.failureHandling`
+    #   properties:
+    #     changeAnnotations:
+    #       additionalProperties:
+    #         $ref: '#/components/schemas/ChangeAnnotation'
+    #       defaultProperties: []
+    #       description: |-
+    #         A map of change annotations that can be referenced in `AnnotatedTextEdit`s or create, rename and
+    #         delete file / folder operations.
+    #
+    #         Whether clients honor this property depends on the client capability `workspace.changeAnnotationSupport`.
+    #       propertyOrder: []
+    #       title: changeAnnotations
+    #       type: object
+    #     changes:
+    #       additionalProperties:
+    #         items:
+    #           $ref: '#/components/schemas/TextEdit_1'
+    #         type: array
+    #       defaultProperties: []
+    #       description: Holds changes to existing resources.
+    #       propertyOrder: []
+    #       title: changes
+    #       type: object
+    #     documentChanges:
+    #       description: |-
+    #         Depending on the client capability `workspace.workspaceEdit.resourceOperations` document changes
+    #         are either an array of `TextDocumentEdit`s to express changes to n different text documents
+    #         where each text document edit addresses a specific version of a text document. Or it can contain
+    #         above `TextDocumentEdit`s mixed with create, rename and delete file / folder operations.
+    #
+    #         Whether a client supports versioned document edits is expressed via
+    #         `workspace.workspaceEdit.documentChanges` client capability.
+    #
+    #         If a client neither supports `documentChanges` nor `workspace.workspaceEdit.resourceOperations` then
+    #         only plain `TextEdit`s using the `changes` property are supported.
+    #       items:
+    #         anyOf:
+    #         - $ref: '#/components/schemas/TextDocumentEdit'
+    #         - $ref: '#/components/schemas/CreateFile'
+    #         - $ref: '#/components/schemas/RenameFile'
+    #         - $ref: '#/components/schemas/DeleteFile'
+    #       title: documentChanges
+    #       type: array
+    #   propertyOrder:
+    #   - changes
+    #   - documentChanges
+    #   - changeAnnotations
+    #   title: WorkspaceEdit
+    #   type: object
+    # WorkspaceEdit_1:
+    #   $ref: '#/components/schemas/WorkspaceEdit'
+    #   description: |-
+    #     A workspace edit represents changes to many resources managed in the workspace. The edit
+    #     should either provide `changes` or `documentChanges`. If documentChanges are present
+    #     they are preferred over `changes` if the client can handle versioned document edits.
+    #
+    #     Since version 3.13.0 a workspace edit can contain resource operations as well. If resource
+    #     operations are present clients need to execute the operations in the order in which they
+    #     are provided. So a workspace edit for example can consist of the following two changes:
+    #     (1) a create file a.txt and (2) a text document edit which insert text into file a.txt.
+    #
+    #     An invalid sequence (e.g. (1) delete file a.txt and (2) insert text into file a.txt) will
+    #     cause failure of the operation. How the client recovers from the failure is described by
+    #     the client capability: `workspace.workspaceEdit.failureHandling`
+    #   title: WorkspaceEdit_1
+    # WorkspaceSymbol:
+    #   defaultProperties: []
+    #   description: A special workspace symbol that supports locations without a range
+    #   properties:
+    #     containerName:
+    #       description: |-
+    #         The name of the symbol containing this symbol. This information is for
+    #         user interface purposes (e.g. to render a qualifier in the user interface
+    #         if necessary). It can't be used to re-infer a hierarchy for the document
+    #         symbols.
+    #       title: containerName
+    #       type: string
+    #     data:
+    #       $ref: '#/components/schemas/LSPAny_1'
+    #       description: |-
+    #         A data entry field that is preserved on a workspace symbol between a
+    #         workspace symbol request and a workspace symbol resolve request.
+    #       title: data
+    #     kind:
+    #       $ref: '#/components/schemas/SymbolKind'
+    #       description: The kind of this symbol.
+    #       title: kind
+    #     location:
+    #       anyOf:
+    #       - $ref: '#/components/schemas/Location'
+    #       - defaultProperties: []
+    #         properties:
+    #           uri:
+    #             $ref: '#/components/schemas/DocumentUri'
+    #             title: uri
+    #         propertyOrder:
+    #         - uri
+    #         required:
+    #         - uri
+    #         type: object
+    #       description: |-
+    #         The location of the symbol.
+    #
+    #         See SymbolInformation#location for more details.
+    #       title: location
+    #     name:
+    #       description: The name of this symbol.
+    #       title: name
+    #       type: string
+    #     tags:
+    #       description: Tags for this completion item.
+    #       items:
+    #         enum:
+    #         - 1
+    #         type: number
+    #       title: tags
+    #       type: array
+    #   propertyOrder:
+    #   - location
+    #   - data
+    #   - name
+    #   - kind
+    #   - tags
+    #   - containerName
+    #   required:
+    #   - kind
+    #   - location
+    #   - name
+    #   title: WorkspaceSymbol
+    #   type: object
+    # decimal:
+    #   description: |-
+    #     Defines a decimal number. Since decimal numbers are very
+    #     rare in the language server specification we denote the
+    #     exact range with every decimal using the mathematics
+    #     interval notations (e.g. [0, 1] denotes all decimals d with
+    #     0 <= d <= 1.
+    #   title: decimal
+    #   type: integer
+    integer:
+      description: Defines an integer in the range of -2^31 to 2^31 - 1.
+      title: integer
+      type: integer
+    uinteger:
+      description: Defines an unsigned integer in the range of 0 to 2^31 - 1.
+      title: uinteger
+      type: integer
+    # uinteger_1:
+    #   description: Defines an unsigned integer in the range of 0 to 2^31 - 1.
+    #   title: uinteger_1
+    #   type: integer
