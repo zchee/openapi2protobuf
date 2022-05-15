@@ -1,12 +1,6 @@
-compileArray: array.Title: _lineOffsets
-compileArray: fieldType: TYPE_INT32
 syntax = "proto3";
 
 package go.lsp.dev.textDocument;
-
-option cc_enable_arenas = true;
-
-option csharp_namespace = "Go.Lsp.Dev.TextDocument";
 
 option java_package = "dev.lsp.go";
 
@@ -16,33 +10,35 @@ option java_multiple_files = true;
 
 option go_package = "go.lsp.dev.textDocument;textDocument";
 
+option cc_enable_arenas = true;
+
+option csharp_namespace = "Go.Lsp.Dev.TextDocument";
+
 message DocumentUri {
   string document_uri = 1;
 }
 
 message FullTextDocument {
-  string _content = 1;
+  string language_id = 1;
 
-  string _language_id = 2;
+  int32 version = 2;
 
-  LineOffsets _line_offsets = 3;
+  string _content = 3;
 
-  int32 line_count = 4;
+  string _language_id = 4;
 
-  string uri = 5;
+  repeated LineOffsets _line_offsets = 5;
 
   DocumentUri _uri = 6;
 
   int32 _version = 7;
 
-  string language_id = 8;
+  int32 line_count = 8;
 
-  int32 version = 9;
+  string uri = 9;
 
   message LineOffsets {
-    message  {
-      int32  = 1;
-    }
+    FullTextDocument _line_offsets = 1;
   }
 }
 
