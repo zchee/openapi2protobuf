@@ -1,98 +1,19 @@
 ```proto
 syntax = "proto3";
 
-import "{generated-file-0001}.proto";
+package go.lsp.dev.textDocument;
 
-import "{generated-file-0002}.proto";
+option java_multiple_files = true;
 
-import "{generated-file-0003}.proto";
+option go_package = "go.lsp.dev.textDocument;textDocument";
 
-import "{generated-file-0004}.proto";
+option cc_enable_arenas = true;
 
-import "{generated-file-0005}.proto";
+option csharp_namespace = "Go.Lsp.Dev.TextDocument";
 
-import "{generated-file-0006}.proto";
+option java_package = "dev.lsp.go";
 
-import "{generated-file-0007}.proto";
-
-import "{generated-file-0008}.proto";
-
-import "{generated-file-0009}.proto";
-
-message CharCode {
-  CharCode char_code = 1;
-
-  enum CharCode {
-    CharCode_10 = 0;
-
-    CharCode_13 = 1;
-  }
-}
-
-// DocumentUri a tagging type for string properties that are actually URIs.
-message DocumentUri {
-  string document_uri = 1;
-}
-
-message FullTextDocument {
-  Content _content = 1;
-
-  LanguageId language_id = 2;
-
-  Uri uri = 3;
-
-  LanguageId _language_id = 4;
-
-  repeated LineOffsets _line_offsets = 5;
-
-  DocumentUri _uri = 6;
-
-  Version _version = 7;
-
-  LineCount line_count = 8;
-
-  Version version = 9;
-
-  message Content {
-    string _content = 1;
-  }
-
-  message LanguageId {
-    string language_id = 1;
-  }
-
-  message Uri {
-    string uri = 1;
-  }
-
-  message LineOffsets {
-    LineOffsets _line_offsets = 1;
-  }
-
-  message Version {
-    int32 _version = 1;
-  }
-
-  message LineCount {
-    int32 line_count = 1;
-  }
-}
-
-message Position {
-  Character character = 1;
-
-  Line line = 2;
-
-  // Character character offset on a line in a document (zero-based). Assuming that the line is represented as a string, the `character` value represents the gap between the `character` and `character + 1`.  If the character value is greater than the line length it defaults back to the line length. If a line number is negative, it defaults to 0.
-  message Character {
-    int32 character = 1;
-  }
-
-  // Line line position in a document (zero-based). If a line number is greater than the number of lines in a document, it defaults back to the number of lines in the document. If a line number is negative, it defaults to 0.
-  message Line {
-    int32 line = 1;
-  }
-}
+option java_outer_classname = "TextDocument";
 
 message Range {
   Position end = 1;
@@ -101,28 +22,13 @@ message Range {
 }
 
 message TextDocument {
-  LanguageId language_id = 1;
+  string language_id = 1;
 
-  LineCount line_count = 2;
+  int32 line_count = 2;
 
   DocumentUri uri = 3;
 
-  Version version = 4;
-
-  // LanguageId the identifier of the language associated with this document.
-  message LanguageId {
-    string language_id = 1;
-  }
-
-  // LineCount the number of lines in this document.
-  message LineCount {
-    int32 line_count = 1;
-  }
-
-  // Version the version number of this document (it will increase after each change, including undo/redo).
-  message Version {
-    int32 version = 1;
-  }
+  int32 version = 4;
 }
 
 message TextDocumentContentChangeEvent {
@@ -133,41 +39,51 @@ message TextDocumentContentChangeEvent {
   }
 
   message TextDocumentContentChangeEvent_0 {
-    RangeLength range_length = 1;
+    Range range = 1;
 
-    Text text = 2;
+    int32 range_length = 2;
 
-    Range range = 3;
-
-    // RangeLength the optional length of the range that got replaced.
-    message RangeLength {
-      int32 range_length = 1;
-    }
-
-    // Text the new text for the provided range.
-    message Text {
-      string text = 1;
-    }
+    string text = 3;
   }
 
   message TextDocumentContentChangeEvent_1 {
-    Text text = 1;
-
-    // Text the new text of the whole document.
-    message Text {
-      string text = 1;
-    }
+    string text = 1;
   }
 }
 
 message TextEdit {
-  NewText new_text = 1;
+  string new_text = 1;
 
   Range range = 2;
+}
 
-  // NewText the string to be inserted. For delete operations use an empty string.
-  message NewText {
-    string new_text = 1;
-  }
+message DocumentUri {
+  string document_uri = 1;
+}
+
+message FullTextDocument {
+  string _language_id = 1;
+
+  string uri = 2;
+
+  int32 version = 3;
+
+  int32 _version = 4;
+
+  string language_id = 5;
+
+  int32 line_count = 6;
+
+  string _content = 7;
+
+  repeated int32 _line_offsets = 8;
+
+  DocumentUri _uri = 9;
+}
+
+message Position {
+  int32 character = 1;
+
+  int32 line = 2;
 }
 ```
