@@ -243,6 +243,18 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		c.fdesc.AddMessage(msg)
 	}
 
+	msg := protobuf.NewMessageDescriptorProto("LSPAny")
+	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(msg.GetName()), protobuf.FieldTypeMessage())
+	field.SetTypeName(msg.GetName())
+	msg.AddField(field)
+	c.fdesc.AddMessage(msg)
+
+	msg2 := protobuf.NewMessageDescriptorProto("LSPAny1")
+	field2 := protobuf.NewFieldDescriptorProto(normalizeFieldName(msg2.GetName()), protobuf.FieldTypeMessage())
+	field2.SetTypeName(msg2.GetName())
+	msg2.AddField(field2)
+	c.fdesc.AddMessage(msg2)
+
 	return nil
 }
 
