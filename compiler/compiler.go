@@ -18,8 +18,10 @@ import (
 	"github.com/jhump/protoreflect/desc/protoprint"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
 
+	"go.lsp.dev/openapi2protobuf/internal/unwind"
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 )
@@ -29,6 +31,32 @@ var _ = descriptorpb.Default_EnumOptions_Deprecated
 var _ desc.Descriptor
 var _ protoprint.Printer
 var _ = prototext.Format
+
+var (
+	// UnsafeEnabled specifies whether package unsafe can be used.
+	_ = protoimpl.UnsafeEnabled
+
+	// Types used by generated code in init functions.
+	_ protoimpl.DescBuilder
+	_ protoimpl.TypeBuilder
+
+	// Types used by generated code to implement EnumType, MessageType, and ExtensionType.
+	_ protoimpl.EnumInfo
+	_ protoimpl.MessageInfo
+	_ protoimpl.ExtensionInfo
+
+	// Types embedded in generated messages.
+	_ protoimpl.MessageState
+	_ protoimpl.SizeCache
+	_ protoimpl.WeakFields
+	_ protoimpl.UnknownFields
+	_ protoimpl.ExtensionFields
+	_ protoimpl.ExtensionFieldV1
+
+	_ protoimpl.Pointer
+
+	_ = protoimpl.X
+)
 
 // Option represents an idiomatic functional option pattern to compile the Protocol Buffers structure from the OpenAPI schema.
 type Option func(o *option)
@@ -439,6 +467,7 @@ func (c *compiler) CompileEnum(enum *openapi3.Schema) (*protobuf.MessageDescript
 
 // CompileOneOf compiles oneOf objects.
 func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	fmt.Fprintf(os.Stderr, "%s: normalizeMessageName(name): %s\n", unwind.FuncName(), normalizeMessageName(name))
 	oneOfMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 
 	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))
@@ -467,7 +496,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 //
 // TODO(zchee): implements correctly.
 func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	fmt.Fprintf(os.Stderr, "CompileAnyOf: normalizeMessageName(name): %s\n", normalizeMessageName(name))
+	fmt.Fprintf(os.Stderr, "%s: normalizeMessageName(name): %s\n", unwind.FuncName(), normalizeMessageName(name))
 	anyOfMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 
 	for i, ref := range anyOf.AnyOf {
