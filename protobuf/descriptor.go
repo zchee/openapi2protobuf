@@ -123,6 +123,7 @@ func objcClassPrefix(fqn string) string {
 
 func (fd *FileDescriptorProto) GetName() string {
 	return fd.desc.GetName()
+	// return string(fd.desc.ProtoReflect().Descriptor().Name())
 }
 
 func (fd *FileDescriptorProto) SetName(name string) {

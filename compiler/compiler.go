@@ -175,7 +175,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	fd := c.fdesc.Build()
-	dumpFileDescriptor(fd)
+	// dumpFileDescriptor(fd)
 	fdesc, err := desc.CreateFileDescriptor(fd)
 	if err != nil {
 		return nil, fmt.Errorf("could not convert to desc: %w", err)
@@ -467,26 +467,26 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 // CompileEnum compiles enum objects.
 func (c *compiler) CompileEnum(enum *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	msgName := normalizeMessageName(enum.Title)
-	// fmt.Fprintf(os.Stderr, "CompileEnum: msgName: %s\n", msgName)
-	enmuMsg := protobuf.NewMessageDescriptorProto(msgName)
+	msg := protobuf.NewMessageDescriptorProto(msgName)
 
 	eb := protobuf.NewEnumDescriptorProto(msgName)
 	for i, e := range enum.Enum {
 		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+strconv.Itoa(int(e.(float64))), int32(i+1))
 		eb.AddValue(enumVal)
 	}
-	enmuMsg.AddEnumType(eb)
+	msg.AddEnumType(eb)
+	c.fdesc.AddMessage(msg)
 
-	return enmuMsg, nil
+	return msg, nil
 }
 
 // CompileOneOf compiles oneOf objects.
 func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	// fmt.Fprintf(os.Stderr, "%s: normalizeMessageName(name): %s\n", unwind.FuncName(), normalizeMessageName(name))
-	oneOfMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
+	msg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 
 	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))
-	oneOfMsg.AddOneof(ob)
+	msg.AddOneof(ob)
 
 	for i, ref := range oneOf.OneOf {
 		nestedMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref)
@@ -495,16 +495,17 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		}
 
 		nestedMsg.SetName(name + "_" + strconv.Itoa(i))
-		oneOfMsg.AddNestedMessage(nestedMsg)
+		msg.AddNestedMessage(nestedMsg)
 
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(nestedMsg.GetName()), protobuf.FieldTypeMessage())
 		field.SetNumber()
-		field.SetOneofIndex(oneOfMsg.GetOneofIndex())
+		field.SetOneofIndex(msg.GetOneofIndex())
 		field.SetTypeName(nestedMsg.GetName())
-		oneOfMsg.AddField(field)
+		msg.AddField(field)
 	}
+	c.fdesc.AddMessage(msg)
 
-	return oneOfMsg, nil
+	return msg, nil
 }
 
 // CompileAnyOf compiles anyOf objects.
@@ -512,23 +513,22 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 // TODO(zchee): implements correctly.
 func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	fmt.Fprintf(os.Stderr, "%s: normalizeMessageName(name): %s\n", unwind.FuncName(), normalizeMessageName(name))
-	anyOfMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
+	msg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 
-	for i, ref := range anyOf.AnyOf {
-		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(name+"_"+strconv.Itoa(i)), ref)
+	for _, ref := range anyOf.AnyOf {
+		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(ref.Value.Type), ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
-
-		anyOfMsg.SetName(normalizeMessageName(name + "_" + strconv.Itoa(i)))
-		anyOfMsg.AddNestedMessage(anyOfMsg)
+		msg.AddNestedMessage(anyOfMsg)
 
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage())
 		field.SetTypeName(anyOfMsg.GetName())
-		anyOfMsg.AddField(field)
+		msg.AddField(field)
 	}
+	c.fdesc.AddMessage(msg)
 
-	return anyOfMsg, nil
+	return msg, nil
 }
 
 // CompileSecurity compiles security object.
