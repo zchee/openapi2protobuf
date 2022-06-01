@@ -421,10 +421,10 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 			if skipMessage(refMsg) {
 				return arrayMsg, nil
 			}
-			// fmt.Fprintf(os.Stderr, "%s: normalizeFieldName(refObj.Title): %s\n", unwind.FuncName(), normalizeFieldName(refObj.Title))
 
 			fieldType := refMsg.GetFieldType()
 			field := protobuf.NewFieldDescriptorProto(normalizeFieldName(refObj.Title), fieldType)
+			field.SetTypeName(refMsg.GetName())
 			field.SetRepeated()
 
 			switch fieldType.Number() {
@@ -589,8 +589,6 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 }
 
 // CompileAnyOf compiles anyOf objects.
-//
-// TODO(zchee): implements correctly.
 func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	if anyOf.Title != "" {
 		name = anyOf.Title
@@ -613,10 +611,7 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 			continue
 		}
 
-		// anyOfMsg.SetName(name + "_" + strconv.Itoa(i))
-		// if anyOfMsg.GetName() == "" {
-		// 	anyOfMsg.SetName(name + "_" + strconv.Itoa(i))
-		// }
+		anyOfMsg.SetName(name + "_" + strconv.Itoa(i+1))
 		msg.AddNestedMessage(anyOfMsg)
 
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage())
