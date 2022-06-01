@@ -30,195 +30,195 @@ components:
       - range
       title: AnnotatedTextEdit
       type: object
-    CallHierarchyIncomingCall:
-      defaultProperties: []
-      description: Represents an incoming call, e.g. a caller of a method or constructor.
-      properties:
-        from:
-          $ref: '#/components/schemas/CallHierarchyItem'
-          description: The item that makes the call.
-          title: from
-        fromRanges:
-          description: |-
-            The ranges at which the calls appear. This is relative to the caller
-            denoted by [`this.from`](#CallHierarchyIncomingCall.from).
-          items:
-            $ref: '#/components/schemas/Range'
-          title: fromRanges
-          type: array
-      propertyOrder:
-      - from
-      - fromRanges
-      required:
-      - from
-      - fromRanges
-      title: CallHierarchyIncomingCall
-      type: object
-    CallHierarchyItem:
-      defaultProperties: []
-      description: |-
-        Represents programming constructs like functions or constructors in the context
-        of call hierarchy.
-      properties:
-        data:
-          $ref: '#/components/schemas/LSPAny_1'
-          description: |-
-            A data entry field that is preserved between a call hierarchy prepare and
-            incoming calls or outgoing calls requests.
-          title: data
-        detail:
-          description: More detail for this item, e.g. the signature of a function.
-          title: detail
-          type: string
-        kind:
-          $ref: '#/components/schemas/SymbolKind'
-          description: The kind of this item.
-          title: kind
-        name:
-          description: The name of this item.
-          title: name
-          type: string
-        range:
-          $ref: '#/components/schemas/Range'
-          description: The range enclosing this symbol not including leading/trailing
-            whitespace but everything else, e.g. comments and code.
-          title: range
-        selectionRange:
-          $ref: '#/components/schemas/Range'
-          description: |-
-            The range that should be selected and revealed when this symbol is being picked, e.g. the name of a function.
-            Must be contained by the [`range`](#CallHierarchyItem.range).
-          title: selectionRange
-        tags:
-          description: Tags for this item.
-          items:
-            enum:
-            - 1
-            type: number
-          title: tags
-          type: array
-        uri:
-          $ref: '#/components/schemas/DocumentUri'
-          description: The resource identifier of this item.
-          title: uri
-      propertyOrder:
-      - name
-      - kind
-      - tags
-      - detail
-      - uri
-      - range
-      - selectionRange
-      - data
-      required:
-      - kind
-      - name
-      - range
-      - selectionRange
-      - uri
-      title: CallHierarchyItem
-      type: object
-    CallHierarchyOutgoingCall:
-      defaultProperties: []
-      description: Represents an outgoing call, e.g. calling a getter from a method
-        or a method from a constructor etc.
-      properties:
-        fromRanges:
-          description: |-
-            The range at which this item is called. This is the range relative to the caller, e.g the item
-            passed to [`provideCallHierarchyOutgoingCalls`](#CallHierarchyItemProvider.provideCallHierarchyOutgoingCalls)
-            and not [`this.to`](#CallHierarchyOutgoingCall.to).
-          items:
-            $ref: '#/components/schemas/Range'
-          title: fromRanges
-          type: array
-        to:
-          $ref: '#/components/schemas/CallHierarchyItem'
-          description: The item that is called.
-          title: to
-      propertyOrder:
-      - to
-      - fromRanges
-      required:
-      - fromRanges
-      - to
-      title: CallHierarchyOutgoingCall
-      type: object
-    ChangeAnnotation:
-      defaultProperties: []
-      description: Additional information that describes document changes.
-      properties:
-        description:
-          description: |-
-            A human-readable string which is rendered less prominent in
-            the user interface.
-          title: description
-          type: string
-        label:
-          description: |-
-            A human-readable string describing the actual change. The string
-            is rendered prominent in the user interface.
-          title: label
-          type: string
-        needsConfirmation:
-          description: |-
-            A flag which indicates that user confirmation is needed
-            before applying the change.
-          title: needsConfirmation
-          type: boolean
-      propertyOrder:
-      - label
-      - needsConfirmation
-      - description
-      required:
-      - label
-      title: ChangeAnnotation
-      type: object
+    # CallHierarchyIncomingCall:
+    #   defaultProperties: []
+    #   description: Represents an incoming call, e.g. a caller of a method or constructor.
+    #   properties:
+    #     from:
+    #       $ref: '#/components/schemas/CallHierarchyItem'
+    #       description: The item that makes the call.
+    #       title: from
+    #     fromRanges:
+    #       description: |-
+    #         The ranges at which the calls appear. This is relative to the caller
+    #         denoted by [`this.from`](#CallHierarchyIncomingCall.from).
+    #       items:
+    #         $ref: '#/components/schemas/Range'
+    #       title: fromRanges
+    #       type: array
+    #   propertyOrder:
+    #   - from
+    #   - fromRanges
+    #   required:
+    #   - from
+    #   - fromRanges
+    #   title: CallHierarchyIncomingCall
+    #   type: object
+    # CallHierarchyItem:
+    #   defaultProperties: []
+    #   description: |-
+    #     Represents programming constructs like functions or constructors in the context
+    #     of call hierarchy.
+    #   properties:
+    #     data:
+    #       $ref: '#/components/schemas/LSPAny_1'
+    #       description: |-
+    #         A data entry field that is preserved between a call hierarchy prepare and
+    #         incoming calls or outgoing calls requests.
+    #       title: data
+    #     detail:
+    #       description: More detail for this item, e.g. the signature of a function.
+    #       title: detail
+    #       type: string
+    #     kind:
+    #       $ref: '#/components/schemas/SymbolKind'
+    #       description: The kind of this item.
+    #       title: kind
+    #     name:
+    #       description: The name of this item.
+    #       title: name
+    #       type: string
+    #     range:
+    #       $ref: '#/components/schemas/Range'
+    #       description: The range enclosing this symbol not including leading/trailing
+    #         whitespace but everything else, e.g. comments and code.
+    #       title: range
+    #     selectionRange:
+    #       $ref: '#/components/schemas/Range'
+    #       description: |-
+    #         The range that should be selected and revealed when this symbol is being picked, e.g. the name of a function.
+    #         Must be contained by the [`range`](#CallHierarchyItem.range).
+    #       title: selectionRange
+    #     tags:
+    #       description: Tags for this item.
+    #       items:
+    #         enum:
+    #         - 1
+    #         type: number
+    #       title: tags
+    #       type: array
+    #     uri:
+    #       $ref: '#/components/schemas/DocumentUri'
+    #       description: The resource identifier of this item.
+    #       title: uri
+    #   propertyOrder:
+    #   - name
+    #   - kind
+    #   - tags
+    #   - detail
+    #   - uri
+    #   - range
+    #   - selectionRange
+    #   - data
+    #   required:
+    #   - kind
+    #   - name
+    #   - range
+    #   - selectionRange
+    #   - uri
+    #   title: CallHierarchyItem
+    #   type: object
+    # CallHierarchyOutgoingCall:
+    #   defaultProperties: []
+    #   description: Represents an outgoing call, e.g. calling a getter from a method
+    #     or a method from a constructor etc.
+    #   properties:
+    #     fromRanges:
+    #       description: |-
+    #         The range at which this item is called. This is the range relative to the caller, e.g the item
+    #         passed to [`provideCallHierarchyOutgoingCalls`](#CallHierarchyItemProvider.provideCallHierarchyOutgoingCalls)
+    #         and not [`this.to`](#CallHierarchyOutgoingCall.to).
+    #       items:
+    #         $ref: '#/components/schemas/Range'
+    #       title: fromRanges
+    #       type: array
+    #     to:
+    #       $ref: '#/components/schemas/CallHierarchyItem'
+    #       description: The item that is called.
+    #       title: to
+    #   propertyOrder:
+    #   - to
+    #   - fromRanges
+    #   required:
+    #   - fromRanges
+    #   - to
+    #   title: CallHierarchyOutgoingCall
+    #   type: object
+    # ChangeAnnotation:
+    #   defaultProperties: []
+    #   description: Additional information that describes document changes.
+    #   properties:
+    #     description:
+    #       description: |-
+    #         A human-readable string which is rendered less prominent in
+    #         the user interface.
+    #       title: description
+    #       type: string
+    #     label:
+    #       description: |-
+    #         A human-readable string describing the actual change. The string
+    #         is rendered prominent in the user interface.
+    #       title: label
+    #       type: string
+    #     needsConfirmation:
+    #       description: |-
+    #         A flag which indicates that user confirmation is needed
+    #         before applying the change.
+    #       title: needsConfirmation
+    #       type: boolean
+    #   propertyOrder:
+    #   - label
+    #   - needsConfirmation
+    #   - description
+    #   required:
+    #   - label
+    #   title: ChangeAnnotation
+    #   type: object
     ChangeAnnotationIdentifier:
       description: An identifier to refer to a change annotation stored with a workspace
         edit.
       title: ChangeAnnotationIdentifier
       type: string
-    ChangeAnnotationIdentifier_1:
-      description: An identifier to refer to a change annotation stored with a workspace
-        edit.
-      title: ChangeAnnotationIdentifier_1
-      type: string
-    ChangeAnnotations:
-      defaultProperties: []
-      description: A helper class
-      properties:
-        _annotations:
-          additionalProperties:
-            $ref: '#/components/schemas/ChangeAnnotation'
-          defaultProperties: []
-          propertyOrder: []
-          title: _annotations
-          type: object
-        _counter:
-          title: _counter
-          type: integer
-        _size:
-          title: _size
-          type: integer
-        size:
-          title: size
-          type: integer
-      propertyOrder:
-      - _annotations
-      - _counter
-      - _size
-      - all
-      - size
-      - manage
-      - nextId
-      required:
-      - _annotations
-      - _counter
-      - _size
-      - size
-      title: ChangeAnnotations
-      type: object
+    # ChangeAnnotationIdentifier_1:
+    #   description: An identifier to refer to a change annotation stored with a workspace
+    #     edit.
+    #   title: ChangeAnnotationIdentifier_1
+    #   type: string
+    # ChangeAnnotations:
+    #   defaultProperties: []
+    #   description: A helper class
+    #   properties:
+    #     _annotations:
+    #       additionalProperties:
+    #         $ref: '#/components/schemas/ChangeAnnotation'
+    #       defaultProperties: []
+    #       propertyOrder: []
+    #       title: _annotations
+    #       type: object
+    #     _counter:
+    #       title: _counter
+    #       type: integer
+    #     _size:
+    #       title: _size
+    #       type: integer
+    #     size:
+    #       title: size
+    #       type: integer
+    #   propertyOrder:
+    #   - _annotations
+    #   - _counter
+    #   - _size
+    #   - all
+    #   - size
+    #   - manage
+    #   - nextId
+    #   required:
+    #   - _annotations
+    #   - _counter
+    #   - _size
+    #   - size
+    #   title: ChangeAnnotations
+    #   type: object
     # CodeAction:
     #   defaultProperties: []
     #   description: |-
@@ -763,6 +763,14 @@ components:
     #   description: The kind of a completion entry.
     #   enum:
     #   - 1
+    #   - 2
+    #   - 3
+    #   - 4
+    #   - 5
+    #   - 6
+    #   - 7
+    #   - 8
+    #   - 9
     #   - 10
     #   - 11
     #   - 12
@@ -773,25 +781,25 @@ components:
     #   - 17
     #   - 18
     #   - 19
-    #   - 2
     #   - 20
     #   - 21
     #   - 22
     #   - 23
     #   - 24
     #   - 25
-    #   - 3
-    #   - 4
-    #   - 5
-    #   - 6
-    #   - 7
-    #   - 8
-    #   - 9
     #   type: number
     # CompletionItemKind_1:
     #   description: The kind of a completion entry.
     #   enum:
     #   - 1
+    #   - 2
+    #   - 3
+    #   - 4
+    #   - 5
+    #   - 6
+    #   - 7
+    #   - 8
+    #   - 9
     #   - 10
     #   - 11
     #   - 12
@@ -802,20 +810,12 @@ components:
     #   - 17
     #   - 18
     #   - 19
-    #   - 2
     #   - 20
     #   - 21
     #   - 22
     #   - 23
     #   - 24
     #   - 25
-    #   - 3
-    #   - 4
-    #   - 5
-    #   - 6
-    #   - 7
-    #   - 8
-    #   - 9
     #   title: CompletionItemKind_1
     #   type: number
     # CompletionItemLabelDetails:
@@ -1802,47 +1802,47 @@ components:
     #   - 2
     #   title: InsertTextMode_1
     #   type: number
-    LSPAny:
-      anyOf:
-      - $ref: '#/components/schemas/LSPObject'
-      - description: LSP arrays.
-        items:
-          $ref: '#/components/schemas/LSPAny'
-        type: array
-      # - type:
-      #   - "null"
-      #   - string
-      #   - integer
-      #   - boolean
-      description: The LSP any type
-      title: LSPAny
-    LSPAny_1:
-      anyOf:
-      - $ref: '#/components/schemas/LSPObject'
-        description: LSP object definition.
-      - $ref: '#/components/schemas/LSPArray'
-        description: LSP arrays.
-      # - type:
-      #   - "null"
-      #   - string
-      #   - integer
-      #   - boolean
-      description: The LSP any type
-      title: LSPAny_1
-    LSPArray:
-      description: LSP arrays.
-      items:
-        $ref: '#/components/schemas/LSPAny'
-      title: LSPArray
-      type: array
-    LSPObject:
-      additionalProperties:
-        $ref: '#/components/schemas/LSPAny'
-      defaultProperties: []
-      description: LSP object definition.
-      propertyOrder: []
-      title: LSPObject
-      type: object
+    # LSPAny:
+    #   anyOf:
+    #   - $ref: '#/components/schemas/LSPObject'
+    #   - description: LSP arrays.
+    #     items:
+    #       $ref: '#/components/schemas/LSPAny'
+    #     type: array
+    #   # - type:
+    #   #   - "null"
+    #   #   - string
+    #   #   - integer
+    #   #   - boolean
+    #   description: The LSP any type
+    #   title: LSPAny
+    # LSPAny_1:
+    #   anyOf:
+    #   - $ref: '#/components/schemas/LSPObject'
+    #     description: LSP object definition.
+    #   - $ref: '#/components/schemas/LSPArray'
+    #     description: LSP arrays.
+    #   # - type:
+    #   #   - "null"
+    #   #   - string
+    #   #   - integer
+    #   #   - boolean
+    #   description: The LSP any type
+    #   title: LSPAny_1
+    # LSPArray:
+    #   description: LSP arrays.
+    #   items:
+    #     $ref: '#/components/schemas/LSPAny'
+    #   title: LSPArray
+    #   type: array
+    # LSPObject:
+    #   additionalProperties:
+    #     $ref: '#/components/schemas/LSPAny'
+    #   defaultProperties: []
+    #   description: LSP object definition.
+    #   propertyOrder: []
+    #   title: LSPObject
+    #   type: object
     # Location:
     #   defaultProperties: []
     #   description: |-
@@ -2554,6 +2554,14 @@ components:
       description: A symbol kind.
       enum:
       - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
       - 10
       - 11
       - 12
@@ -2564,7 +2572,6 @@ components:
       - 17
       - 18
       - 19
-      - 2
       - 20
       - 21
       - 22
@@ -2572,13 +2579,6 @@ components:
       - 24
       - 25
       - 26
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
       title: SymbolKind
       type: number
     # SymbolTag:
@@ -3100,15 +3100,15 @@ components:
     #   - name
     #   title: WorkspaceSymbol
     #   type: object
-    # decimal:
-    #   description: |-
-    #     Defines a decimal number. Since decimal numbers are very
-    #     rare in the language server specification we denote the
-    #     exact range with every decimal using the mathematics
-    #     interval notations (e.g. [0, 1] denotes all decimals d with
-    #     0 <= d <= 1.
-    #   title: decimal
-    #   type: integer
+    decimal:
+      description: |-
+        Defines a decimal number. Since decimal numbers are very
+        rare in the language server specification we denote the
+        exact range with every decimal using the mathematics
+        interval notations (e.g. [0, 1] denotes all decimals d with
+        0 <= d <= 1.
+      title: decimal
+      type: integer
     integer:
       description: Defines an integer in the range of -2^31 to 2^31 - 1.
       title: integer

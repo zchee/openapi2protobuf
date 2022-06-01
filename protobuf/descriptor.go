@@ -43,6 +43,7 @@ var (
 type FileDescriptorProto struct {
 	desc *descriptorpb.FileDescriptorProto
 	msg  map[string]bool
+	enum map[string]bool
 }
 
 func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
@@ -61,7 +62,8 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 			},
 			Syntax: proto.String(protoreflect.Proto3.String()),
 		},
-		msg: make(map[string]bool),
+		msg:  make(map[string]bool),
+		enum: make(map[string]bool),
 	}
 }
 
@@ -158,6 +160,11 @@ func (fd *FileDescriptorProto) AddMessage(msg *MessageDescriptorProto) *FileDesc
 }
 
 func (fd *FileDescriptorProto) AddEnum(enum *EnumDescriptorProto) *FileDescriptorProto {
+	if fd.enum[enum.GetName()] {
+		return fd
+	}
+
+	fd.enum[enum.GetName()] = true
 	fd.desc.EnumType = append(fd.desc.EnumType, enum.Build())
 
 	return fd

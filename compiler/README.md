@@ -15,99 +15,32 @@ option cc_enable_arenas = true;
 
 option csharp_namespace = "Go.Lsp.Dev.TextDocument";
 
-message SymbolKind {
-  enum SymbolKind {
-    SymbolKind_1 = 1;
+message AnnotatedTextEdit {
+  string new_text = 1;
 
-    SymbolKind_10 = 2;
+  Range range = 2;
 
-    SymbolKind_11 = 3;
-
-    SymbolKind_12 = 4;
-
-    SymbolKind_13 = 5;
-
-    SymbolKind_14 = 6;
-
-    SymbolKind_15 = 7;
-
-    SymbolKind_16 = 8;
-
-    SymbolKind_17 = 9;
-
-    SymbolKind_18 = 10;
-
-    SymbolKind_19 = 11;
-
-    SymbolKind_2 = 12;
-
-    SymbolKind_20 = 13;
-
-    SymbolKind_21 = 14;
-
-    SymbolKind_22 = 15;
-
-    SymbolKind_23 = 16;
-
-    SymbolKind_24 = 17;
-
-    SymbolKind_25 = 18;
-
-    SymbolKind_26 = 19;
-
-    SymbolKind_3 = 20;
-
-    SymbolKind_4 = 21;
-
-    SymbolKind_5 = 22;
-
-    SymbolKind_6 = 23;
-
-    SymbolKind_7 = 24;
-
-    SymbolKind_8 = 25;
-
-    SymbolKind_9 = 26;
-  }
-}
-
-message Integer {
-  int32 integer = 1;
-}
-
-message ChangeAnnotation {
-  string label = 1;
-
-  bool needs_confirmation = 2;
-
-  string description = 3;
-}
-
-message ChangeAnnotations {
-  Annotations _annotations = 1;
-
-  int32 _counter = 2;
-
-  int32 _size = 3;
-
-  int32 size = 4;
-
-  message Annotations {
-  }
+  ChangeAnnotationIdentifier annotation_id = 3;
 }
 
 message DocumentUri {
   string document_uri = 1;
 }
 
-message LSPArray {
-  repeated  lsp_any = 1;
+message Decimal {
+  int32 decimal = 1;
 }
 
-message Range {
-  Position end = 1;
+message Integer {
+  int32 integer = 1;
+}
 
-  Position start = 2;
+message Uinteger {
+  int32 uinteger = 1;
+}
+
+message ChangeAnnotationIdentifier {
+  string change_annotation_identifier = 1;
 }
 
 message Position {
@@ -116,103 +49,63 @@ message Position {
   Uinteger line = 2;
 }
 
-message AnnotatedTextEdit {
-  ChangeAnnotationIdentifier annotation_id = 1;
+message Range {
+  Position end = 1;
 
-  string new_text = 2;
-
-  Range range = 3;
+  Position start = 2;
 }
 
-message  {
-  enum  {
-    _1 = 1;
-  }
-}
+enum SymbolKind {
+  SymbolKind_1 = 1;
 
-message LSPAny1 {
-  LSPObject lsp_object = 1;
+  SymbolKind_2 = 2;
 
-  LSPArray lsp_array = 2;
+  SymbolKind_3 = 3;
 
-  message LSPObject {
-  }
+  SymbolKind_4 = 4;
 
-  message LSPArray {
-    repeated  lsp_any = 1;
-  }
-}
+  SymbolKind_5 = 5;
 
-message CallHierarchyIncomingCall {
-  CallHierarchyItem from = 1;
+  SymbolKind_6 = 6;
 
-  repeated FromRanges from_ranges = 2;
+  SymbolKind_7 = 7;
 
-  message FromRanges {
-    repeated  range = 1;
-  }
-}
+  SymbolKind_8 = 8;
 
-message CallHierarchyOutgoingCall {
-  repeated FromRanges from_ranges = 1;
+  SymbolKind_9 = 9;
 
-  CallHierarchyItem to = 2;
+  SymbolKind_10 = 10;
 
-  message FromRanges {
-    repeated  range = 1;
-  }
-}
+  SymbolKind_11 = 11;
 
-message ChangeAnnotationIdentifier1 {
-  string change_annotation_identifier_1 = 1;
-}
+  SymbolKind_12 = 12;
 
-message LSPAny {
-  LSPObject lsp_object = 1;
+  SymbolKind_13 = 13;
 
-    = 2;
+  SymbolKind_14 = 14;
 
-  message LSPObject {
-  }
+  SymbolKind_15 = 15;
 
-  message  {
-    repeated  lsp_any = 1;
-  }
-}
+  SymbolKind_16 = 16;
 
-message CallHierarchyItem {
-  LSPAny1 data = 1;
+  SymbolKind_17 = 17;
 
-  string detail = 2;
+  SymbolKind_18 = 18;
 
-  SymbolKind kind = 3;
+  SymbolKind_19 = 19;
 
-  string name = 4;
+  SymbolKind_20 = 20;
 
-  Range range = 5;
+  SymbolKind_21 = 21;
 
-  Range selection_range = 6;
+  SymbolKind_22 = 22;
 
-  repeated Tags tags = 7;
+  SymbolKind_23 = 23;
 
-  DocumentUri uri = 8;
+  SymbolKind_24 = 24;
 
-  message Tags {
-     tags = 1;
+  SymbolKind_25 = 25;
 
-    message  {
-      enum  {
-        _1 = 1;
-      }
-    }
-  }
-}
-
-message ChangeAnnotationIdentifier {
-  string change_annotation_identifier = 1;
-}
-
-message Uinteger {
-  int32 uinteger = 1;
+  SymbolKind_26 = 26;
 }
 ```

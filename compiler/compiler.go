@@ -146,16 +146,16 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		return nil, fmt.Errorf("could not compile paths object: %w", err)
 	}
 
-	lspAnyMsg := protobuf.NewMessageDescriptorProto("LSPAny")
-	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(lspAnyMsg.GetName()), protobuf.FieldTypeMessage())
-	field.SetTypeName(lspAnyMsg.GetName())
-	lspAnyMsg.AddField(field)
-
-	lspAnyOneMsg := lspAnyMsg.Clone()
-	lspAnyOneMsg.SetName("LSPAny1")
+	// lspAnyMsg := protobuf.NewMessageDescriptorProto("LSPAny")
+	// field := protobuf.NewFieldDescriptorProto(normalizeFieldName(lspAnyMsg.GetName()), protobuf.FieldTypeMessage())
+	// field.SetTypeName(lspAnyMsg.GetName())
+	// lspAnyMsg.AddField(field)
+	// lspAnyOneMsg := lspAnyMsg.Clone()
+	// lspAnyOneMsg.SetName("LSPAny1")
 
 	// compile all component objects
-	if err := c.CompileComponents(spec.Components, lspAnyMsg, lspAnyOneMsg); err != nil {
+	// if err := c.CompileComponents(spec.Components, lspAnyMsg, lspAnyOneMsg); err != nil {
+	if err := c.CompileComponents(spec.Components); err != nil {
 		return nil, fmt.Errorf("could not compile component objects: %w", err)
 	}
 
@@ -216,7 +216,10 @@ func dumpFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
 	if len(fd.EnumType) > 0 {
 		sb.WriteString("EnumType:\n")
 		for _, enum := range fd.EnumType {
-			sb.WriteString(fmt.Sprintf("%#v\n", enum.GetName()))
+			sb.WriteString(fmt.Sprintf("%s\n", enum.GetName()))
+			for _, value := range enum.GetValue() {
+				sb.WriteString(fmt.Sprintf("Value: %s\n", value))
+			}
 		}
 		sb.WriteString("\n")
 	}
@@ -288,10 +291,12 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 		if err != nil {
 			return err
 		}
-		if msg == nil || msg.IsEmptyField() {
+		if msg == enumMessage {
 			continue
 		}
-		c.fdesc.AddMessage(msg)
+		if msg != nil && !msg.IsEmptyField() {
+			c.fdesc.AddMessage(msg)
+		}
 	}
 
 	for _, amsg := range additionalMessages {
@@ -301,24 +306,36 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 	return nil
 }
 
+var enumMessage = protobuf.NewMessageDescriptorProto("enum")
+
 // compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
-	msg := protobuf.NewMessageDescriptorProto(name)
-
 	if val := schemaRef.Value; val != nil {
 		// Enum, OneOf, AnyOf, AllOf
 		switch {
 		case isEnum(val):
-			return c.CompileEnum(val)
+			enum := c.CompileEnum(val)
+			if enum != nil && enum.GetName() != "" {
+				c.fdesc.AddEnum(enum)
+			}
+			return enumMessage, nil
 
 		case isOneOf(val):
-			return c.CompileOneOf(name, val)
+			oneof, err := c.CompileOneOf(name, val)
+			if err != nil {
+				return nil, err
+			}
+			return oneof, nil
 
 		case isAnyOf(val):
-			return c.CompileAnyOf(name, val)
+			anyof, err := c.CompileAnyOf(name, val)
+			if err != nil {
+				return nil, err
+			}
+			return anyof, nil
 
 		case isAllOf(val):
-			return msg, nil
+			return nil, nil
 		}
 
 		switch val.Type {
@@ -342,7 +359,7 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 		}
 	}
 
-	return nil, fmt.Errorf("unreachable: %s -> %s", schemaRef.Value.Type, schemaRef.Value.Title)
+	return nil, nil
 }
 
 func isEnum(schema *openapi3.Schema) bool { return schema.Enum != nil }
@@ -392,6 +409,9 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
+	if itemsMsg == enumMessage || itemsMsg == nil || itemsMsg.IsEmptyField() {
+		return arrayMsg, nil
+	}
 
 	fieldType := itemsMsg.GetFieldType()
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(arrayMsg.GetName()), fieldType)
@@ -424,6 +444,9 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 				if err != nil {
 					return nil, fmt.Errorf("compile object items: %w", err)
 				}
+				if refMsg == enumMessage || refMsg == nil || refMsg.IsEmptyField() {
+					continue
+				}
 
 				field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), protobuf.FieldTypeMessage())
 				field.SetTypeName(refMsg.GetName())
@@ -440,6 +463,9 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		propMsg, err := c.compileSchemaRef(normalizeMessageName(propName), prop)
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
+		}
+		if propMsg == enumMessage || propMsg == nil || propMsg.IsEmptyField() {
+			continue
 		}
 
 		fieldType := propMsg.GetFieldType()
@@ -465,19 +491,19 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 }
 
 // CompileEnum compiles enum objects.
-func (c *compiler) CompileEnum(enum *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	msgName := normalizeMessageName(enum.Title)
-	msg := protobuf.NewMessageDescriptorProto(msgName)
+func (c *compiler) CompileEnum(enum *openapi3.Schema) *protobuf.EnumDescriptorProto {
+	if enum.Title == "" {
+		return nil
+	}
 
-	eb := protobuf.NewEnumDescriptorProto(msgName)
+	eb := protobuf.NewEnumDescriptorProto(normalizeMessageName(enum.Title))
+
 	for i, e := range enum.Enum {
 		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+strconv.Itoa(int(e.(float64))), int32(i+1))
 		eb.AddValue(enumVal)
 	}
-	msg.AddEnumType(eb)
-	c.fdesc.AddMessage(msg)
 
-	return msg, nil
+	return eb
 }
 
 // CompileOneOf compiles oneOf objects.
@@ -492,6 +518,9 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		nestedMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile oneOf ref: %w", err)
+		}
+		if nestedMsg == enumMessage || nestedMsg == nil || nestedMsg.IsEmptyField() {
+			continue
 		}
 
 		nestedMsg.SetName(name + "_" + strconv.Itoa(i))
@@ -519,6 +548,9 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(ref.Value.Type), ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
+		}
+		if anyOfMsg == enumMessage || anyOfMsg == nil || anyOfMsg.IsEmptyField() {
+			continue
 		}
 		msg.AddNestedMessage(anyOfMsg)
 
