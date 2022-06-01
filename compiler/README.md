@@ -3,8 +3,6 @@ syntax = "proto3";
 
 package go.lsp.dev.textDocument;
 
-option csharp_namespace = "Go.Lsp.Dev.TextDocument";
-
 option java_package = "dev.lsp.go";
 
 option java_outer_classname = "TextDocument";
@@ -15,12 +13,62 @@ option go_package = "go.lsp.dev.textDocument;textDocument";
 
 option cc_enable_arenas = true;
 
+option csharp_namespace = "Go.Lsp.Dev.TextDocument";
+
+message Declaration {
+  oneof declaration {
+    Location location = 1;
+
+      = 2;
+  }
+
+  message Location {
+    DocumentUri uri = 1;
+
+    Range range = 2;
+  }
+
+  message  {
+    repeated  location = 1;
+  }
+}
+
+message Location {
+  DocumentUri uri = 1;
+
+  Range range = 2;
+}
+
+message ChangeAnnotations {
+  int32 _counter = 1;
+
+  int32 _size = 2;
+
+  int32 size = 3;
+}
+
+message Integer {
+  int32 integer = 1;
+}
+
+message Uinteger {
+  int32 uinteger = 1;
+}
+
+message AnnotatedTextEdit {
+  Range range = 1;
+
+  ChangeAnnotationIdentifier annotation_id = 2;
+
+  string new_text = 3;
+}
+
 message ChangeAnnotation {
-  string label = 1;
+  string description = 1;
 
-  bool needs_confirmation = 2;
+  string label = 2;
 
-  string description = 3;
+  bool needs_confirmation = 3;
 }
 
 message ChangeAnnotationIdentifier {
@@ -33,26 +81,8 @@ message Position {
   Uinteger line = 2;
 }
 
-message AnnotatedTextEdit {
-  ChangeAnnotationIdentifier annotation_id = 1;
-
-  string new_text = 2;
-
-  Range range = 3;
-}
-
 message DocumentUri {
   string document_uri = 1;
-}
-
-message Location {
-  Range range = 1;
-
-  DocumentUri uri = 2;
-}
-
-message Decimal {
-  int32 decimal = 1;
 }
 
 message Range {
@@ -61,66 +91,14 @@ message Range {
   Position start = 2;
 }
 
-message Integer {
-  int32 integer = 1;
-}
-
-message Uinteger {
-  int32 uinteger = 1;
-}
-
 message BaseSymbolInformation {
-  string container_name = 1;
+  string name = 1;
 
-  string name = 2;
+  string container_name = 2;
 }
 
-message ChangeAnnotations {
-  int32 _counter = 1;
-
-  int32 _size = 2;
-
-  int32 size = 3;
-}
-
-message Declaration {
-  Location location = 1;
-
-    = 2;
-
-  message Location {
-    Range range = 1;
-
-    DocumentUri uri = 2;
-  }
-
-  message  {
-    repeated  location = 1;
-  }
-}
-
-enum DiagnosticSeverity {
-  DiagnosticSeverity_1 = 1;
-
-  DiagnosticSeverity_2 = 2;
-
-  DiagnosticSeverity_3 = 3;
-
-  DiagnosticSeverity_4 = 4;
-}
-
-enum DocumentHighlightKind {
-  DocumentHighlightKind_1 = 1;
-
-  DocumentHighlightKind_2 = 2;
-
-  DocumentHighlightKind_3 = 3;
-}
-
-enum InlayHintKind {
-  InlayHintKind_1 = 1;
-
-  InlayHintKind_2 = 2;
+message Decimal {
+  int32 decimal = 1;
 }
 
 enum SemanticTokenTypes {
@@ -171,66 +149,32 @@ enum SemanticTokenTypes {
   SemanticTokenTypes_Variable = 23;
 }
 
-enum CompletionItemKind {
-  CompletionItemKind_1 = 1;
+enum InlayHintKind {
+  InlayHintKind_1 = 1;
 
-  CompletionItemKind_2 = 2;
-
-  CompletionItemKind_3 = 3;
-
-  CompletionItemKind_4 = 4;
-
-  CompletionItemKind_5 = 5;
-
-  CompletionItemKind_6 = 6;
-
-  CompletionItemKind_7 = 7;
-
-  CompletionItemKind_8 = 8;
-
-  CompletionItemKind_9 = 9;
-
-  CompletionItemKind_10 = 10;
-
-  CompletionItemKind_11 = 11;
-
-  CompletionItemKind_12 = 12;
-
-  CompletionItemKind_13 = 13;
-
-  CompletionItemKind_14 = 14;
-
-  CompletionItemKind_15 = 15;
-
-  CompletionItemKind_16 = 16;
-
-  CompletionItemKind_17 = 17;
-
-  CompletionItemKind_18 = 18;
-
-  CompletionItemKind_19 = 19;
-
-  CompletionItemKind_20 = 20;
-
-  CompletionItemKind_21 = 21;
-
-  CompletionItemKind_22 = 22;
-
-  CompletionItemKind_23 = 23;
-
-  CompletionItemKind_24 = 24;
-
-  CompletionItemKind_25 = 25;
+  InlayHintKind_2 = 2;
 }
 
-enum DiagnosticTag {
-  DiagnosticTag_1 = 1;
+enum SemanticTokenModifiers {
+  SemanticTokenModifiers_Abstract = 1;
 
-  DiagnosticTag_2 = 2;
-}
+  SemanticTokenModifiers_Async = 2;
 
-enum Tags {
-  Tags_1 = 1;
+  SemanticTokenModifiers_Declaration = 3;
+
+  SemanticTokenModifiers_DefaultLibrary = 4;
+
+  SemanticTokenModifiers_Definition = 5;
+
+  SemanticTokenModifiers_Deprecated = 6;
+
+  SemanticTokenModifiers_Documentation = 7;
+
+  SemanticTokenModifiers_Modification = 8;
+
+  SemanticTokenModifiers_Readonly = 9;
+
+  SemanticTokenModifiers_Static = 10;
 }
 
 enum SymbolKind {
@@ -287,25 +231,83 @@ enum SymbolKind {
   SymbolKind_26 = 26;
 }
 
-enum SemanticTokenModifiers {
-  SemanticTokenModifiers_Abstract = 1;
+enum Tags {
+  Tags_1 = 1;
+}
 
-  SemanticTokenModifiers_Async = 2;
+enum CompletionItemKind {
+  CompletionItemKind_1 = 1;
 
-  SemanticTokenModifiers_Declaration = 3;
+  CompletionItemKind_2 = 2;
 
-  SemanticTokenModifiers_DefaultLibrary = 4;
+  CompletionItemKind_3 = 3;
 
-  SemanticTokenModifiers_Definition = 5;
+  CompletionItemKind_4 = 4;
 
-  SemanticTokenModifiers_Deprecated = 6;
+  CompletionItemKind_5 = 5;
 
-  SemanticTokenModifiers_Documentation = 7;
+  CompletionItemKind_6 = 6;
 
-  SemanticTokenModifiers_Modification = 8;
+  CompletionItemKind_7 = 7;
 
-  SemanticTokenModifiers_Readonly = 9;
+  CompletionItemKind_8 = 8;
 
-  SemanticTokenModifiers_Static = 10;
+  CompletionItemKind_9 = 9;
+
+  CompletionItemKind_10 = 10;
+
+  CompletionItemKind_11 = 11;
+
+  CompletionItemKind_12 = 12;
+
+  CompletionItemKind_13 = 13;
+
+  CompletionItemKind_14 = 14;
+
+  CompletionItemKind_15 = 15;
+
+  CompletionItemKind_16 = 16;
+
+  CompletionItemKind_17 = 17;
+
+  CompletionItemKind_18 = 18;
+
+  CompletionItemKind_19 = 19;
+
+  CompletionItemKind_20 = 20;
+
+  CompletionItemKind_21 = 21;
+
+  CompletionItemKind_22 = 22;
+
+  CompletionItemKind_23 = 23;
+
+  CompletionItemKind_24 = 24;
+
+  CompletionItemKind_25 = 25;
+}
+
+enum DiagnosticSeverity {
+  DiagnosticSeverity_1 = 1;
+
+  DiagnosticSeverity_2 = 2;
+
+  DiagnosticSeverity_3 = 3;
+
+  DiagnosticSeverity_4 = 4;
+}
+
+enum DiagnosticTag {
+  DiagnosticTag_1 = 1;
+
+  DiagnosticTag_2 = 2;
+}
+
+enum DocumentHighlightKind {
+  DocumentHighlightKind_1 = 1;
+
+  DocumentHighlightKind_2 = 2;
+
+  DocumentHighlightKind_3 = 3;
 }
 ```

@@ -20,7 +20,6 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
 
-	"go.lsp.dev/openapi2protobuf/internal/unwind"
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 	"go.lsp.dev/openapi2protobuf/protobuf/printer"
@@ -175,7 +174,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	fd := c.fdesc.Build()
-	// dumpFileDescriptor(fd)
+	dumpFileDescriptor(fd)
 	fdesc, err := desc.CreateFileDescriptor(fd)
 	if err != nil {
 		return nil, fmt.Errorf("could not convert to desc: %w", err)
@@ -200,13 +199,18 @@ func dumpFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
 		for _, msg := range fd.MessageType {
 			sb.WriteString(fmt.Sprintf("%s\n", msg.GetName()))
 			for _, field := range msg.GetField() {
-				sb.WriteString(fmt.Sprintf("Field: %#v\n", field))
+				sb.WriteString(fmt.Sprintf("Field: %s -> %s\n", field.GetName(), field.GetTypeName()))
 			}
 			if len(msg.GetEnumType()) > 0 {
 				sb.WriteString(fmt.Sprintf("Enum: %#v\n", msg.GetEnumType()))
 			}
 			if len(msg.GetNestedType()) > 0 {
-				sb.WriteString(fmt.Sprintf("Nested: %#v\n", msg.GetNestedType()))
+				for _, nested := range msg.GetNestedType() {
+					sb.WriteString(fmt.Sprintf("Field: %s\n", nested.GetName()))
+					for _, field := range nested.GetField() {
+						sb.WriteString(fmt.Sprintf("Nested: %s -> %s\n", field.GetName(), field.GetTypeName()))
+					}
+				}
 			}
 			sb.WriteString("\n")
 		}
@@ -522,14 +526,20 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Enu
 
 // CompileOneOf compiles oneOf objects.
 func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	// fmt.Fprintf(os.Stderr, "%s: normalizeMessageName(name): %s\n", unwind.FuncName(), normalizeMessageName(name))
-	msg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
+	if oneOf.Title != "" {
+		name = oneOf.Title
+	}
 
+	msg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))
 	msg.AddOneof(ob)
 
 	for i, ref := range oneOf.OneOf {
-		nestedMsg, err := c.compileSchemaRef(name+"_"+strconv.Itoa(i), ref)
+		nestedMsgName := ref.Value.Title
+		if nestedMsgName == "" {
+			nestedMsgName = name + "_" + strconv.Itoa(i+1)
+		}
+		nestedMsg, err := c.compileSchemaRef(nestedMsgName, ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile oneOf ref: %w", err)
 		}
@@ -537,7 +547,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 			continue
 		}
 
-		nestedMsg.SetName(name + "_" + strconv.Itoa(i))
+		nestedMsg.SetName(name + "_" + strconv.Itoa(i+1))
 		msg.AddNestedMessage(nestedMsg)
 
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(nestedMsg.GetName()), protobuf.FieldTypeMessage())
@@ -554,24 +564,33 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 //
 // TODO(zchee): implements correctly.
 func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	fmt.Fprintf(os.Stderr, "%s: normalizeMessageName(name): %s\n", unwind.FuncName(), normalizeMessageName(name))
 	if anyOf.Title != "" {
 		name = anyOf.Title
 	}
 
 	msg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
+	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))
+	msg.AddOneof(ob)
 
-	for _, ref := range anyOf.AnyOf {
-		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(ref.Value.Title), ref)
+	for i, ref := range anyOf.AnyOf {
+		anyOfMsgName := ref.Value.Title
+		if anyOfMsgName == "" {
+			anyOfMsgName = name + "_" + strconv.Itoa(i)
+		}
+		anyOfMsg, err := c.compileSchemaRef(anyOfMsgName, ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
 		if skipMessage(anyOfMsg) {
 			continue
 		}
+
+		// anyOfMsg.SetName(name + "_" + strconv.Itoa(i))
 		msg.AddNestedMessage(anyOfMsg)
 
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage())
+		field.SetNumber()
+		field.SetOneofIndex(msg.GetOneofIndex())
 		field.SetTypeName(anyOfMsg.GetName())
 		msg.AddField(field)
 	}
