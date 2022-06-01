@@ -145,10 +145,10 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		return nil, fmt.Errorf("could not compile paths object: %w", err)
 	}
 
-	// lspAnyMsg := protobuf.NewMessageDescriptorProto("LSPAny")
-	// field := protobuf.NewFieldDescriptorProto(normalizeFieldName(lspAnyMsg.GetName()), protobuf.FieldTypeMessage())
-	// field.SetTypeName(lspAnyMsg.GetName())
-	// lspAnyMsg.AddField(field)
+	// lspanyMsg := protobuf.NewMessageDescriptorProto("LSPAny")
+	// field := protobuf.NewFieldDescriptorProto(normalizeFieldName(lspanyMsg.GetName()), protobuf.FieldTypeMessage())
+	// field.SetTypeName("google.protobuf.Any")
+	// lspanyMsg.AddField(field)
 	// lspAnyOneMsg := lspAnyMsg.Clone()
 	// lspAnyOneMsg.SetName("LSPAny1")
 
@@ -219,7 +219,7 @@ func (c *compiler) CompileServers(info openapi3.Servers) error { return nil }
 func (c *compiler) CompilePaths(paths openapi3.Paths) error { return nil }
 
 // CompileComponents compiles all component objects.
-func (c *compiler) CompileComponents(components openapi3.Components, additionalMessages ...*protobuf.MessageDescriptorProto) error {
+func (c *compiler) CompileComponents(components openapi3.Components, additionalMsgs ...*protobuf.MessageDescriptorProto) error {
 	schemasLookupFunc := c.schemasLookupFunc
 	c.schemasLookupFunc = components.Schemas.JSONLookup
 	defer func() {
@@ -234,11 +234,12 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 		if skipMessage(msg) {
 			continue
 		}
+		// fmt.Fprintf(os.Stderr, "%s: skipMessage(%q)\n", unwind.FuncName(), msg.GetName())
 		c.fdesc.AddMessage(msg)
 	}
 
-	for _, amsg := range additionalMessages {
-		c.fdesc.AddMessage(amsg)
+	for _, msg := range additionalMsgs {
+		c.fdesc.AddMessage(msg)
 	}
 
 	return nil
@@ -247,7 +248,7 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 var enumMessage = protobuf.NewMessageDescriptorProto("enum")
 
 func skipMessage(msg *protobuf.MessageDescriptorProto) bool {
-	return msg == enumMessage || msg == nil || msg.IsEmptyField()
+	return msg == nil || msg == enumMessage || msg.IsEmptyField()
 }
 
 // compileSchemaRef compiles schema reference.
@@ -343,6 +344,7 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 			if skipMessage(refMsg) {
 				return arrayMsg, nil
 			}
+			// fmt.Fprintf(os.Stderr, "%s: skipMessage(%q)\n", unwind.FuncName(), refMsg.GetName())
 
 			fieldType := refMsg.GetFieldType()
 			field := protobuf.NewFieldDescriptorProto(normalizeFieldName(refObj.Title), fieldType)
@@ -369,6 +371,7 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	if skipMessage(itemsMsg) {
 		return arrayMsg, nil
 	}
+	// fmt.Fprintf(os.Stderr, "%s: skipMessage(%q)\n", unwind.FuncName(), itemsMsg.GetName())
 
 	fieldType := itemsMsg.GetFieldType()
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(arrayMsg.GetName()), fieldType)
@@ -387,6 +390,12 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	objMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(object.Title))
 
+	// defer func() {
+	// 	if object.Title == "CallHierarchyItem" {
+	// 		fmt.Fprintf(os.Stderr, "%s: objMsg: %#v\n", unwind.FuncName(), objMsg)
+	// 	}
+	// }()
+
 	for propName, prop := range object.Properties {
 		if ref := prop.Ref; ref != "" {
 			refBase := path.Base(ref)
@@ -404,9 +413,16 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 				if skipMessage(refMsg) {
 					continue
 				}
+				// if object.Title == "CallHierarchyItem" {
+				// 	fmt.Fprintf(os.Stderr, "%s: propMsg.GetName(): %s\n", unwind.FuncName(), refMsg.GetName())
+				// }
 
 				field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), protobuf.FieldTypeMessage())
-				field.SetTypeName(refMsg.GetName())
+				typeName := refMsg.GetName()
+				// if typeName == "LSPAny" {
+				// 	typeName = "google.protobuf.Any"
+				// }
+				field.SetTypeName(typeName)
 				field.SetNumber()
 				objMsg.AddField(field)
 
@@ -424,6 +440,10 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		if skipMessage(propMsg) {
 			continue
 		}
+		// if object.Title == "CallHierarchyItem" {
+		// 	fmt.Fprintf(os.Stderr, "%s: propMsg.GetName(): %s\n", unwind.FuncName(), propMsg.GetName())
+		// }
+		// fmt.Fprintf(os.Stderr, "%s: skipMessage(%q)\n", unwind.FuncName(), propMsg.GetName())
 
 		fieldType := propMsg.GetFieldType()
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), fieldType)
@@ -435,6 +455,11 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		switch fieldType.Number() {
 		case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
 			objMsg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
+			// typeName := propMsg.GetName()
+			// fmt.Fprintf(os.Stderr, "%s: anyOfMsg.SetName: %s\n", unwind.FuncName(), typeName)
+			// if typeName == "LSPAny" {
+			// 	typeName = "google.protobuf.Any"
+			// }
 			field.SetTypeName(propMsg.GetName())
 
 		default:
@@ -496,6 +521,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		if skipMessage(nestedMsg) {
 			continue
 		}
+		// fmt.Fprintf(os.Stderr, "%s: skipMessage(%q)\n", unwind.FuncName(), nestedMsg.GetName())
 
 		nestedMsg.SetName(name + "_" + strconv.Itoa(i+1))
 		msg.AddNestedMessage(nestedMsg)
@@ -532,6 +558,7 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		if skipMessage(anyOfMsg) {
 			continue
 		}
+		// fmt.Fprintf(os.Stderr, "%s: skipMessage(%q)\n", unwind.FuncName(), anyOfMsg.GetName())
 
 		if anyOfMsg.GetName() == "" {
 			anyOfMsg.SetName(name + "_" + strconv.Itoa(i+1))
