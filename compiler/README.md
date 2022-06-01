@@ -1,11 +1,61 @@
 ```proto
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Tags")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Annotations")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Arguments")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("TextEditChange")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Arguments")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Annotations")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("TextEditChanges")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("ChangeAnnotations")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Changes")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("ChangeAnnotations")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Changes")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("ChangeAnnotations")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Changes")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Tags")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Annotations")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("Tags")
+go.lsp.dev/openapi2protobuf/compiler.skipMessage: skipMessage("enum")
 syntax = "proto3";
 
 package go.lsp.dev.textDocument;
-
-option cc_enable_arenas = true;
-
-option csharp_namespace = "Go.Lsp.Dev.TextDocument";
 
 option java_package = "dev.lsp.go";
 
@@ -15,32 +65,78 @@ option java_multiple_files = true;
 
 option go_package = "go.lsp.dev.textDocument;textDocument";
 
-message  {
-  int32 frame_id = 1;
+option cc_enable_arenas = true;
 
-  Range stopped_location = 2;
+option csharp_namespace = "Go.Lsp.Dev.TextDocument";
+
+message  {
+  Location location = 1;
+
+  .Tooltip tooltip = 2;
+
+  string value = 3;
+
+  Command command = 4;
+
+  message Tooltip {
+    oneof tooltip {
+      MarkupContent markup_content = 1;
+
+      tooltip_2 tooltip_2 = 2;
+    }
+
+    message MarkupContent {
+      string value = 1;
+    }
+
+    message tooltip_2 {
+      string  = 1;
+    }
+  }
 }
 
 message AnnotatedTextEdit {
-  string new_text = 1;
+  ChangeAnnotationIdentifier annotation_id = 1;
 
-  Range range = 2;
+  string new_text = 2;
 
-  ChangeAnnotationIdentifier annotation_id = 3;
+  Range range = 3;
 }
 
 message BaseSymbolInformation {
   string container_name = 1;
 
   string name = 2;
+
+  repeated Tags tags = 3;
+
+  message Tags {
+  }
+}
+
+message CallHierarchyItem {
+  string detail = 1;
+
+  string name = 2;
+
+  Range range = 3;
+
+  Range selection_range = 4;
+
+  repeated Tags tags = 5;
+
+  DocumentUri uri = 6;
+
+  message Tags {
+  }
 }
 
 message ChangeAnnotation {
-  string description = 1;
+  bool needs_confirmation = 1;
 
-  string label = 2;
+  string description = 2;
 
-  bool needs_confirmation = 3;
+  string label = 3;
 }
 
 message ChangeAnnotationIdentifier {
@@ -48,11 +144,16 @@ message ChangeAnnotationIdentifier {
 }
 
 message ChangeAnnotations {
-  int32 _counter = 1;
+  Annotations _annotations = 1;
 
-  int32 _size = 2;
+  int32 _counter = 2;
 
-  int32 size = 3;
+  int32 _size = 3;
+
+  int32 size = 4;
+
+  message Annotations {
+  }
 }
 
 message CodeActionKind {
@@ -80,11 +181,11 @@ message ColorInformation {
 }
 
 message ColorPresentation {
-  TextEdit text_edit = 1;
+  repeated AdditionalTextEdits additional_text_edits = 1;
 
-  repeated AdditionalTextEdits additional_text_edits = 2;
+  string label = 2;
 
-  string label = 3;
+  TextEdit text_edit = 3;
 
   message AdditionalTextEdits {
     repeated TextEdit text_edit = 1;
@@ -98,9 +199,14 @@ message ColorPresentation {
 }
 
 message Command {
-  string command = 1;
+  repeated Arguments arguments = 1;
 
-  string title = 2;
+  string command = 2;
+
+  string title = 3;
+
+  message Arguments {
+  }
 }
 
 message CompletionItemLabelDetails {
@@ -176,17 +282,17 @@ message Definition {
 }
 
 message DeleteFile {
-  DeleteFileOptions options = 1;
+  ChangeAnnotationIdentifier annotation_id = 1;
 
-  DocumentUri uri = 2;
+  DeleteFileOptions options = 2;
 
-  ChangeAnnotationIdentifier annotation_id = 3;
+  DocumentUri uri = 3;
 }
 
 message DeleteFileOptions {
-  bool recursive = 1;
+  bool ignore_if_not_exists = 1;
 
-  bool ignore_if_not_exists = 2;
+  bool recursive = 2;
 }
 
 message DiagnosticRelatedInformation {
@@ -222,31 +328,31 @@ message FoldingRangeKind {
 }
 
 message FormattingOptions {
-  bool trim_final_newlines = 1;
+  bool insert_spaces = 1;
 
-  bool trim_trailing_whitespace = 2;
+  Uinteger tab_size = 2;
 
-  bool insert_final_newline = 3;
+  bool trim_final_newlines = 3;
 
-  bool insert_spaces = 4;
+  bool trim_trailing_whitespace = 4;
 
-  Uinteger tab_size = 5;
+  bool insert_final_newline = 5;
 }
 
 message FullTextDocument {
-  string _language_id = 1;
+  string _content = 1;
 
-  repeated int32 _line_offsets = 2;
+  Integer version = 2;
 
-  DocumentUri _uri = 3;
+  string uri = 3;
 
-  Integer _version = 4;
+  string _language_id = 4;
 
-  string uri = 5;
+  repeated int32 _line_offsets = 5;
 
-  Integer version = 6;
+  DocumentUri _uri = 6;
 
-  string _content = 7;
+  Integer _version = 7;
 
   string language_id = 8;
 
@@ -254,9 +360,9 @@ message FullTextDocument {
 }
 
 message Hover {
-  Range range = 1;
+  Contents contents = 1;
 
-  Contents contents = 2;
+  Range range = 2;
 
   message Contents {
     oneof contents {
@@ -309,40 +415,60 @@ message Hover {
 
 message InlineValue {
   oneof inline_value {
-    Type type = 1;
+    InlineValueText inline_value_text = 1;
 
-    Type1 type_1 = 2;
+    InlineValueVariableLookup inline_value_variable_lookup = 2;
 
-    Type2 type_2 = 3;
+    InlineValueEvaluatableExpression inline_value_evaluatable_expression = 3;
   }
 
-  message Type {
+  message InlineValueText {
     Range range = 1;
 
     string text = 2;
   }
 
-  message Type1 {
-    bool case_sensitive_lookup = 1;
-
-    Range range = 2;
-
-    string variable_name = 3;
-  }
-
-  message Type2 {
+  message InlineValueVariableLookup {
     Range range = 1;
 
-    string expression = 2;
+    string variable_name = 2;
+
+    bool case_sensitive_lookup = 3;
+  }
+
+  message InlineValueEvaluatableExpression {
+    string expression = 1;
+
+    Range range = 2;
   }
 }
 
+message InlineValueEvaluatableExpression {
+  string expression = 1;
+
+  Range range = 2;
+}
+
+message InlineValueText {
+  string text = 1;
+
+  Range range = 2;
+}
+
+message InlineValueVariableLookup {
+  string variable_name = 1;
+
+  bool case_sensitive_lookup = 2;
+
+  Range range = 3;
+}
+
 message InsertReplaceEdit {
-  string new_text = 1;
+  Range insert = 1;
 
-  Range replace = 2;
+  string new_text = 2;
 
-  Range insert = 3;
+  Range replace = 3;
 }
 
 message Integer {
@@ -356,13 +482,13 @@ message Location {
 }
 
 message LocationLink {
-  Range target_selection_range = 1;
+  Range origin_selection_range = 1;
 
-  DocumentUri target_uri = 2;
+  Range target_range = 2;
 
-  Range origin_selection_range = 3;
+  Range target_selection_range = 3;
 
-  Range target_range = 4;
+  DocumentUri target_uri = 4;
 }
 
 message MarkedString {
@@ -410,13 +536,13 @@ message ReferenceContext {
 }
 
 message RenameFile {
-  DocumentUri new_uri = 1;
+  ChangeAnnotationIdentifier annotation_id = 1;
 
-  DocumentUri old_uri = 2;
+  DocumentUri new_uri = 2;
 
-  RenameFileOptions options = 3;
+  DocumentUri old_uri = 3;
 
-  ChangeAnnotationIdentifier annotation_id = 4;
+  RenameFileOptions options = 4;
 }
 
 message RenameFileOptions {
@@ -432,9 +558,9 @@ message ResourceOperation {
 }
 
 message SemanticTokens {
-  string result_id = 1;
+  repeated int32 data = 1;
 
-  repeated int32 data = 2;
+  string result_id = 2;
 }
 
 message SemanticTokensDelta {
@@ -470,23 +596,28 @@ message SemanticTokensLegend {
 }
 
 message SymbolInformation {
-  Location location = 1;
+  string name = 1;
 
-  string name = 2;
+  repeated Tags tags = 2;
 
   string container_name = 3;
 
   bool deprecated = 4;
+
+  Location location = 5;
+
+  message Tags {
+  }
 }
 
 message TextDocument {
-  string language_id = 1;
+  Uinteger line_count = 1;
 
-  Uinteger line_count = 2;
+  DocumentUri uri = 2;
 
-  DocumentUri uri = 3;
+  Integer version = 3;
 
-  Integer version = 4;
+  string language_id = 4;
 }
 
 message TextDocumentContentChangeEvent {
@@ -497,11 +628,11 @@ message TextDocumentContentChangeEvent {
   }
 
   message TextDocumentContentChangeEvent_1 {
-    Uinteger range_length = 1;
+    Range range = 1;
 
-    string text = 2;
+    Uinteger range_length = 2;
 
-    Range range = 3;
+    string text = 3;
   }
 
   message TextDocumentContentChangeEvent_2 {
@@ -510,9 +641,9 @@ message TextDocumentContentChangeEvent {
 }
 
 message TextDocumentEdit {
-  repeated Edits edits = 1;
+  OptionalVersionedTextDocumentIdentifier text_document = 1;
 
-  OptionalVersionedTextDocumentIdentifier text_document = 2;
+  repeated Edits edits = 2;
 
   message Edits {
     repeated  edits = 1;
@@ -546,19 +677,22 @@ message TextDocumentIdentifier {
 }
 
 message TextDocumentItem {
-  Integer version = 1;
+  string text = 1;
 
-  string language_id = 2;
+  DocumentUri uri = 2;
 
-  string text = 3;
+  Integer version = 3;
 
-  DocumentUri uri = 4;
+  string language_id = 4;
 }
 
 message TextEdit {
   string new_text = 1;
 
   Range range = 2;
+}
+
+message TextEditChange {
 }
 
 message TextEditChangeImpl {
@@ -593,26 +727,6 @@ message TextEditChangeImpl {
   }
 }
 
-message Type {
-  Range range = 1;
-
-  string text = 2;
-}
-
-message Type1 {
-  string variable_name = 1;
-
-  bool case_sensitive_lookup = 2;
-
-  Range range = 3;
-}
-
-message Type2 {
-  string expression = 1;
-
-  Range range = 2;
-}
-
 message URI {
   string uri = 1;
 }
@@ -622,21 +736,36 @@ message Uinteger {
 }
 
 message VersionedTextDocumentIdentifier {
-  DocumentUri uri = 1;
+  Integer version = 1;
 
-  Integer version = 2;
+  DocumentUri uri = 2;
 }
 
 message WorkspaceChange {
   ChangeAnnotations _change_annotations = 1;
 
-  WorkspaceEdit _workspace_edit = 2;
+  TextEditChanges _text_edit_changes = 2;
 
-  WorkspaceEdit edit = 3;
+  WorkspaceEdit _workspace_edit = 3;
+
+  WorkspaceEdit edit = 4;
+
+  message TextEditChanges {
+  }
 }
 
 message WorkspaceEdit {
-  repeated DocumentChanges document_changes = 1;
+  ChangeAnnotations change_annotations = 1;
+
+  Changes changes = 2;
+
+  repeated DocumentChanges document_changes = 3;
+
+  message ChangeAnnotations {
+  }
+
+  message Changes {
+  }
 
   message DocumentChanges {
     repeated  document_changes = 1;
@@ -674,22 +803,22 @@ message WorkspaceEdit {
             }
 
             message AnnotatedTextEdit {
-              ChangeAnnotationIdentifier annotation_id = 1;
+              Range range = 1;
 
-              string new_text = 2;
+              ChangeAnnotationIdentifier annotation_id = 2;
 
-              Range range = 3;
+              string new_text = 3;
             }
           }
         }
       }
 
       message CreateFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
+        CreateFileOptions options = 1;
 
-        CreateFileOptions options = 2;
+        DocumentUri uri = 2;
 
-        DocumentUri uri = 3;
+        ChangeAnnotationIdentifier annotation_id = 3;
       }
 
       message RenameFile {
@@ -703,11 +832,11 @@ message WorkspaceEdit {
       }
 
       message DeleteFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
+        DocumentUri uri = 1;
 
-        DeleteFileOptions options = 2;
+        ChangeAnnotationIdentifier annotation_id = 2;
 
-        DocumentUri uri = 3;
+        DeleteFileOptions options = 3;
       }
     }
   }

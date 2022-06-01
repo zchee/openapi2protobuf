@@ -20,6 +20,7 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
 
+	"go.lsp.dev/openapi2protobuf/internal/unwind"
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 	"go.lsp.dev/openapi2protobuf/protobuf/printer"
@@ -248,7 +249,12 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 var enumMessage = protobuf.NewMessageDescriptorProto("enum")
 
 func skipMessage(msg *protobuf.MessageDescriptorProto) bool {
-	return msg == nil || msg == enumMessage || msg.IsEmptyField()
+	skip := msg == nil || msg == enumMessage
+	if msg != nil && msg.IsEmptyField() {
+		fmt.Fprintf(os.Stderr, "%s: skipMessage(%q)\n", unwind.FuncName(), msg.GetName())
+	}
+
+	return skip
 }
 
 // compileSchemaRef compiles schema reference.
