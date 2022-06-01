@@ -15,7 +15,6 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-openapi/jsonpointer"
 	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/desc/protoprint"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
@@ -24,12 +23,13 @@ import (
 	"go.lsp.dev/openapi2protobuf/internal/unwind"
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
+	"go.lsp.dev/openapi2protobuf/protobuf/printer"
 )
 
 var _ = jsonpointer.GetForToken
 var _ = descriptorpb.Default_EnumOptions_Deprecated
 var _ desc.Descriptor
-var _ protoprint.Printer
+var _ printer.Printer
 var _ = prototext.Format
 
 var (
@@ -146,8 +146,16 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		return nil, fmt.Errorf("could not compile paths object: %w", err)
 	}
 
+	lspAnyMsg := protobuf.NewMessageDescriptorProto("LSPAny")
+	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(lspAnyMsg.GetName()), protobuf.FieldTypeMessage())
+	field.SetTypeName(lspAnyMsg.GetName())
+	lspAnyMsg.AddField(field)
+
+	lspAnyOneMsg := lspAnyMsg.Clone()
+	lspAnyOneMsg.SetName("LSPAny1")
+
 	// compile all component objects
-	if err := c.CompileComponents(spec.Components); err != nil {
+	if err := c.CompileComponents(spec.Components, lspAnyMsg, lspAnyOneMsg); err != nil {
 		return nil, fmt.Errorf("could not compile component objects: %w", err)
 	}
 
@@ -167,13 +175,13 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	fd := c.fdesc.Build()
-
+	dumpFileDescriptor(fd)
 	fdesc, err := desc.CreateFileDescriptor(fd)
 	if err != nil {
 		return nil, fmt.Errorf("could not convert to desc: %w", err)
 	}
 
-	p := protoprint.Printer{}
+	p := printer.Printer{}
 	var sb strings.Builder
 	if err := p.PrintProtoFile(fdesc, &sb); err != nil {
 		return nil, fmt.Errorf("could not print proto: %w", err)
@@ -185,41 +193,57 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 
 func dumpFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
 	var sb strings.Builder
-
-	sb.WriteString("Dependency:\n")
-	for _, dep := range fd.Dependency {
-		sb.WriteString(fmt.Sprintf("%#v\n", dep))
-	}
 	sb.WriteString("\n")
 
-	sb.WriteString("MessageType:\n")
-	for _, msg := range fd.MessageType {
-		sb.WriteString(fmt.Sprintf("%#v\n", msg.GetName()))
-		for _, field := range msg.GetField() {
-			sb.WriteString(fmt.Sprintf("%#v\n", field))
+	if len(fd.MessageType) > 0 {
+		sb.WriteString("MessageType:\n")
+		for _, msg := range fd.MessageType {
+			sb.WriteString(fmt.Sprintf("%s\n", msg.GetName()))
+			for _, field := range msg.GetField() {
+				sb.WriteString(fmt.Sprintf("Field: %#v\n", field))
+			}
+			if len(msg.GetEnumType()) > 0 {
+				sb.WriteString(fmt.Sprintf("Enum: %#v\n", msg.GetEnumType()))
+			}
+			if len(msg.GetNestedType()) > 0 {
+				sb.WriteString(fmt.Sprintf("Nested: %#v\n", msg.GetNestedType()))
+			}
+			sb.WriteString("\n")
 		}
-		sb.WriteString(fmt.Sprintf("%#v\n", msg.GetEnumType()))
-		sb.WriteString(fmt.Sprintf("%#v\n", msg.GetNestedType()))
+		sb.WriteString("\n")
 	}
-	sb.WriteString("\n")
 
-	sb.WriteString("EnumType:\n")
-	for _, enum := range fd.EnumType {
-		sb.WriteString(fmt.Sprintf("%#v\n", enum.GetName()))
+	if len(fd.EnumType) > 0 {
+		sb.WriteString("EnumType:\n")
+		for _, enum := range fd.EnumType {
+			sb.WriteString(fmt.Sprintf("%#v\n", enum.GetName()))
+		}
+		sb.WriteString("\n")
 	}
-	sb.WriteString("\n")
 
-	sb.WriteString("Service:\n")
-	for _, service := range fd.Service {
-		sb.WriteString(fmt.Sprintf("%#v\n", service.GetName()))
+	if len(fd.Service) > 0 {
+		sb.WriteString("Service:\n")
+		for _, service := range fd.Service {
+			sb.WriteString(fmt.Sprintf("%#v\n", service.GetName()))
+		}
+		sb.WriteString("\n")
 	}
-	sb.WriteString("\n")
 
-	sb.WriteString("Extension:\n")
-	for _, ext := range fd.Extension {
-		sb.WriteString(fmt.Sprintf("%#v\n", ext.GetName()))
+	if len(fd.Dependency) > 0 {
+		sb.WriteString("Dependency:\n")
+		for _, dep := range fd.Dependency {
+			sb.WriteString(fmt.Sprintf("%#v\n", dep))
+		}
+		sb.WriteString("\n")
 	}
-	sb.WriteString("\n")
+
+	if len(fd.Extension) > 0 {
+		sb.WriteString("Extension:\n")
+		for _, ext := range fd.Extension {
+			sb.WriteString(fmt.Sprintf("%#v\n", ext.GetName()))
+		}
+		sb.WriteString("\n")
+	}
 
 	fmt.Fprintln(os.Stderr, sb.String())
 }
@@ -252,7 +276,7 @@ func (c *compiler) CompileServers(info openapi3.Servers) error { return nil }
 func (c *compiler) CompilePaths(paths openapi3.Paths) error { return nil }
 
 // CompileComponents compiles all component objects.
-func (c *compiler) CompileComponents(components openapi3.Components) error {
+func (c *compiler) CompileComponents(components openapi3.Components, additionalMessages ...*protobuf.MessageDescriptorProto) error {
 	schemasLookupFunc := c.schemasLookupFunc
 	c.schemasLookupFunc = components.Schemas.JSONLookup
 	defer func() {
@@ -267,21 +291,12 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		if msg == nil || msg.IsEmptyField() {
 			continue
 		}
-
 		c.fdesc.AddMessage(msg)
 	}
 
-	msg := protobuf.NewMessageDescriptorProto("LSPAny")
-	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(msg.GetName()), protobuf.FieldTypeMessage())
-	field.SetTypeName(msg.GetName())
-	msg.AddField(field)
-	c.fdesc.AddMessage(msg)
-
-	msg2 := protobuf.NewMessageDescriptorProto("LSPAny1")
-	field2 := protobuf.NewFieldDescriptorProto(normalizeFieldName(msg2.GetName()), protobuf.FieldTypeMessage())
-	field2.SetTypeName(msg2.GetName())
-	msg2.AddField(field2)
-	c.fdesc.AddMessage(msg2)
+	for _, amsg := range additionalMessages {
+		c.fdesc.AddMessage(amsg)
+	}
 
 	return nil
 }
@@ -452,7 +467,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 // CompileEnum compiles enum objects.
 func (c *compiler) CompileEnum(enum *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	msgName := normalizeMessageName(enum.Title)
-	fmt.Fprintf(os.Stderr, "CompileEnum: msgName: %s\n", msgName)
+	// fmt.Fprintf(os.Stderr, "CompileEnum: msgName: %s\n", msgName)
 	enmuMsg := protobuf.NewMessageDescriptorProto(msgName)
 
 	eb := protobuf.NewEnumDescriptorProto(msgName)
@@ -467,7 +482,7 @@ func (c *compiler) CompileEnum(enum *openapi3.Schema) (*protobuf.MessageDescript
 
 // CompileOneOf compiles oneOf objects.
 func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	fmt.Fprintf(os.Stderr, "%s: normalizeMessageName(name): %s\n", unwind.FuncName(), normalizeMessageName(name))
+	// fmt.Fprintf(os.Stderr, "%s: normalizeMessageName(name): %s\n", unwind.FuncName(), normalizeMessageName(name))
 	oneOfMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 
 	ob := protobuf.NewOneofDescriptorProto(normalizeFieldName(name))

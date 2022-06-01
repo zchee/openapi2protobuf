@@ -26,6 +26,21 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 	}
 }
 
+func (md *MessageDescriptorProto) Clone() *MessageDescriptorProto {
+	desc := &descriptorpb.DescriptorProto{}
+	*desc = *md.desc
+
+	mdesc := &MessageDescriptorProto{
+		desc:     desc,
+		nested:   md.nested,
+		field:    md.field,
+		number:   md.number,
+		oneOfIdx: md.oneOfIdx,
+	}
+
+	return mdesc
+}
+
 func (md *MessageDescriptorProto) GetName() string {
 	return md.desc.GetName()
 }
