@@ -906,13 +906,13 @@ components:
     #       type: boolean
     #   title: CreateFileOptions
     #   type: object
-    # Declaration:
-    #   anyOf:
-    #   - $ref: '#/components/schemas/Location'
-    #   - items:
-    #       $ref: '#/components/schemas/Location'
-    #     type: array
-    #   description: The declaration of a symbol representation as one or many [locations](#Location).
+    Declaration:
+      anyOf:
+      - $ref: '#/components/schemas/Location'
+      - items:
+          $ref: '#/components/schemas/Location'
+        type: array
+      description: The declaration of a symbol representation as one or many [locations](#Location).
     # DeclarationLink:
     #   $ref: '#/components/schemas/LocationLink'
     # Definition:
@@ -1670,24 +1670,24 @@ components:
     #   additionalProperties: true
     #   properties: {}
     #   type: object
-    # Location:
-    #   description: |-
-    #     Represents a location inside a resource, such as a line
-    #     inside a text file.
-    #     The Location namespace provides helper functions to work with
-    #     [Location](#Location) literals.
-    #   properties:
-    #     range:
-    #       $ref: '#/components/schemas/Range'
-    #       title: range
-    #     uri:
-    #       $ref: '#/components/schemas/DocumentUri'
-    #       title: uri
-    #   required:
-    #   - range
-    #   - uri
-    #   title: Location
-    #   type: object
+    Location:
+      description: |-
+        Represents a location inside a resource, such as a line
+        inside a text file.
+        The Location namespace provides helper functions to work with
+        [Location](#Location) literals.
+      properties:
+        range:
+          $ref: '#/components/schemas/Range'
+          title: range
+        uri:
+          $ref: '#/components/schemas/DocumentUri'
+          title: uri
+      required:
+      - range
+      - uri
+      title: Location
+      type: object
     # LocationLink:
     #   description: |-
     #     Represents the connection of two locations. Provides additional metadata over normal [locations](#Location),

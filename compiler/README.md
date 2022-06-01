@@ -3,6 +3,8 @@ syntax = "proto3";
 
 package go.lsp.dev.textDocument;
 
+option csharp_namespace = "Go.Lsp.Dev.TextDocument";
+
 option java_package = "dev.lsp.go";
 
 option java_outer_classname = "TextDocument";
@@ -13,30 +15,22 @@ option go_package = "go.lsp.dev.textDocument;textDocument";
 
 option cc_enable_arenas = true;
 
-option csharp_namespace = "Go.Lsp.Dev.TextDocument";
-
 message ChangeAnnotation {
-  bool needs_confirmation = 1;
+  string label = 1;
 
-  string description = 2;
+  bool needs_confirmation = 2;
 
-  string label = 3;
+  string description = 3;
 }
 
 message ChangeAnnotationIdentifier {
   string change_annotation_identifier = 1;
 }
 
-message Decimal {
-  int32 decimal = 1;
-}
+message Position {
+  Uinteger character = 1;
 
-message Uinteger {
-  int32 uinteger = 1;
-}
-
-message Integer {
-  int32 integer = 1;
+  Uinteger line = 2;
 }
 
 message AnnotatedTextEdit {
@@ -47,28 +41,196 @@ message AnnotatedTextEdit {
   Range range = 3;
 }
 
-message ChangeAnnotations {
-  int32 _size = 1;
-
-  int32 size = 2;
-
-  int32 _counter = 3;
-}
-
 message DocumentUri {
   string document_uri = 1;
 }
 
-message Position {
-  Uinteger character = 1;
+message Location {
+  Range range = 1;
 
-  Uinteger line = 2;
+  DocumentUri uri = 2;
+}
+
+message Decimal {
+  int32 decimal = 1;
 }
 
 message Range {
   Position end = 1;
 
   Position start = 2;
+}
+
+message Integer {
+  int32 integer = 1;
+}
+
+message Uinteger {
+  int32 uinteger = 1;
+}
+
+message BaseSymbolInformation {
+  string container_name = 1;
+
+  string name = 2;
+}
+
+message ChangeAnnotations {
+  int32 _counter = 1;
+
+  int32 _size = 2;
+
+  int32 size = 3;
+}
+
+message Declaration {
+  Location location = 1;
+
+    = 2;
+
+  message Location {
+    Range range = 1;
+
+    DocumentUri uri = 2;
+  }
+
+  message  {
+    repeated  location = 1;
+  }
+}
+
+enum DiagnosticSeverity {
+  DiagnosticSeverity_1 = 1;
+
+  DiagnosticSeverity_2 = 2;
+
+  DiagnosticSeverity_3 = 3;
+
+  DiagnosticSeverity_4 = 4;
+}
+
+enum DocumentHighlightKind {
+  DocumentHighlightKind_1 = 1;
+
+  DocumentHighlightKind_2 = 2;
+
+  DocumentHighlightKind_3 = 3;
+}
+
+enum InlayHintKind {
+  InlayHintKind_1 = 1;
+
+  InlayHintKind_2 = 2;
+}
+
+enum SemanticTokenTypes {
+  SemanticTokenTypes_Class = 1;
+
+  SemanticTokenTypes_Comment = 2;
+
+  SemanticTokenTypes_Decorator = 3;
+
+  SemanticTokenTypes_Enum = 4;
+
+  SemanticTokenTypes_EnumMember = 5;
+
+  SemanticTokenTypes_Event = 6;
+
+  SemanticTokenTypes_Function = 7;
+
+  SemanticTokenTypes_Interface = 8;
+
+  SemanticTokenTypes_Keyword = 9;
+
+  SemanticTokenTypes_Macro = 10;
+
+  SemanticTokenTypes_Method = 11;
+
+  SemanticTokenTypes_Modifier = 12;
+
+  SemanticTokenTypes_Namespace = 13;
+
+  SemanticTokenTypes_Number = 14;
+
+  SemanticTokenTypes_Operator = 15;
+
+  SemanticTokenTypes_Parameter = 16;
+
+  SemanticTokenTypes_Property = 17;
+
+  SemanticTokenTypes_Regexp = 18;
+
+  SemanticTokenTypes_String = 19;
+
+  SemanticTokenTypes_Struct = 20;
+
+  SemanticTokenTypes_Type = 21;
+
+  SemanticTokenTypes_TypeParameter = 22;
+
+  SemanticTokenTypes_Variable = 23;
+}
+
+enum CompletionItemKind {
+  CompletionItemKind_1 = 1;
+
+  CompletionItemKind_2 = 2;
+
+  CompletionItemKind_3 = 3;
+
+  CompletionItemKind_4 = 4;
+
+  CompletionItemKind_5 = 5;
+
+  CompletionItemKind_6 = 6;
+
+  CompletionItemKind_7 = 7;
+
+  CompletionItemKind_8 = 8;
+
+  CompletionItemKind_9 = 9;
+
+  CompletionItemKind_10 = 10;
+
+  CompletionItemKind_11 = 11;
+
+  CompletionItemKind_12 = 12;
+
+  CompletionItemKind_13 = 13;
+
+  CompletionItemKind_14 = 14;
+
+  CompletionItemKind_15 = 15;
+
+  CompletionItemKind_16 = 16;
+
+  CompletionItemKind_17 = 17;
+
+  CompletionItemKind_18 = 18;
+
+  CompletionItemKind_19 = 19;
+
+  CompletionItemKind_20 = 20;
+
+  CompletionItemKind_21 = 21;
+
+  CompletionItemKind_22 = 22;
+
+  CompletionItemKind_23 = 23;
+
+  CompletionItemKind_24 = 24;
+
+  CompletionItemKind_25 = 25;
+}
+
+enum DiagnosticTag {
+  DiagnosticTag_1 = 1;
+
+  DiagnosticTag_2 = 2;
+}
+
+enum Tags {
+  Tags_1 = 1;
 }
 
 enum SymbolKind {
@@ -123,5 +285,27 @@ enum SymbolKind {
   SymbolKind_25 = 25;
 
   SymbolKind_26 = 26;
+}
+
+enum SemanticTokenModifiers {
+  SemanticTokenModifiers_Abstract = 1;
+
+  SemanticTokenModifiers_Async = 2;
+
+  SemanticTokenModifiers_Declaration = 3;
+
+  SemanticTokenModifiers_DefaultLibrary = 4;
+
+  SemanticTokenModifiers_Definition = 5;
+
+  SemanticTokenModifiers_Deprecated = 6;
+
+  SemanticTokenModifiers_Documentation = 7;
+
+  SemanticTokenModifiers_Modification = 8;
+
+  SemanticTokenModifiers_Readonly = 9;
+
+  SemanticTokenModifiers_Static = 10;
 }
 ```

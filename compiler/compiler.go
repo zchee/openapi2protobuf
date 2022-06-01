@@ -418,6 +418,7 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	fieldType := itemsMsg.GetFieldType()
 	field := protobuf.NewFieldDescriptorProto(normalizeFieldName(arrayMsg.GetName()), fieldType)
 	field.SetNumber()
+	field.SetRepeated()
 
 	switch fieldType.Number() {
 	case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
@@ -554,10 +555,14 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 // TODO(zchee): implements correctly.
 func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	fmt.Fprintf(os.Stderr, "%s: normalizeMessageName(name): %s\n", unwind.FuncName(), normalizeMessageName(name))
+	if anyOf.Title != "" {
+		name = anyOf.Title
+	}
+
 	msg := protobuf.NewMessageDescriptorProto(normalizeMessageName(name))
 
 	for _, ref := range anyOf.AnyOf {
-		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(ref.Value.Type), ref)
+		anyOfMsg, err := c.compileSchemaRef(normalizeMessageName(ref.Value.Title), ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
