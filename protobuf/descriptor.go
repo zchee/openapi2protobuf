@@ -5,6 +5,7 @@ package protobuf
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -183,5 +184,9 @@ func (fd *FileDescriptorProto) AddExtension(ext *FieldDescriptorProto) *FileDesc
 }
 
 func (fd *FileDescriptorProto) Build() *descriptorpb.FileDescriptorProto {
+	sort.Slice(fd.desc.MessageType, func(i, j int) bool { return fd.desc.MessageType[i].GetName() < fd.desc.MessageType[j].GetName() })
+	sort.Slice(fd.desc.EnumType, func(i, j int) bool { return fd.desc.EnumType[i].GetName() < fd.desc.EnumType[j].GetName() })
+	sort.Slice(fd.desc.Service, func(i, j int) bool { return fd.desc.Service[i].GetName() < fd.desc.Service[j].GetName() })
+	sort.Slice(fd.desc.Extension, func(i, j int) bool { return fd.desc.Extension[i].GetName() < fd.desc.Extension[j].GetName() })
 	return fd.desc
 }
