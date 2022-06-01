@@ -291,12 +291,10 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 		if err != nil {
 			return err
 		}
-		if msg == enumMessage {
+		if skipMessage(msg) {
 			continue
 		}
-		if msg != nil && !msg.IsEmptyField() {
-			c.fdesc.AddMessage(msg)
-		}
+		c.fdesc.AddMessage(msg)
 	}
 
 	for _, amsg := range additionalMessages {
@@ -308,13 +306,17 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 
 var enumMessage = protobuf.NewMessageDescriptorProto("enum")
 
+func skipMessage(msg *protobuf.MessageDescriptorProto) bool {
+	return msg == enumMessage || msg == nil || msg.IsEmptyField()
+}
+
 // compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
 	if val := schemaRef.Value; val != nil {
 		// Enum, OneOf, AnyOf, AllOf
 		switch {
 		case isEnum(val):
-			enum := c.CompileEnum(val)
+			enum := c.CompileEnum(name, val)
 			if enum != nil && enum.GetName() != "" {
 				c.fdesc.AddEnum(enum)
 			}
@@ -409,7 +411,7 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
-	if itemsMsg == enumMessage || itemsMsg == nil || itemsMsg.IsEmptyField() {
+	if skipMessage(itemsMsg) {
 		return arrayMsg, nil
 	}
 
@@ -444,7 +446,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 				if err != nil {
 					return nil, fmt.Errorf("compile object items: %w", err)
 				}
-				if refMsg == enumMessage || refMsg == nil || refMsg.IsEmptyField() {
+				if skipMessage(refMsg) {
 					continue
 				}
 
@@ -464,7 +466,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
-		if propMsg == enumMessage || propMsg == nil || propMsg.IsEmptyField() {
+		if skipMessage(propMsg) {
 			continue
 		}
 
@@ -491,15 +493,26 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 }
 
 // CompileEnum compiles enum objects.
-func (c *compiler) CompileEnum(enum *openapi3.Schema) *protobuf.EnumDescriptorProto {
-	if enum.Title == "" {
-		return nil
+func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.EnumDescriptorProto {
+	if enum.Title != "" {
+		name = enum.Title
 	}
 
-	eb := protobuf.NewEnumDescriptorProto(normalizeMessageName(enum.Title))
+	eb := protobuf.NewEnumDescriptorProto(normalizeMessageName(name))
 
 	for i, e := range enum.Enum {
-		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+strconv.Itoa(int(e.(float64))), int32(i+1))
+		var enumValName string
+		switch e := e.(type) {
+		case string:
+			enumValName = normalizeMessageName(e)
+		case uint64:
+			enumValName = strconv.Itoa(int(e))
+		case int64:
+			enumValName = strconv.Itoa(int(e))
+		case float64:
+			enumValName = strconv.Itoa(int(e))
+		}
+		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+enumValName, int32(i+1))
 		eb.AddValue(enumVal)
 	}
 
@@ -519,7 +532,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		if err != nil {
 			return nil, fmt.Errorf("compile oneOf ref: %w", err)
 		}
-		if nestedMsg == enumMessage || nestedMsg == nil || nestedMsg.IsEmptyField() {
+		if skipMessage(nestedMsg) {
 			continue
 		}
 
@@ -532,7 +545,6 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		field.SetTypeName(nestedMsg.GetName())
 		msg.AddField(field)
 	}
-	c.fdesc.AddMessage(msg)
 
 	return msg, nil
 }
@@ -549,7 +561,7 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
-		if anyOfMsg == enumMessage || anyOfMsg == nil || anyOfMsg.IsEmptyField() {
+		if skipMessage(anyOfMsg) {
 			continue
 		}
 		msg.AddNestedMessage(anyOfMsg)
@@ -558,7 +570,6 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		field.SetTypeName(anyOfMsg.GetName())
 		msg.AddField(field)
 	}
-	c.fdesc.AddMessage(msg)
 
 	return msg, nil
 }

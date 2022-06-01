@@ -15,32 +15,48 @@ option cc_enable_arenas = true;
 
 option csharp_namespace = "Go.Lsp.Dev.TextDocument";
 
-message AnnotatedTextEdit {
-  string new_text = 1;
+message ChangeAnnotation {
+  bool needs_confirmation = 1;
 
-  Range range = 2;
+  string description = 2;
 
-  ChangeAnnotationIdentifier annotation_id = 3;
+  string label = 3;
 }
 
-message DocumentUri {
-  string document_uri = 1;
+message ChangeAnnotationIdentifier {
+  string change_annotation_identifier = 1;
 }
 
 message Decimal {
   int32 decimal = 1;
 }
 
-message Integer {
-  int32 integer = 1;
-}
-
 message Uinteger {
   int32 uinteger = 1;
 }
 
-message ChangeAnnotationIdentifier {
-  string change_annotation_identifier = 1;
+message Integer {
+  int32 integer = 1;
+}
+
+message AnnotatedTextEdit {
+  ChangeAnnotationIdentifier annotation_id = 1;
+
+  string new_text = 2;
+
+  Range range = 3;
+}
+
+message ChangeAnnotations {
+  int32 _size = 1;
+
+  int32 size = 2;
+
+  int32 _counter = 3;
+}
+
+message DocumentUri {
+  string document_uri = 1;
 }
 
 message Position {
