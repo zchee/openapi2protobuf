@@ -174,7 +174,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	fd := c.fdesc.Build()
-	fmt.Fprintln(os.Stdout, prototext.Format(fd))
+	// fmt.Fprintln(os.Stdout, prototext.Format(fd))
 	// dumpFileDescriptor(fd)
 	fdesc, err := desc.CreateFileDescriptor(fd)
 	if err != nil {
@@ -189,84 +189,6 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	fmt.Fprintln(os.Stdout, sb.String())
 
 	return fd, nil
-}
-
-func dumpFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
-	var sb strings.Builder
-	sb.WriteString("\n")
-
-	if len(fd.MessageType) > 0 {
-		sb.WriteString("MessageType:\n")
-		for _, msg := range fd.MessageType {
-			sb.WriteString(fmt.Sprintf("%s\n", msg.GetName()))
-			for _, field := range msg.GetField() {
-				typeName := field.GetTypeName()
-				if typeName == "" {
-					typeName = field.GetType().String()
-				}
-				sb.WriteString(fmt.Sprintf("Field: %s -> %s\n", field.GetName(), typeName))
-			}
-			if len(msg.GetEnumType()) > 0 {
-				for _, enum := range msg.EnumType {
-					sb.WriteString(fmt.Sprintf("%s\n", enum.GetName()))
-					for _, value := range enum.GetValue() {
-						sb.WriteString(fmt.Sprintf("Value: %s\n", value))
-					}
-				}
-			}
-			if len(msg.GetNestedType()) > 0 {
-				for _, nested := range msg.GetNestedType() {
-					sb.WriteString(fmt.Sprintf("Field: %s\n", nested.GetName()))
-					for _, field := range nested.GetField() {
-						typeName := field.GetTypeName()
-						if typeName == "" {
-							typeName = field.GetType().String()
-						}
-						sb.WriteString(fmt.Sprintf("Nested: %s -> %s\n", field.GetName(), typeName))
-					}
-				}
-			}
-			sb.WriteString("\n")
-		}
-		sb.WriteString("\n")
-	}
-
-	if len(fd.EnumType) > 0 {
-		sb.WriteString("EnumType:\n")
-		for _, enum := range fd.EnumType {
-			sb.WriteString(fmt.Sprintf("%s\n", enum.GetName()))
-			for _, value := range enum.GetValue() {
-				sb.WriteString(fmt.Sprintf("Value: %s\n", value))
-			}
-		}
-		sb.WriteString("\n")
-	}
-
-	if len(fd.Service) > 0 {
-		sb.WriteString("Service:\n")
-		for _, service := range fd.Service {
-			sb.WriteString(fmt.Sprintf("%#v\n", service.GetName()))
-		}
-		sb.WriteString("\n")
-	}
-
-	if len(fd.Dependency) > 0 {
-		sb.WriteString("Dependency:\n")
-		for _, dep := range fd.Dependency {
-			sb.WriteString(fmt.Sprintf("%#v\n", dep))
-		}
-		sb.WriteString("\n")
-	}
-
-	if len(fd.Extension) > 0 {
-		sb.WriteString("Extension:\n")
-		for _, ext := range fd.Extension {
-			sb.WriteString(fmt.Sprintf("%#v\n", ext.GetName()))
-		}
-		sb.WriteString("\n")
-	}
-
-	fmt.Fprintln(os.Stderr, sb.String())
 }
 
 // CompileInfo compiles info object.
@@ -611,7 +533,9 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 			continue
 		}
 
-		anyOfMsg.SetName(name + "_" + strconv.Itoa(i+1))
+		if anyOfMsg.GetName() == "" {
+			anyOfMsg.SetName(name + "_" + strconv.Itoa(i+1))
+		}
 		msg.AddNestedMessage(anyOfMsg)
 
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage())
@@ -673,4 +597,82 @@ func StringFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	default:
 		return protobuf.FieldTypeString()
 	}
+}
+
+func dumpFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
+	var sb strings.Builder
+	sb.WriteString("\n")
+
+	if len(fd.MessageType) > 0 {
+		sb.WriteString("MessageType:\n")
+		for _, msg := range fd.MessageType {
+			sb.WriteString(fmt.Sprintf("%s\n", msg.GetName()))
+			for _, field := range msg.GetField() {
+				typeName := field.GetTypeName()
+				if typeName == "" {
+					typeName = field.GetType().String()
+				}
+				sb.WriteString(fmt.Sprintf("Field: %s -> %s\n", field.GetName(), typeName))
+			}
+			if len(msg.GetEnumType()) > 0 {
+				for _, enum := range msg.EnumType {
+					sb.WriteString(fmt.Sprintf("%s\n", enum.GetName()))
+					for _, value := range enum.GetValue() {
+						sb.WriteString(fmt.Sprintf("Value: %s\n", value))
+					}
+				}
+			}
+			if len(msg.GetNestedType()) > 0 {
+				for _, nested := range msg.GetNestedType() {
+					sb.WriteString(fmt.Sprintf("Field: %s\n", nested.GetName()))
+					for _, field := range nested.GetField() {
+						typeName := field.GetTypeName()
+						if typeName == "" {
+							typeName = field.GetType().String()
+						}
+						sb.WriteString(fmt.Sprintf("Nested: %s -> %s\n", field.GetName(), typeName))
+					}
+				}
+			}
+			sb.WriteString("\n")
+		}
+		sb.WriteString("\n")
+	}
+
+	if len(fd.EnumType) > 0 {
+		sb.WriteString("EnumType:\n")
+		for _, enum := range fd.EnumType {
+			sb.WriteString(fmt.Sprintf("%s\n", enum.GetName()))
+			for _, value := range enum.GetValue() {
+				sb.WriteString(fmt.Sprintf("Value: %s\n", value))
+			}
+		}
+		sb.WriteString("\n")
+	}
+
+	if len(fd.Service) > 0 {
+		sb.WriteString("Service:\n")
+		for _, service := range fd.Service {
+			sb.WriteString(fmt.Sprintf("%#v\n", service.GetName()))
+		}
+		sb.WriteString("\n")
+	}
+
+	if len(fd.Dependency) > 0 {
+		sb.WriteString("Dependency:\n")
+		for _, dep := range fd.Dependency {
+			sb.WriteString(fmt.Sprintf("%#v\n", dep))
+		}
+		sb.WriteString("\n")
+	}
+
+	if len(fd.Extension) > 0 {
+		sb.WriteString("Extension:\n")
+		for _, ext := range fd.Extension {
+			sb.WriteString(fmt.Sprintf("%#v\n", ext.GetName()))
+		}
+		sb.WriteString("\n")
+	}
+
+	fmt.Fprintln(os.Stderr, sb.String())
 }
