@@ -20,9 +20,6 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
 
-	_ "github.com/golang/protobuf/ptypes/any"
-	_ "google.golang.org/protobuf/types/known/anypb"
-
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 	"go.lsp.dev/openapi2protobuf/protobuf/printer"
@@ -154,6 +151,11 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		opt:   opt,
 	}
 
+	// append additional messages
+	for _, msg := range c.opt.additionalMessages {
+		c.fdesc.AddMessage(msg)
+	}
+
 	// compile info object
 	if err := c.CompileInfo(spec.Info); err != nil {
 		return nil, fmt.Errorf("could not compile info object: %w", err)
@@ -189,10 +191,9 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		return nil, fmt.Errorf("could not compile external documentation object: %w", err)
 	}
 
-	// append additional messages
-	for _, msg := range c.opt.additionalMessages {
-		c.fdesc.AddMessage(msg)
-	}
+	fd := c.fdesc.Build()
+	// fmt.Fprintln(os.Stdout, prototext.Format(fd))
+	// dumpFileDescriptor(fd)
 
 	// add dependency proto
 	depsFileDescriptor := make([]*desc.FileDescriptor, 0, len(DependencyProto))
@@ -207,10 +208,6 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 			depsFileDescriptor = append(depsFileDescriptor, knownDesc)
 		}
 	}
-
-	fd := c.fdesc.Build()
-	// fmt.Fprintln(os.Stdout, prototext.Format(fd))
-	// dumpFileDescriptor(fd)
 
 	fdesc, err := desc.CreateFileDescriptor(fd, depsFileDescriptor...)
 	if err != nil {
@@ -267,7 +264,7 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 		if err != nil {
 			return err
 		}
-		if skipMessage(msg) {
+		if skipMessage(msg, nil) {
 			continue
 		}
 		// fmt.Fprintf(os.Stderr, "%s: skipMessage(%q)\n", unwind.FuncName(), msg.GetName())
@@ -283,8 +280,24 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 
 var enumMessage = protobuf.NewMessageDescriptorProto("enum")
 
-func skipMessage(msg *protobuf.MessageDescriptorProto) bool {
+func skipMessage(msg, parent *protobuf.MessageDescriptorProto, schemaRefs ...*openapi3.SchemaRef) bool {
+	return msg == nil || msg == enumMessage
 	skip := msg == nil || msg == enumMessage
+
+	if msg != nil && msg != enumMessage && msg.IsEmptyField() {
+		if parent != nil {
+			// fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q), parent(%q)\n", unwind.FuncNameN(3)+":", normalizeFieldName(msg.GetName()), parent.GetName())
+			return skip
+		}
+
+		// fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q)\n", unwind.FuncNameN(3)+":", normalizeFieldName(msg.GetName()))
+
+		if len(schemaRefs) > 0 {
+			// for _, ref := range schemaRefs {
+			// 	fmt.Fprintf(os.Stderr, "%-70s ref: %#v\n", unwind.FuncNameN(3)+":", ref)
+			// }
+		}
+	}
 
 	return skip
 }
@@ -337,20 +350,6 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 
 		case openapi3.TypeObject:
 			return c.compileObject(val)
-
-			// default:
-			// 	// anyMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(schemaRef.Value.Title))
-			// 	// field := protobuf.NewFieldDescriptorProto("any", protobuf.FieldTypeMessage())
-			// 	// field.SetTypeName(protobuf.Any)
-			// 	// field.SetNumber()
-			// 	// anyMsg.AddField(field)
-			//
-			// 	lspAnyMsg := protobuf.NewMessageDescriptorProto("LSPAny")
-			// 	lspAnyField := protobuf.NewFieldDescriptorProto("any", protobuf.FieldTypeMessage()).SetTypeName(protobuf.Any).SetNumber()
-			// 	lspAnyMsg.AddField(lspAnyField)
-			// 	c.fdesc.AddMessage(lspAnyMsg)
-			// 	c.fdesc.AddDependency(protobuf.KnownImports[protobuf.Any])
-			// 	return lspAnyMsg, nil
 		}
 	}
 
@@ -389,23 +388,10 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 
 		switch refObj := refObj.(type) {
 		case *openapi3.Schema:
-			refMsg, err := c.compileSchemaRef(normalizeMessageName(refObj.Title), array.Items)
-			if err != nil {
-				return nil, fmt.Errorf("compile array items: %w", err)
-			}
-			if skipMessage(refMsg) {
-				return arrayMsg, nil
-			}
-
-			fieldType := refMsg.GetFieldType()
-			field := protobuf.NewFieldDescriptorProto(normalizeFieldName(refObj.Title), fieldType)
-			field.SetTypeName(refMsg.GetName())
+			field := protobuf.NewFieldDescriptorProto(normalizeFieldName(refObj.Title), protobuf.FieldTypeMessage())
+			field.SetNumber()
 			field.SetRepeated()
-
-			switch fieldType.Number() {
-			case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
-				arrayMsg.AddNestedMessage(refMsg) // add nested message only MESSAGE type
-			}
+			field.SetTypeName(refObj.Title)
 			arrayMsg.AddField(field)
 
 		default:
@@ -419,7 +405,7 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
-	if skipMessage(itemsMsg) {
+	if skipMessage(itemsMsg, arrayMsg, array.Items) {
 		return arrayMsg, nil
 	}
 
@@ -454,7 +440,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 				if err != nil {
 					return nil, fmt.Errorf("compile object items: %w", err)
 				}
-				if skipMessage(refMsg) {
+				if skipMessage(refMsg, objMsg) {
 					continue
 				}
 
@@ -474,7 +460,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
-		if skipMessage(propMsg) {
+		if skipMessage(propMsg, objMsg, prop) {
 			continue
 		}
 
@@ -546,7 +532,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		if err != nil {
 			return nil, fmt.Errorf("compile oneOf ref: %w", err)
 		}
-		if skipMessage(nestedMsg) {
+		if skipMessage(nestedMsg, msg, ref) {
 			continue
 		}
 
@@ -582,7 +568,7 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
-		if skipMessage(anyOfMsg) {
+		if skipMessage(anyOfMsg, msg, ref) {
 			continue
 		}
 

@@ -2,7 +2,10 @@
 
 package unwind
 
-import _ "unsafe" // for go:linkname
+import (
+	"strings"
+	_ "unsafe"
+) // for go:linkname
 
 //go:noescape
 //go:linkname callers runtime.callers
@@ -16,4 +19,13 @@ func FuncNameN(n int) string {
 	var pcbuf [1]uintptr
 	callers(1+n, pcbuf[:])
 	return Name(pcbuf[0])
+}
+
+func ShortenPath(path string) string {
+	idx := strings.LastIndex(path, "/")
+	if idx == -1 {
+		return path
+	}
+
+	return path[idx+1:]
 }

@@ -547,7 +547,8 @@ components:
           description: |-
             Arguments that the command handler should be
             invoked with.
-          items: {}
+          items:
+            $ref: '#/components/schemas/LSPAny'
           title: arguments
           type: array
         command:
@@ -825,6 +826,7 @@ components:
         item.
       enum:
       - 1
+      title: CompletionItemTag
       type: number
     CompletionList:
       description: |-
@@ -966,8 +968,10 @@ components:
           $ref: '#/components/schemas/Location'
         type: array
       description: The declaration of a symbol representation as one or many [locations](#Location).
+      title: Declaration
     DeclarationLink:
       $ref: '#/components/schemas/LocationLink'
+      title: DeclarationLink
     Definition:
       anyOf:
       - $ref: '#/components/schemas/Location'
@@ -981,8 +985,10 @@ components:
 
         Servers should prefer returning `DefinitionLink` over `Definition` if supported
         by the client.
+      title: Definition
     DefinitionLink:
       $ref: '#/components/schemas/LocationLink'
+      title: DefinitionLink
     DeleteFile:
       description: Delete file operation
       properties:
@@ -1147,6 +1153,7 @@ components:
       enum:
       - 1
       - 2
+      title: DiagnosticTag
       type: number
     DocumentHighlight:
       description: |-
@@ -1641,6 +1648,7 @@ components:
       required:
       - label
       - position
+      title: InlayHint
       type: object
     InlayHintKind:
       description: Inlay hint kinds.
@@ -1697,6 +1705,7 @@ components:
       - command
       required:
       - value
+      title: InlayHintLabelPart
       type: object
     InlineValue:
       anyOf:
@@ -1722,6 +1731,7 @@ components:
         - as a name to use for a variable lookup (class InlineValueVariableLookup)
         - as an evaluatable expression (class InlineValueEvaluatableExpression)
         The InlineValue types combines all inline value types into one type.
+      title: InlineValue
     InlineValueContext:
       description: |-
         The InlineValueContext namespace provides helper functions to work with
@@ -1743,6 +1753,7 @@ components:
       required:
       - frameId
       - stoppedLocation
+      title: InlineValueContext
       type: object
     InlineValueEvaluatableExpression:
       description: |-
@@ -1986,6 +1997,7 @@ components:
         ```
 
         Note that markdown strings will be sanitized - that means html will be escaped.
+      title: MarkedString
     MarkupContent:
       description: |-
         A `MarkupContent` literal represents a string value which content is interpreted base on its
@@ -2310,6 +2322,7 @@ components:
       - modification
       - readonly
       - static
+      title: SemanticTokenModifiers
       type: string
     SemanticTokenTypes:
       description: |-
@@ -2340,6 +2353,7 @@ components:
       - type
       - typeParameter
       - variable
+      title: SemanticTokenTypes
       type: string
     SemanticTokens:
       properties:
@@ -2612,6 +2626,7 @@ components:
       description: Symbol tags are extra annotations that tweak the rendering of a symbol.
       enum:
       - 1
+      title: SymbolTag
       type: number
     TextDocument:
       description: |-
@@ -2690,6 +2705,7 @@ components:
       description: |-
         An event describing a change to a text document. If range and rangeLength are omitted
         the new text is considered to be the full content of the document.
+      title: TextDocumentContentChangeEvent
     TextDocumentEdit:
       description: |-
         Describes textual changes on a text document. A TextDocumentEdit describes all changes
@@ -2898,6 +2914,7 @@ components:
       - range
       - selectionRange
       - uri
+      title: TypeHierarchyItem
       type: object
     URI:
       description: A tagging type for string properties that are actually URIs
