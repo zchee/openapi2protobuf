@@ -65,12 +65,13 @@ type Option func(o *option)
 
 // option holds an option to compile the Protocol Buffers from the OpenAPI schema.
 type option struct {
-	packageName       string
-	useAnnotation     bool
-	skipRPC           bool
-	skipDeprecatedRPC bool
-	usePrefixEnum     bool
-	wrapPrimitives    bool
+	packageName        string
+	useAnnotation      bool
+	skipRPC            bool
+	skipDeprecatedRPC  bool
+	usePrefixEnum      bool
+	wrapPrimitives     bool
+	additionalMessages []*protobuf.MessageDescriptorProto
 }
 
 // WithPackageName specifies the package name when compiling the Protocol Buffers.
@@ -110,6 +111,11 @@ func WithWrapPrimitives(wrapPrimitives bool) Option {
 	return func(o *option) { o.wrapPrimitives = wrapPrimitives }
 }
 
+// WithAdditionalMessages adds additional messages.
+func WithAdditionalMessages(additionalMessages []*protobuf.MessageDescriptorProto) Option {
+	return func(o *option) { o.additionalMessages = append(o.additionalMessages, additionalMessages...) }
+}
+
 type lookupFunc func(token string) (interface{}, error)
 
 type compiler struct {
@@ -120,9 +126,14 @@ type compiler struct {
 	pathLookupFunc    lookupFunc
 }
 
+var AdditionalMessages []*protobuf.MessageDescriptorProto
+var DependencyProto []string
+
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.
 func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*descriptorpb.FileDescriptorProto, error) {
-	opt := new(option)
+	opt := &option{
+		additionalMessages: AdditionalMessages,
+	}
 	for _, o := range options {
 		o(opt)
 	}
@@ -168,14 +179,27 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		return nil, fmt.Errorf("could not compile external documentation object: %w", err)
 	}
 
-	fd := c.fdesc.Build()
-	anyDesc, err := desc.CreateFileDescriptor(protobuf.AnyDescriptor())
-	if err != nil {
-		return nil, fmt.Errorf("could not create Any descriptor: %w", err)
+	// append additional messages
+	for _, msg := range c.opt.additionalMessages {
+		c.fdesc.AddMessage(msg)
 	}
+	depsFileDescriptor := make([]*desc.FileDescriptor, 0, len(DependencyProto))
+	for _, deps := range DependencyProto {
+		c.fdesc.AddDependency(protobuf.KnownImports[deps])
+		if depDesc, ok := protobuf.KnownDescriptor[protobuf.KnownImports[deps]]; ok {
+			knownDesc, err := desc.CreateFileDescriptor(depDesc)
+			if err != nil {
+				return nil, fmt.Errorf("could not create %s descriptor: %w", depDesc.GetName(), err)
+			}
+			depsFileDescriptor = append(depsFileDescriptor, knownDesc)
+		}
+	}
+
+	fd := c.fdesc.Build()
 	// fmt.Fprintln(os.Stdout, prototext.Format(fd))
 	// dumpFileDescriptor(fd)
-	fdesc, err := desc.CreateFileDescriptor(fd, anyDesc)
+
+	fdesc, err := desc.CreateFileDescriptor(fd, depsFileDescriptor...)
 	if err != nil {
 		return nil, fmt.Errorf("could not convert to desc: %w", err)
 	}
@@ -301,14 +325,19 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 		case openapi3.TypeObject:
 			return c.compileObject(val)
 
-		default:
-			anyMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(schemaRef.Value.Title))
-			field := protobuf.NewFieldDescriptorProto("any", protobuf.FieldTypeMessage())
-			field.SetTypeName(protobuf.Any)
-			field.SetNumber()
-			anyMsg.AddField(field)
-			c.fdesc.AddDependency(protobuf.KnownImports[protobuf.Any])
-			return anyMsg, nil
+			// default:
+			// 	// anyMsg := protobuf.NewMessageDescriptorProto(normalizeMessageName(schemaRef.Value.Title))
+			// 	// field := protobuf.NewFieldDescriptorProto("any", protobuf.FieldTypeMessage())
+			// 	// field.SetTypeName(protobuf.Any)
+			// 	// field.SetNumber()
+			// 	// anyMsg.AddField(field)
+			//
+			// 	lspAnyMsg := protobuf.NewMessageDescriptorProto("LSPAny")
+			// 	lspAnyField := protobuf.NewFieldDescriptorProto("any", protobuf.FieldTypeMessage()).SetTypeName(protobuf.Any).SetNumber()
+			// 	lspAnyMsg.AddField(lspAnyField)
+			// 	c.fdesc.AddMessage(lspAnyMsg)
+			// 	c.fdesc.AddDependency(protobuf.KnownImports[protobuf.Any])
+			// 	return lspAnyMsg, nil
 		}
 	}
 

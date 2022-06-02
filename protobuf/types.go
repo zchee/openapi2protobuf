@@ -36,6 +36,10 @@ func APIDescriptor() *descriptorpb.FileDescriptorProto {
 	return protodesc.ToFileDescriptorProto(apipb.File_google_protobuf_api_proto)
 }
 
+func DescriptorDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(descriptorpb.File_google_protobuf_descriptor_proto)
+}
+
 func DurationDescriptor() *descriptorpb.FileDescriptorProto {
 	return protodesc.ToFileDescriptorProto(durationpb.File_google_protobuf_duration_proto)
 }
@@ -106,6 +110,16 @@ var KnownImports = map[string]string{
 	BoolValue:     "google/protobuf/wrappers.proto",
 	StringValue:   "google/protobuf/wrappers.proto",
 	BytesValue:    "google/protobuf/wrappers.proto",
+}
+
+var KnownDescriptor = map[string]*descriptorpb.FileDescriptorProto{
+	"google/protobuf/any.proto":        AnyDescriptor(),
+	"google/protobuf/duration.proto":   DurationDescriptor(),
+	"google/protobuf/empty.proto":      EmptyDescriptor(),
+	"google/protobuf/struct.proto":     StructDescriptor(),
+	"google/protobuf/descriptor.proto": DescriptorDescriptor(),
+	"google/protobuf/timestamp.proto":  TimestampDescriptor(),
+	"google/protobuf/wrappers.proto":   WrappersDescriptor(),
 }
 
 var FieldTypes = map[string]protoreflect.Kind{

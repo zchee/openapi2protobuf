@@ -124,6 +124,42 @@ func (md *MessageDescriptorProto) GetOneofIndex() int32 {
 	return int32(len(md.desc.OneofDecl) - 1)
 }
 
+func (md *MessageDescriptorProto) SetMessageSetWireFormat(messageSetWireFormat bool) *MessageDescriptorProto {
+	if md.desc.Options == nil {
+		md.desc.Options = &descriptorpb.MessageOptions{}
+	}
+	md.desc.Options.MessageSetWireFormat = proto.Bool(messageSetWireFormat)
+
+	return md
+}
+
+func (md *MessageDescriptorProto) SetNoStandardDescriptorAccessor(noStandardDescriptorAccessor bool) *MessageDescriptorProto {
+	if md.desc.Options == nil {
+		md.desc.Options = &descriptorpb.MessageOptions{}
+	}
+	md.desc.Options.NoStandardDescriptorAccessor = proto.Bool(noStandardDescriptorAccessor)
+
+	return md
+}
+
+func (md *MessageDescriptorProto) SetDeprecated(deprecated bool) *MessageDescriptorProto {
+	if md.desc.Options == nil {
+		md.desc.Options = &descriptorpb.MessageOptions{}
+	}
+	md.desc.Options.Deprecated = proto.Bool(deprecated)
+
+	return md
+}
+
+func (md *MessageDescriptorProto) SetMapEntry(mapEntry bool) *MessageDescriptorProto {
+	if md.desc.Options == nil {
+		md.desc.Options = &descriptorpb.MessageOptions{}
+	}
+	md.desc.Options.MapEntry = proto.Bool(mapEntry)
+
+	return md
+}
+
 func (md *MessageDescriptorProto) SetMessageOptions(options *descriptorpb.MessageOptions) *MessageDescriptorProto {
 	md.desc.Options = options
 	return md

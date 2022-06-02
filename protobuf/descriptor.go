@@ -137,6 +137,10 @@ func (fd *FileDescriptorProto) SetPackage(fqn string) {
 	fd.desc.Package = proto.String(fqn)
 }
 
+func (fd *FileDescriptorProto) GetDependency() []string {
+	return fd.desc.Dependency
+}
+
 func (fd *FileDescriptorProto) AddDependency(deps string) *FileDescriptorProto {
 	fd.desc.Dependency = append(fd.desc.Dependency, deps)
 
