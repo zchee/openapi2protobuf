@@ -26,6 +26,7 @@ import (
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 	"go.lsp.dev/openapi2protobuf/protobuf/printer"
+	"go.lsp.dev/openapi2protobuf/protobuf/types"
 )
 
 var _ = jsonpointer.GetForToken
@@ -127,7 +128,16 @@ type compiler struct {
 }
 
 var AdditionalMessages []*protobuf.MessageDescriptorProto
+
+func RegisterAdditionalMessages(descs ...*protobuf.MessageDescriptorProto) {
+	AdditionalMessages = append(AdditionalMessages, descs...)
+}
+
 var DependencyProto []string
+
+func RegisterDependencyProto(deps string) {
+	DependencyProto = append(DependencyProto, deps)
+}
 
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.
 func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*descriptorpb.FileDescriptorProto, error) {
@@ -183,10 +193,13 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	for _, msg := range c.opt.additionalMessages {
 		c.fdesc.AddMessage(msg)
 	}
+
+	// add dependency proto
 	depsFileDescriptor := make([]*desc.FileDescriptor, 0, len(DependencyProto))
 	for _, deps := range DependencyProto {
-		c.fdesc.AddDependency(protobuf.KnownImports[deps])
-		if depDesc, ok := protobuf.KnownDescriptor[protobuf.KnownImports[deps]]; ok {
+		c.fdesc.AddDependency(deps)
+
+		if depDesc, ok := types.Descriptor[deps]; ok {
 			knownDesc, err := desc.CreateFileDescriptor(depDesc)
 			if err != nil {
 				return nil, fmt.Errorf("could not create %s descriptor: %w", depDesc.GetName(), err)
