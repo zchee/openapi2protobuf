@@ -22,6 +22,7 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
 
+	"go.lsp.dev/openapi2protobuf/internal/dump"
 	"go.lsp.dev/openapi2protobuf/internal/conv"
 	"go.lsp.dev/openapi2protobuf/internal/unwind"
 	"go.lsp.dev/openapi2protobuf/openapi"
@@ -205,14 +206,13 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	// add dependency proto
 	depsFileDescriptor := make([]*desc.FileDescriptor, 0, len(DependencyProto))
 	for _, deps := range c.fdesc.GetDependency() {
-		c.fdesc.AddDependency(deps)
-
 		if depDesc, ok := types.Descriptor[deps]; ok {
 			knownDesc, err := desc.CreateFileDescriptor(depDesc)
 			if err != nil {
 				return nil, fmt.Errorf("could not create %s descriptor: %w", depDesc.GetName(), err)
 			}
 			depsFileDescriptor = append(depsFileDescriptor, knownDesc)
+			c.fdesc.AddDependency(deps)
 		}
 	}
 
@@ -280,9 +280,6 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 			var xPropertyOrder []string
 			if err := sonic.Unmarshal(rawPropertyOrder, &xPropertyOrder); err != nil {
 				return err
-			}
-			if msg.GetName() == "AnnotatedTextEdit" {
-				fmt.Fprintf(os.Stderr, "%s xPropertyOrder: %s\n", unwind.FuncNameN(1), xPropertyOrder)
 			}
 			msg.SortField(xPropertyOrder)
 		}
@@ -409,10 +406,16 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 
 		return arrayMsg, nil
 	}
+	if strings.ToLower(array.Title) == "tags" {
+		fmt.Fprintf(os.Stderr, "%s: array.Items\n", unwind.FuncNameN(3))
+	}
 
 	itemsMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(arrayMsg.GetName()), array.Items)
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
+	}
+	if strings.ToLower(array.Title) == "tags" {
+		fmt.Fprintf(os.Stderr, "array: %s\n", dump.Sdump(array))
 	}
 	if skipMessage(itemsMsg, arrayMsg) {
 		return arrayMsg, nil
@@ -421,12 +424,18 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	fieldType := itemsMsg.GetFieldType()
 	field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(arrayMsg.GetName()), fieldType)
 	field.SetNumber()
-	field.SetRepeated()
+	if array.Type == openapi3.TypeArray {
+		field.SetRepeated()
+	}
 
 	switch fieldType.Number() {
 	case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
 		arrayMsg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
+
+	default:
+		field.SetTypeName(fieldType.String())
 	}
+
 	arrayMsg.AddField(field)
 
 	return arrayMsg, nil
