@@ -45,6 +45,7 @@ type FileDescriptorProto struct {
 	desc *descriptorpb.FileDescriptorProto
 	msg  map[string]bool
 	enum map[string]bool
+	deps map[string]bool
 }
 
 func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
@@ -65,6 +66,7 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 		},
 		msg:  make(map[string]bool),
 		enum: make(map[string]bool),
+		deps: make(map[string]bool),
 	}
 }
 
@@ -142,6 +144,11 @@ func (fd *FileDescriptorProto) GetDependency() []string {
 }
 
 func (fd *FileDescriptorProto) AddDependency(deps string) *FileDescriptorProto {
+	if fd.deps[deps] {
+		return fd
+	}
+
+	fd.deps[deps] = true
 	fd.desc.Dependency = append(fd.desc.Dependency, deps)
 
 	return fd

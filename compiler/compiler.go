@@ -20,6 +20,7 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
 
+	"go.lsp.dev/openapi2protobuf/internal/unwind"
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 	"go.lsp.dev/openapi2protobuf/protobuf/printer"
@@ -155,6 +156,9 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	for _, msg := range c.opt.additionalMessages {
 		c.fdesc.AddMessage(msg)
 	}
+	for _, deps := range DependencyProto {
+		c.fdesc.AddDependency(deps)
+	}
 
 	// compile info object
 	if err := c.CompileInfo(spec.Info); err != nil {
@@ -197,7 +201,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 
 	// add dependency proto
 	depsFileDescriptor := make([]*desc.FileDescriptor, 0, len(DependencyProto))
-	for _, deps := range DependencyProto {
+	for _, deps := range c.fdesc.GetDependency() {
 		c.fdesc.AddDependency(deps)
 
 		if depDesc, ok := types.Descriptor[deps]; ok {
@@ -252,7 +256,7 @@ func (c *compiler) CompileServers(info openapi3.Servers) error { return nil }
 func (c *compiler) CompilePaths(paths openapi3.Paths) error { return nil }
 
 // CompileComponents compiles all component objects.
-func (c *compiler) CompileComponents(components openapi3.Components, additionalMsgs ...*protobuf.MessageDescriptorProto) error {
+func (c *compiler) CompileComponents(components openapi3.Components) error {
 	schemasLookupFunc := c.schemasLookupFunc
 	c.schemasLookupFunc = components.Schemas.JSONLookup
 	defer func() {
@@ -267,11 +271,6 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 		if skipMessage(msg, nil) {
 			continue
 		}
-		// fmt.Fprintf(os.Stderr, "%s: skipMessage(%q)\n", unwind.FuncName(), msg.GetName())
-		c.fdesc.AddMessage(msg)
-	}
-
-	for _, msg := range additionalMsgs {
 		c.fdesc.AddMessage(msg)
 	}
 
@@ -280,22 +279,13 @@ func (c *compiler) CompileComponents(components openapi3.Components, additionalM
 
 var enumMessage = protobuf.NewMessageDescriptorProto("enum")
 
-func skipMessage(msg, parent *protobuf.MessageDescriptorProto, schemaRefs ...*openapi3.SchemaRef) bool {
-	return msg == nil || msg == enumMessage
+func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
 	skip := msg == nil || msg == enumMessage
 
 	if msg != nil && msg != enumMessage && msg.IsEmptyField() {
 		if parent != nil {
-			// fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q), parent(%q)\n", unwind.FuncNameN(3)+":", normalizeFieldName(msg.GetName()), parent.GetName())
+			fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q), parent(%q)\n", unwind.FuncNameN(3)+":", normalizeFieldName(msg.GetName()), parent.GetName())
 			return skip
-		}
-
-		// fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q)\n", unwind.FuncNameN(3)+":", normalizeFieldName(msg.GetName()))
-
-		if len(schemaRefs) > 0 {
-			// for _, ref := range schemaRefs {
-			// 	fmt.Fprintf(os.Stderr, "%-70s ref: %#v\n", unwind.FuncNameN(3)+":", ref)
-			// }
 		}
 	}
 
@@ -304,6 +294,10 @@ func skipMessage(msg, parent *protobuf.MessageDescriptorProto, schemaRefs ...*op
 
 // compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
+	if additionalProps := schemaRef.Value.AdditionalProperties; additionalProps != nil {
+		return c.compileSchemaRef(name, additionalProps)
+	}
+
 	if val := schemaRef.Value; val != nil {
 		// Enum, OneOf, AnyOf, AllOf
 		switch {
@@ -390,7 +384,6 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 		case *openapi3.Schema:
 			field := protobuf.NewFieldDescriptorProto(normalizeFieldName(refObj.Title), protobuf.FieldTypeMessage())
 			field.SetNumber()
-			field.SetRepeated()
 			field.SetTypeName(refObj.Title)
 			arrayMsg.AddField(field)
 
@@ -405,7 +398,7 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
-	if skipMessage(itemsMsg, arrayMsg, array.Items) {
+	if skipMessage(itemsMsg, arrayMsg) {
 		return arrayMsg, nil
 	}
 
@@ -460,7 +453,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
-		if skipMessage(propMsg, objMsg, prop) {
+		if skipMessage(propMsg, objMsg) {
 			continue
 		}
 
@@ -505,6 +498,8 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Enu
 			enumValName = strconv.Itoa(int(e))
 		case float64:
 			enumValName = strconv.Itoa(int(e))
+		default:
+			fmt.Fprintf(os.Stderr, "%s: enumValName: %T -> %s\n", unwind.FuncName(), e, e)
 		}
 		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+enumValName, int32(i+1))
 		eb.AddValue(enumVal)
@@ -532,7 +527,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		if err != nil {
 			return nil, fmt.Errorf("compile oneOf ref: %w", err)
 		}
-		if skipMessage(nestedMsg, msg, ref) {
+		if skipMessage(nestedMsg, msg) {
 			continue
 		}
 
@@ -568,7 +563,7 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
-		if skipMessage(anyOfMsg, msg, ref) {
+		if skipMessage(anyOfMsg, msg) {
 			continue
 		}
 

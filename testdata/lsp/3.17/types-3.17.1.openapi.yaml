@@ -1899,6 +1899,8 @@ components:
       title: LSPAny
     LSPArray:
       items: {}
+        # $ref: '#/components/schemas/LSPAny'
+      # title: LSPArray
       type: array
     # LSPObject:
     #   additionalProperties: true
@@ -2950,7 +2952,7 @@ components:
           title: _changeAnnotations
         _textEditChanges:
           additionalProperties:
-            $ref: '#/components/schemas/TextEditChange'
+            $ref: '#/components/schemas/TextEditChangeImpl'
           propertyOrder: []
           title: _textEditChanges
           type: object
