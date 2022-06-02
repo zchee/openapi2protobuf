@@ -272,6 +272,23 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 			continue
 		}
 
+		// raw, ok := schemaRef.Value.Extensions["x-propertyOrder"].(json.RawMessage)
+		// if ok && raw != nil {
+		// 	var xPropertyOrder []string
+		// 	if err := json.Unmarshal(raw, &xPropertyOrder); err != nil {
+		// 		return err
+		// 	}
+		// 	msg2 := msg.Copy()
+		// 	for _, prop := range xPropertyOrder {
+		// 		field := msg.GetFieldByName(normalizeFieldName(prop))
+		// 		if field != nil {
+		// 			msg2.AddField(field)
+		// 		}
+		// 	}
+		// 	c.fdesc.AddMessage(msg2)
+		// 	continue
+		// }
+
 		c.fdesc.AddMessage(msg)
 	}
 
@@ -461,7 +478,6 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		fieldType := propMsg.GetFieldType()
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), fieldType)
 		field.SetNumber()
-		field.SetTypeName(propMsg.GetName())
 		if prop.Value.Type == openapi3.TypeArray {
 			field.SetRepeated()
 		}

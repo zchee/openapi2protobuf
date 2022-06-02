@@ -77,7 +77,9 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 func (md *MessageDescriptorProto) GetFieldByName(name string) *FieldDescriptorProto {
 	for _, field := range md.desc.Field {
 		if field.GetName() == name {
-			return &FieldDescriptorProto{desc: field}
+			return &FieldDescriptorProto{
+				desc: field,
+			}
 		}
 	}
 
