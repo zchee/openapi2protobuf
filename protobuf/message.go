@@ -4,6 +4,7 @@
 package protobuf
 
 import (
+	"go.lsp.dev/openapi2protobuf/internal/conv"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -41,17 +42,6 @@ func (md *MessageDescriptorProto) Clone() *MessageDescriptorProto {
 	return mdesc
 }
 
-func (md *MessageDescriptorProto) Copy() *MessageDescriptorProto {
-	desc := &descriptorpb.DescriptorProto{}
-	*desc = *md.desc
-
-	return &MessageDescriptorProto{
-		desc:   desc,
-		nested: make(map[string]bool),
-		field:  make(map[string]bool),
-	}
-}
-
 func (md *MessageDescriptorProto) GetName() string {
 	return md.desc.GetName()
 }
@@ -70,6 +60,32 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 	field.desc.Number = proto.Int32(md.number)
 	md.field[field.GetName()] = true
 	md.desc.Field = append(md.desc.Field, field.Build())
+
+	return md
+}
+
+func (md *MessageDescriptorProto) SortField(order []string) *MessageDescriptorProto {
+	propOrder := make([]string, len(order))
+	for i, s := range order {
+		propOrder[i] = conv.NormalizeFieldName(s)
+	}
+
+	n := len(md.desc.Field)
+	fdescFields := make([]*descriptorpb.FieldDescriptorProto, n)
+	copy(fdescFields, md.desc.Field)
+	md.desc.Field = make([]*descriptorpb.FieldDescriptorProto, n) // reset
+
+	i := 0
+	for _, field := range propOrder {
+		for _, msgfield := range fdescFields {
+			if msgfield.GetName() == field {
+				msgfield.Number = proto.Int32(int32(i + 1))
+				md.desc.Field[i] = msgfield
+				i++
+				break
+			}
+		}
+	}
 
 	return md
 }

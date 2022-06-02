@@ -1,7 +1,7 @@
 // Copyright 2022 The Go Language Server Authors
 // SPDX-License-Identifier: BSD-3-Clause
 
-package compiler
+package conv
 
 import (
 	"strings"
@@ -11,19 +11,19 @@ import (
 	"github.com/jhump/protoreflect/desc/builder"
 )
 
-func normalizeMessageName(s string) string {
+func NormalizeMessageName(s string) string {
 	return strcase.ToCamel(s)
 }
 
-func normalizeFieldName(s string) string {
+func NormalizeFieldName(s string) string {
 	return strcase.ToSnake(s)
 }
 
-func normalizeComment(title, description string) builder.Comments {
+func NormalizeComment(title, description string) builder.Comments {
 	var sb strings.Builder
 
 	sb.WriteString(" ") // add space after "//"
-	sb.WriteString(normalizeMessageName(title))
+	sb.WriteString(NormalizeMessageName(title))
 	sb.WriteString(" ") // add space before description
 
 	// toLower to first charactor of description
