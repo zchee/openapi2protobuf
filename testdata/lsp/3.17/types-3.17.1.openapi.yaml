@@ -66,29 +66,29 @@ components:
       - name
       title: BaseSymbolInformation
       type: object
-    # CallHierarchyIncomingCall:
-    #   description: Represents an incoming call, e.g. a caller of a method or constructor.
-    #   properties:
-    #     from:
-    #       $ref: '#/components/schemas/CallHierarchyItem'
-    #       description: The item that makes the call.
-    #       title: from
-    #     fromRanges:
-    #       description: |-
-    #         The ranges at which the calls appear. This is relative to the caller
-    #         denoted by [`this.from`](#CallHierarchyIncomingCall.from).
-    #       items:
-    #         $ref: '#/components/schemas/Range'
-    #       title: fromRanges
-    #       type: array
-    #   propertyOrder:
-    #   - from
-    #   - fromRanges
-    #   required:
-    #   - from
-    #   - fromRanges
-    #   title: CallHierarchyIncomingCall
-    #   type: object
+    CallHierarchyIncomingCall:
+      description: Represents an incoming call, e.g. a caller of a method or constructor.
+      properties:
+        from:
+          $ref: '#/components/schemas/CallHierarchyItem'
+          description: The item that makes the call.
+          title: from
+        fromRanges:
+          description: |-
+            The ranges at which the calls appear. This is relative to the caller
+            denoted by [`this.from`](#CallHierarchyIncomingCall.from).
+          items:
+            $ref: '#/components/schemas/Range'
+          title: fromRanges
+          type: array
+      propertyOrder:
+      - from
+      - fromRanges
+      required:
+      - from
+      - fromRanges
+      title: CallHierarchyIncomingCall
+      type: object
     CallHierarchyItem:
       description: |-
         Represents programming constructs like functions or constructors in the context
@@ -152,31 +152,31 @@ components:
       - uri
       title: CallHierarchyItem
       type: object
-    # CallHierarchyOutgoingCall:
-    #   description: Represents an outgoing call, e.g. calling a getter from a method
-    #     or a method from a constructor etc.
-    #   properties:
-    #     fromRanges:
-    #       description: |-
-    #         The range at which this item is called. This is the range relative to the caller, e.g the item
-    #         passed to [`provideCallHierarchyOutgoingCalls`](#CallHierarchyItemProvider.provideCallHierarchyOutgoingCalls)
-    #         and not [`this.to`](#CallHierarchyOutgoingCall.to).
-    #       items:
-    #         $ref: '#/components/schemas/Range'
-    #       title: fromRanges
-    #       type: array
-    #     to:
-    #       $ref: '#/components/schemas/CallHierarchyItem'
-    #       description: The item that is called.
-    #       title: to
-    #   propertyOrder:
-    #   - to
-    #   - fromRanges
-    #   required:
-    #   - fromRanges
-    #   - to
-    #   title: CallHierarchyOutgoingCall
-    #   type: object
+    CallHierarchyOutgoingCall:
+      description: Represents an outgoing call, e.g. calling a getter from a method
+        or a method from a constructor etc.
+      properties:
+        fromRanges:
+          description: |-
+            The range at which this item is called. This is the range relative to the caller, e.g the item
+            passed to [`provideCallHierarchyOutgoingCalls`](#CallHierarchyItemProvider.provideCallHierarchyOutgoingCalls)
+            and not [`this.to`](#CallHierarchyOutgoingCall.to).
+          items:
+            $ref: '#/components/schemas/Range'
+          title: fromRanges
+          type: array
+        to:
+          $ref: '#/components/schemas/CallHierarchyItem'
+          description: The item that is called.
+          title: to
+      propertyOrder:
+      - to
+      - fromRanges
+      required:
+      - fromRanges
+      - to
+      title: CallHierarchyOutgoingCall
+      type: object
     ChangeAnnotation:
       description: Additional information that describes document changes.
       properties:
@@ -409,40 +409,40 @@ components:
       - href
       title: CodeDescription
       type: object
-    # CodeLens:
-    #   description: |-
-    #     A code lens represents a [command](#Command) that should be shown along with
-    #     source text, like the number of references, a way to run tests, etc.
-    #
-    #     A code lens is _unresolved_ when no command is associated to it. For performance
-    #     reasons the creation of a code lens and resolving should be done to two stages.
-    #     The CodeLens namespace provides helper functions to work with
-    #     [CodeLens](#CodeLens) literals.
-    #   properties:
-    #     command:
-    #       $ref: '#/components/schemas/Command'
-    #       description: The command this code lens represents.
-    #       title: command
-    #     data:
-    #       $ref: '#/components/schemas/LSPAny'
-    #       description: |-
-    #         A data entry field that is preserved on a code lens item between
-    #         a [CodeLensRequest](#CodeLensRequest) and a [CodeLensResolveRequest]
-    #         (#CodeLensResolveRequest)
-    #       title: data
-    #     range:
-    #       $ref: '#/components/schemas/Range'
-    #       description: The range in which this code lens is valid. Should only span
-    #         a single line.
-    #       title: range
-    #   propertyOrder:
-    #   - range
-    #   - command
-    #   - data
-    #   required:
-    #   - range
-    #   title: CodeLens
-    #   type: object
+    CodeLens:
+      description: |-
+        A code lens represents a [command](#Command) that should be shown along with
+        source text, like the number of references, a way to run tests, etc.
+
+        A code lens is _unresolved_ when no command is associated to it. For performance
+        reasons the creation of a code lens and resolving should be done to two stages.
+        The CodeLens namespace provides helper functions to work with
+        [CodeLens](#CodeLens) literals.
+      properties:
+        command:
+          $ref: '#/components/schemas/Command'
+          description: The command this code lens represents.
+          title: command
+        data:
+          $ref: '#/components/schemas/LSPAny'
+          description: |-
+            A data entry field that is preserved on a code lens item between
+            a [CodeLensRequest](#CodeLensRequest) and a [CodeLensResolveRequest]
+            (#CodeLensResolveRequest)
+          title: data
+        range:
+          $ref: '#/components/schemas/Range'
+          description: The range in which this code lens is valid. Should only span
+            a single line.
+          title: range
+      propertyOrder:
+      - range
+      - command
+      - data
+      required:
+      - range
+      title: CodeLens
+      type: object
     Color:
       description: |-
         Represents a color in RGBA space.
@@ -567,208 +567,208 @@ components:
       - title
       title: Command
       type: object
-    # CompletionItem:
-    #   description: |-
-    #     A completion item represents a text snippet that is
-    #     proposed to complete text that is being typed.
-    #     The CompletionItem namespace provides functions to deal with
-    #     completion items.
-    #   properties:
-    #     additionalTextEdits:
-    #       description: |-
-    #         An optional array of additional [text edits](#TextEdit) that are applied when
-    #         selecting this completion. Edits must not overlap (including the same insert position)
-    #         with the main [edit](#CompletionItem.textEdit) nor with themselves.
-    #
-    #         Additional text edits should be used to change text unrelated to the current cursor position
-    #         (for example adding an import statement at the top of the file if the completion item will
-    #         insert an unqualified type).
-    #       items:
-    #         $ref: '#/components/schemas/TextEdit'
-    #       title: additionalTextEdits
-    #       type: array
-    #     command:
-    #       $ref: '#/components/schemas/Command'
-    #       description: |-
-    #         An optional [command](#Command) that is executed *after* inserting this completion. *Note* that
-    #         additional modifications to the current document should be described with the
-    #         [additionalTextEdits](#CompletionItem.additionalTextEdits)-property.
-    #       title: command
-    #     commitCharacters:
-    #       description: |-
-    #         An optional set of characters that when pressed while this completion is active will accept it first and
-    #         then type that character. *Note* that all commit characters should have `length=1` and that superfluous
-    #         characters will be ignored.
-    #       items:
-    #         type: string
-    #       title: commitCharacters
-    #       type: array
-    #     data:
-    #       $ref: '#/components/schemas/LSPAny'
-    #       description: |-
-    #         A data entry field that is preserved on a completion item between a
-    #         [CompletionRequest](#CompletionRequest) and a [CompletionResolveRequest](#CompletionResolveRequest).
-    #       title: data
-    #     deprecated:
-    #       description: Indicates if this item is deprecated.
-    #       title: deprecated
-    #       type: boolean
-    #     detail:
-    #       description: |-
-    #         A human-readable string with additional information
-    #         about this item, like type or symbol information.
-    #       title: detail
-    #       type: string
-    #     documentation:
-    #       anyOf:
-    #       - $ref: '#/components/schemas/MarkupContent'
-    #       - type: string
-    #       description: A human-readable string that represents a doc-comment.
-    #       title: documentation
-    #     filterText:
-    #       description: |-
-    #         A string that should be used when filtering a set of
-    #         completion items. When `falsy` the [label](#CompletionItem.label)
-    #         is used.
-    #       title: filterText
-    #       type: string
-    #     insertText:
-    #       description: |-
-    #         A string that should be inserted into a document when selecting
-    #         this completion. When `falsy` the [label](#CompletionItem.label)
-    #         is used.
-    #
-    #         The `insertText` is subject to interpretation by the client side.
-    #         Some tools might not take the string literally. For example
-    #         VS Code when code complete is requested in this example
-    #         `con<cursor position>` and a completion item with an `insertText` of
-    #         `console` is provided it will only insert `sole`. Therefore it is
-    #         recommended to use `textEdit` instead since it avoids additional client
-    #         side interpretation.
-    #       title: insertText
-    #       type: string
-    #     insertTextFormat:
-    #       $ref: '#/components/schemas/InsertTextFormat'
-    #       description: |-
-    #         The format of the insert text. The format applies to both the
-    #         `insertText` property and the `newText` property of a provided
-    #         `textEdit`. If omitted defaults to `InsertTextFormat.PlainText`.
-    #
-    #         Please note that the insertTextFormat doesn't apply to
-    #         `additionalTextEdits`.
-    #       title: insertTextFormat
-    #     insertTextMode:
-    #       $ref: '#/components/schemas/InsertTextMode'
-    #       description: |-
-    #         How whitespace and indentation is handled during completion
-    #         item insertion. If ignored the clients default value depends on
-    #         the `textDocument.completion.insertTextMode` client capability.
-    #       title: insertTextMode
-    #     kind:
-    #       $ref: '#/components/schemas/CompletionItemKind'
-    #       description: |-
-    #         The kind of this completion item. Based of the kind
-    #         an icon is chosen by the editor.
-    #       title: kind
-    #     label:
-    #       description: |-
-    #         The label of this completion item.
-    #
-    #         The label property is also by default the text that
-    #         is inserted when selecting this completion.
-    #
-    #         If label details are provided the label itself should
-    #         be an unqualified name of the completion item.
-    #       title: label
-    #       type: string
-    #     labelDetails:
-    #       $ref: '#/components/schemas/CompletionItemLabelDetails'
-    #       description: Additional details for the label
-    #       title: labelDetails
-    #     preselect:
-    #       description: |-
-    #         Select this item when showing.
-    #
-    #         *Note* that only one completion item can be selected and that the
-    #         tool / client decides which item that is. The rule is that the *first*
-    #         item of those that match best is selected.
-    #       title: preselect
-    #       type: boolean
-    #     sortText:
-    #       description: |-
-    #         A string that should be used when comparing this item
-    #         with other items. When `falsy` the [label](#CompletionItem.label)
-    #         is used.
-    #       title: sortText
-    #       type: string
-    #     tags:
-    #       description: Tags for this completion item.
-    #       items:
-    #         enum:
-    #         - 1
-    #         type: number
-    #       title: tags
-    #       type: array
-    #     textEdit:
-    #       anyOf:
-    #       - $ref: '#/components/schemas/TextEdit'
-    #       - $ref: '#/components/schemas/InsertReplaceEdit'
-    #       description: |-
-    #         An [edit](#TextEdit) which is applied to a document when selecting
-    #         this completion. When an edit is provided the value of
-    #         [insertText](#CompletionItem.insertText) is ignored.
-    #
-    #         Most editors support two different operation when accepting a completion
-    #         item. One is to insert a completion text and the other is to replace an
-    #         existing text with a completion text. Since this can usually not
-    #         predetermined by a server it can report both ranges. Clients need to
-    #         signal support for `InsertReplaceEdits` via the
-    #         `textDocument.completion.insertReplaceSupport` client capability
-    #         property.
-    #
-    #         *Note 1:* The text edit's range as well as both ranges from a insert
-    #         replace edit must be a [single line] and they must contain the position
-    #         at which completion has been requested.
-    #         *Note 2:* If an `InsertReplaceEdit` is returned the edit's insert range
-    #         must be a prefix of the edit's replace range, that means it must be
-    #         contained and starting at the same position.
-    #       title: textEdit
-    #     textEditText:
-    #       description: |-
-    #         The edit text used if the completion item is part of a CompletionList and
-    #         CompletionList defines an item default for the text edit range.
-    #
-    #         Clients will only honor this property if they opt into completion list
-    #         item defaults using the capability `completionList.itemDefaults`.
-    #
-    #         If not provided and a list's default range is provided the label
-    #         property is used as a text.
-    #       title: textEditText
-    #       type: string
-    #   propertyOrder:
-    #   - label
-    #   - labelDetails
-    #   - kind
-    #   - tags
-    #   - detail
-    #   - documentation
-    #   - deprecated
-    #   - preselect
-    #   - sortText
-    #   - filterText
-    #   - insertText
-    #   - insertTextFormat
-    #   - insertTextMode
-    #   - textEdit
-    #   - textEditText
-    #   - additionalTextEdits
-    #   - commitCharacters
-    #   - command
-    #   - data
-    #   required:
-    #   - label
-    #   title: CompletionItem
-    #   type: object
+    CompletionItem:
+      description: |-
+        A completion item represents a text snippet that is
+        proposed to complete text that is being typed.
+        The CompletionItem namespace provides functions to deal with
+        completion items.
+      properties:
+        additionalTextEdits:
+          description: |-
+            An optional array of additional [text edits](#TextEdit) that are applied when
+            selecting this completion. Edits must not overlap (including the same insert position)
+            with the main [edit](#CompletionItem.textEdit) nor with themselves.
+
+            Additional text edits should be used to change text unrelated to the current cursor position
+            (for example adding an import statement at the top of the file if the completion item will
+            insert an unqualified type).
+          items:
+            $ref: '#/components/schemas/TextEdit'
+          title: additionalTextEdits
+          type: array
+        command:
+          $ref: '#/components/schemas/Command'
+          description: |-
+            An optional [command](#Command) that is executed *after* inserting this completion. *Note* that
+            additional modifications to the current document should be described with the
+            [additionalTextEdits](#CompletionItem.additionalTextEdits)-property.
+          title: command
+        commitCharacters:
+          description: |-
+            An optional set of characters that when pressed while this completion is active will accept it first and
+            then type that character. *Note* that all commit characters should have `length=1` and that superfluous
+            characters will be ignored.
+          items:
+            type: string
+          title: commitCharacters
+          type: array
+        data:
+          $ref: '#/components/schemas/LSPAny'
+          description: |-
+            A data entry field that is preserved on a completion item between a
+            [CompletionRequest](#CompletionRequest) and a [CompletionResolveRequest](#CompletionResolveRequest).
+          title: data
+        deprecated:
+          description: Indicates if this item is deprecated.
+          title: deprecated
+          type: boolean
+        detail:
+          description: |-
+            A human-readable string with additional information
+            about this item, like type or symbol information.
+          title: detail
+          type: string
+        documentation:
+          anyOf:
+          - $ref: '#/components/schemas/MarkupContent'
+          - type: string
+          description: A human-readable string that represents a doc-comment.
+          title: documentation
+        filterText:
+          description: |-
+            A string that should be used when filtering a set of
+            completion items. When `falsy` the [label](#CompletionItem.label)
+            is used.
+          title: filterText
+          type: string
+        insertText:
+          description: |-
+            A string that should be inserted into a document when selecting
+            this completion. When `falsy` the [label](#CompletionItem.label)
+            is used.
+
+            The `insertText` is subject to interpretation by the client side.
+            Some tools might not take the string literally. For example
+            VS Code when code complete is requested in this example
+            `con<cursor position>` and a completion item with an `insertText` of
+            `console` is provided it will only insert `sole`. Therefore it is
+            recommended to use `textEdit` instead since it avoids additional client
+            side interpretation.
+          title: insertText
+          type: string
+        insertTextFormat:
+          $ref: '#/components/schemas/InsertTextFormat'
+          description: |-
+            The format of the insert text. The format applies to both the
+            `insertText` property and the `newText` property of a provided
+            `textEdit`. If omitted defaults to `InsertTextFormat.PlainText`.
+
+            Please note that the insertTextFormat doesn't apply to
+            `additionalTextEdits`.
+          title: insertTextFormat
+        insertTextMode:
+          $ref: '#/components/schemas/InsertTextMode'
+          description: |-
+            How whitespace and indentation is handled during completion
+            item insertion. If ignored the clients default value depends on
+            the `textDocument.completion.insertTextMode` client capability.
+          title: insertTextMode
+        kind:
+          $ref: '#/components/schemas/CompletionItemKind'
+          description: |-
+            The kind of this completion item. Based of the kind
+            an icon is chosen by the editor.
+          title: kind
+        label:
+          description: |-
+            The label of this completion item.
+
+            The label property is also by default the text that
+            is inserted when selecting this completion.
+
+            If label details are provided the label itself should
+            be an unqualified name of the completion item.
+          title: label
+          type: string
+        labelDetails:
+          $ref: '#/components/schemas/CompletionItemLabelDetails'
+          description: Additional details for the label
+          title: labelDetails
+        preselect:
+          description: |-
+            Select this item when showing.
+
+            *Note* that only one completion item can be selected and that the
+            tool / client decides which item that is. The rule is that the *first*
+            item of those that match best is selected.
+          title: preselect
+          type: boolean
+        sortText:
+          description: |-
+            A string that should be used when comparing this item
+            with other items. When `falsy` the [label](#CompletionItem.label)
+            is used.
+          title: sortText
+          type: string
+        tags:
+          description: Tags for this completion item.
+          items:
+            enum:
+            - 1
+            type: number
+          title: tags
+          type: array
+        textEdit:
+          anyOf:
+          - $ref: '#/components/schemas/TextEdit'
+          - $ref: '#/components/schemas/InsertReplaceEdit'
+          description: |-
+            An [edit](#TextEdit) which is applied to a document when selecting
+            this completion. When an edit is provided the value of
+            [insertText](#CompletionItem.insertText) is ignored.
+
+            Most editors support two different operation when accepting a completion
+            item. One is to insert a completion text and the other is to replace an
+            existing text with a completion text. Since this can usually not
+            predetermined by a server it can report both ranges. Clients need to
+            signal support for `InsertReplaceEdits` via the
+            `textDocument.completion.insertReplaceSupport` client capability
+            property.
+
+            *Note 1:* The text edit's range as well as both ranges from a insert
+            replace edit must be a [single line] and they must contain the position
+            at which completion has been requested.
+            *Note 2:* If an `InsertReplaceEdit` is returned the edit's insert range
+            must be a prefix of the edit's replace range, that means it must be
+            contained and starting at the same position.
+          title: textEdit
+        textEditText:
+          description: |-
+            The edit text used if the completion item is part of a CompletionList and
+            CompletionList defines an item default for the text edit range.
+
+            Clients will only honor this property if they opt into completion list
+            item defaults using the capability `completionList.itemDefaults`.
+
+            If not provided and a list's default range is provided the label
+            property is used as a text.
+          title: textEditText
+          type: string
+      propertyOrder:
+      - label
+      - labelDetails
+      - kind
+      - tags
+      - detail
+      - documentation
+      - deprecated
+      - preselect
+      - sortText
+      - filterText
+      - insertText
+      - insertTextFormat
+      - insertTextMode
+      - textEdit
+      - textEditText
+      - additionalTextEdits
+      - commitCharacters
+      - command
+      - data
+      required:
+      - label
+      title: CompletionItem
+      type: object
     CompletionItemKind:
       description: The kind of a completion entry.
       enum:
@@ -826,92 +826,92 @@ components:
       enum:
       - 1
       type: number
-    # CompletionList:
-    #   description: |-
-    #     Represents a collection of [completion items](#CompletionItem) to be presented
-    #     in the editor.
-    #     The CompletionList namespace provides functions to deal with
-    #     completion lists.
-    #   properties:
-    #     isIncomplete:
-    #       description: This list it not complete. Further typing results in recomputing
-    #         this list.
-    #       title: isIncomplete
-    #       type: boolean
-    #     itemDefaults:
-    #       description: |-
-    #         In many cases the items of an actual completion result share the same
-    #         value for properties like `commitCharacters` or the range of a text
-    #         edit. A completion list can therefore define item defaults which will
-    #         be used if a completion item itself doesn't specify the value.
-    #
-    #         If a completion list specifies a default value and a completion item
-    #         also specifies a corresponding value the one from the item is used.
-    #
-    #         Servers are only allowed to return default values if the client
-    #         signals support for this via the `completionList.itemDefaults`
-    #         capability.
-    #       properties:
-    #         commitCharacters:
-    #           description: A default commit character set.
-    #           items:
-    #             type: string
-    #           title: commitCharacters
-    #           type: array
-    #         data:
-    #           $ref: '#/components/schemas/LSPAny'
-    #           description: A default data value.
-    #           title: data
-    #         editRange:
-    #           anyOf:
-    #           - $ref: '#/components/schemas/Range'
-    #           - properties:
-    #               insert:
-    #                 $ref: '#/components/schemas/Range'
-    #                 title: insert
-    #               replace:
-    #                 $ref: '#/components/schemas/Range'
-    #                 title: replace
-    #             propertyOrder:
-    #             - insert
-    #             - replace
-    #             required:
-    #             - insert
-    #             - replace
-    #             type: object
-    #           description: A default edit range.
-    #           title: editRange
-    #         insertTextFormat:
-    #           $ref: '#/components/schemas/InsertTextFormat'
-    #           description: A default insert text format.
-    #           title: insertTextFormat
-    #         insertTextMode:
-    #           $ref: '#/components/schemas/InsertTextMode'
-    #           description: A default insert text mode.
-    #           title: insertTextMode
-    #       propertyOrder:
-    #       - commitCharacters
-    #       - editRange
-    #       - insertTextFormat
-    #       - insertTextMode
-    #       - data
-    #       title: itemDefaults
-    #       type: object
-    #     items:
-    #       description: The completion items.
-    #       items:
-    #         $ref: '#/components/schemas/CompletionItem'
-    #       title: items
-    #       type: array
-    #   propertyOrder:
-    #   - isIncomplete
-    #   - itemDefaults
-    #   - items
-    #   required:
-    #   - isIncomplete
-    #   - items
-    #   title: CompletionList
-    #   type: object
+    CompletionList:
+      description: |-
+        Represents a collection of [completion items](#CompletionItem) to be presented
+        in the editor.
+        The CompletionList namespace provides functions to deal with
+        completion lists.
+      properties:
+        isIncomplete:
+          description: This list it not complete. Further typing results in recomputing
+            this list.
+          title: isIncomplete
+          type: boolean
+        itemDefaults:
+          description: |-
+            In many cases the items of an actual completion result share the same
+            value for properties like `commitCharacters` or the range of a text
+            edit. A completion list can therefore define item defaults which will
+            be used if a completion item itself doesn't specify the value.
+
+            If a completion list specifies a default value and a completion item
+            also specifies a corresponding value the one from the item is used.
+
+            Servers are only allowed to return default values if the client
+            signals support for this via the `completionList.itemDefaults`
+            capability.
+          properties:
+            commitCharacters:
+              description: A default commit character set.
+              items:
+                type: string
+              title: commitCharacters
+              type: array
+            data:
+              $ref: '#/components/schemas/LSPAny'
+              description: A default data value.
+              title: data
+            editRange:
+              anyOf:
+              - $ref: '#/components/schemas/Range'
+              - properties:
+                  insert:
+                    $ref: '#/components/schemas/Range'
+                    title: insert
+                  replace:
+                    $ref: '#/components/schemas/Range'
+                    title: replace
+                propertyOrder:
+                - insert
+                - replace
+                required:
+                - insert
+                - replace
+                type: object
+              description: A default edit range.
+              title: editRange
+            insertTextFormat:
+              $ref: '#/components/schemas/InsertTextFormat'
+              description: A default insert text format.
+              title: insertTextFormat
+            insertTextMode:
+              $ref: '#/components/schemas/InsertTextMode'
+              description: A default insert text mode.
+              title: insertTextMode
+          propertyOrder:
+          - commitCharacters
+          - editRange
+          - insertTextFormat
+          - insertTextMode
+          - data
+          title: itemDefaults
+          type: object
+        items:
+          description: The completion items.
+          items:
+            $ref: '#/components/schemas/CompletionItem'
+          title: items
+          type: array
+      propertyOrder:
+      - isIncomplete
+      - itemDefaults
+      - items
+      required:
+      - isIncomplete
+      - items
+      title: CompletionList
+      type: object
     CreateFile:
       description: Create file operation.
       properties:
@@ -1179,45 +1179,45 @@ components:
       - 3
       title: DocumentHighlightKind
       type: number
-    # DocumentLink:
-    #   description: |-
-    #     A document link is a range in a text document that links to an internal or external resource, like another
-    #     text document or a web site.
-    #     The DocumentLink namespace provides helper functions to work with
-    #     [DocumentLink](#DocumentLink) literals.
-    #   properties:
-    #     data:
-    #       $ref: '#/components/schemas/LSPAny'
-    #       description: |-
-    #         A data entry field that is preserved on a document link between a
-    #         DocumentLinkRequest and a DocumentLinkResolveRequest.
-    #       title: data
-    #     range:
-    #       $ref: '#/components/schemas/Range'
-    #       description: The range this link applies to.
-    #       title: range
-    #     target:
-    #       description: The uri this link points to.
-    #       title: target
-    #       type: string
-    #     tooltip:
-    #       description: |-
-    #         The tooltip text when you hover over this link.
-    #
-    #         If a tooltip is provided, is will be displayed in a string that includes instructions on how to
-    #         trigger the link, such as `{0} (ctrl + click)`. The specific instructions vary depending on OS,
-    #         user settings, and localization.
-    #       title: tooltip
-    #       type: string
-    #   propertyOrder:
-    #   - range
-    #   - target
-    #   - tooltip
-    #   - data
-    #   required:
-    #   - range
-    #   title: DocumentLink
-    #   type: object
+    DocumentLink:
+      description: |-
+        A document link is a range in a text document that links to an internal or external resource, like another
+        text document or a web site.
+        The DocumentLink namespace provides helper functions to work with
+        [DocumentLink](#DocumentLink) literals.
+      properties:
+        data:
+          $ref: '#/components/schemas/LSPAny'
+          description: |-
+            A data entry field that is preserved on a document link between a
+            DocumentLinkRequest and a DocumentLinkResolveRequest.
+          title: data
+        range:
+          $ref: '#/components/schemas/Range'
+          description: The range this link applies to.
+          title: range
+        target:
+          description: The uri this link points to.
+          title: target
+          type: string
+        tooltip:
+          description: |-
+            The tooltip text when you hover over this link.
+
+            If a tooltip is provided, is will be displayed in a string that includes instructions on how to
+            trigger the link, such as `{0} (ctrl + click)`. The specific instructions vary depending on OS,
+            user settings, and localization.
+          title: tooltip
+          type: string
+      propertyOrder:
+      - range
+      - target
+      - tooltip
+      - data
+      required:
+      - range
+      title: DocumentLink
+      type: object
     # DocumentSymbol:
     #   description: |-
     #     Represents programming constructs like variables, classes, interfaces etc.
@@ -1516,132 +1516,132 @@ components:
       - contents
       title: Hover
       type: object
-    # InlayHint:
-    #   description: Inlay hint information.
-    #   properties:
-    #     data:
-    #       $ref: '#/components/schemas/LSPAny'
-    #       description: |-
-    #         A data entry field that is preserved on a inlay hint between
-    #         a `textDocument/inlayHint` and a `inlayHint/resolve` request.
-    #       title: data
-    #     kind:
-    #       $ref: '#/components/schemas/InlayHintKind'
-    #       description: |-
-    #         The kind of this hint. Can be omitted in which case the client
-    #         should fall back to a reasonable default.
-    #       title: kind
-    #     label:
-    #       anyOf:
-    #       - items:
-    #           description: |-
-    #             An inlay hint label part allows for interactive and composite labels
-    #             of inlay hints.
-    #           properties:
-    #             command:
-    #               $ref: '#/components/schemas/Command'
-    #               description: |-
-    #                 An optional command for this label part.
-    #
-    #                 Depending on the client capability `inlayHint.resolveSupport` clients
-    #                 might resolve this property late using the resolve request.
-    #               title: command
-    #             location:
-    #               $ref: '#/components/schemas/Location'
-    #               description: |-
-    #                 An optional source code location that represents this
-    #                 label part.
-    #
-    #                 The editor will use this location for the hover and for code navigation
-    #                 features: This part will become a clickable link that resolves to the
-    #                 definition of the symbol at the given location (not necessarily the
-    #                 location itself), it shows the hover that shows at the given location,
-    #                 and it shows a context menu with further code navigation commands.
-    #
-    #                 Depending on the client capability `inlayHint.resolveSupport` clients
-    #                 might resolve this property late using the resolve request.
-    #               title: location
-    #             tooltip:
-    #               anyOf:
-    #               - $ref: '#/components/schemas/MarkupContent'
-    #               - type: string
-    #               description: |-
-    #                 The tooltip text when you hover over this label part. Depending on
-    #                 the client capability `inlayHint.resolveSupport` clients might resolve
-    #                 this property late using the resolve request.
-    #               title: tooltip
-    #             value:
-    #               description: The value of this label part.
-    #               title: value
-    #               type: string
-    #           propertyOrder:
-    #           - value
-    #           - tooltip
-    #           - location
-    #           - command
-    #           required:
-    #           - value
-    #           type: object
-    #         type: array
-    #       - type: string
-    #       description: |-
-    #         The label of this hint. A human readable string or an array of
-    #         InlayHintLabelPart label parts.
-    #
-    #         *Note* that neither the string nor the label part can be empty.
-    #       title: label
-    #     paddingLeft:
-    #       description: |-
-    #         Render padding before the hint.
-    #
-    #         Note: Padding should use the editor's background color, not the
-    #         background color of the hint itself. That means padding can be used
-    #         to visually align/separate an inlay hint.
-    #       title: paddingLeft
-    #       type: boolean
-    #     paddingRight:
-    #       description: |-
-    #         Render padding after the hint.
-    #
-    #         Note: Padding should use the editor's background color, not the
-    #         background color of the hint itself. That means padding can be used
-    #         to visually align/separate an inlay hint.
-    #       title: paddingRight
-    #       type: boolean
-    #     position:
-    #       $ref: '#/components/schemas/Position'
-    #       description: The position of this hint.
-    #       title: position
-    #     textEdits:
-    #       description: |-
-    #         Optional text edits that are performed when accepting this inlay hint.
-    #
-    #         *Note* that edits are expected to change the document so that the inlay
-    #         hint (or its nearest variant) is now part of the document and the inlay
-    #         hint itself is now obsolete.
-    #       items:
-    #         $ref: '#/components/schemas/TextEdit'
-    #       title: textEdits
-    #       type: array
-    #     tooltip:
-    #       anyOf:
-    #       - $ref: '#/components/schemas/MarkupContent'
-    #       - type: string
-    #       description: The tooltip text when you hover over this item.
-    #       title: tooltip
-    #   propertyOrder:
-    #   - position
-    #   - label
-    #   - kind
-    #   - textEdits
-    #   - tooltip
-    #   - paddingLeft
-    #   - paddingRight
-    #   - data
-    #   required:
-    #   - label
-    #   - position
-    #   type: object
+    InlayHint:
+      description: Inlay hint information.
+      properties:
+        data:
+          $ref: '#/components/schemas/LSPAny'
+          description: |-
+            A data entry field that is preserved on a inlay hint between
+            a `textDocument/inlayHint` and a `inlayHint/resolve` request.
+          title: data
+        kind:
+          $ref: '#/components/schemas/InlayHintKind'
+          description: |-
+            The kind of this hint. Can be omitted in which case the client
+            should fall back to a reasonable default.
+          title: kind
+        label:
+          anyOf:
+          - items:
+              description: |-
+                An inlay hint label part allows for interactive and composite labels
+                of inlay hints.
+              properties:
+                command:
+                  $ref: '#/components/schemas/Command'
+                  description: |-
+                    An optional command for this label part.
+
+                    Depending on the client capability `inlayHint.resolveSupport` clients
+                    might resolve this property late using the resolve request.
+                  title: command
+                location:
+                  $ref: '#/components/schemas/Location'
+                  description: |-
+                    An optional source code location that represents this
+                    label part.
+
+                    The editor will use this location for the hover and for code navigation
+                    features: This part will become a clickable link that resolves to the
+                    definition of the symbol at the given location (not necessarily the
+                    location itself), it shows the hover that shows at the given location,
+                    and it shows a context menu with further code navigation commands.
+
+                    Depending on the client capability `inlayHint.resolveSupport` clients
+                    might resolve this property late using the resolve request.
+                  title: location
+                tooltip:
+                  anyOf:
+                  - $ref: '#/components/schemas/MarkupContent'
+                  - type: string
+                  description: |-
+                    The tooltip text when you hover over this label part. Depending on
+                    the client capability `inlayHint.resolveSupport` clients might resolve
+                    this property late using the resolve request.
+                  title: tooltip
+                value:
+                  description: The value of this label part.
+                  title: value
+                  type: string
+              propertyOrder:
+              - value
+              - tooltip
+              - location
+              - command
+              required:
+              - value
+              type: object
+            type: array
+          - type: string
+          description: |-
+            The label of this hint. A human readable string or an array of
+            InlayHintLabelPart label parts.
+
+            *Note* that neither the string nor the label part can be empty.
+          title: label
+        paddingLeft:
+          description: |-
+            Render padding before the hint.
+
+            Note: Padding should use the editor's background color, not the
+            background color of the hint itself. That means padding can be used
+            to visually align/separate an inlay hint.
+          title: paddingLeft
+          type: boolean
+        paddingRight:
+          description: |-
+            Render padding after the hint.
+
+            Note: Padding should use the editor's background color, not the
+            background color of the hint itself. That means padding can be used
+            to visually align/separate an inlay hint.
+          title: paddingRight
+          type: boolean
+        position:
+          $ref: '#/components/schemas/Position'
+          description: The position of this hint.
+          title: position
+        textEdits:
+          description: |-
+            Optional text edits that are performed when accepting this inlay hint.
+
+            *Note* that edits are expected to change the document so that the inlay
+            hint (or its nearest variant) is now part of the document and the inlay
+            hint itself is now obsolete.
+          items:
+            $ref: '#/components/schemas/TextEdit'
+          title: textEdits
+          type: array
+        tooltip:
+          anyOf:
+          - $ref: '#/components/schemas/MarkupContent'
+          - type: string
+          description: The tooltip text when you hover over this item.
+          title: tooltip
+      propertyOrder:
+      - position
+      - label
+      - kind
+      - textEdits
+      - tooltip
+      - paddingLeft
+      - paddingRight
+      - data
+      required:
+      - label
+      - position
+      type: object
     InlayHintKind:
       description: Inlay hint kinds.
       enum:
@@ -1889,10 +1889,10 @@ components:
     LSPArray:
       items: {}
       type: array
-    LSPObject:
-      additionalProperties: true
-      properties: {}
-      type: object
+    # LSPObject:
+    #   additionalProperties: true
+    #   properties: {}
+    #   type: object
     Location:
       description: |-
         Represents a location inside a resource, such as a line
@@ -2836,69 +2836,69 @@ components:
       - edits
       title: TextEditChangeImpl
       type: object
-    # TypeHierarchyItem:
-    #   properties:
-    #     data:
-    #       $ref: '#/components/schemas/LSPAny'
-    #       description: |-
-    #         A data entry field that is preserved between a type hierarchy prepare and
-    #         supertypes or subtypes requests. It could also be used to identify the
-    #         type hierarchy in the server, helping improve the performance on
-    #         resolving supertypes and subtypes.
-    #       title: data
-    #     detail:
-    #       description: More detail for this item, e.g. the signature of a function.
-    #       title: detail
-    #       type: string
-    #     kind:
-    #       $ref: '#/components/schemas/SymbolKind'
-    #       description: The kind of this item.
-    #       title: kind
-    #     name:
-    #       description: The name of this item.
-    #       title: name
-    #       type: string
-    #     range:
-    #       $ref: '#/components/schemas/Range'
-    #       description: |-
-    #         The range enclosing this symbol not including leading/trailing whitespace
-    #         but everything else, e.g. comments and code.
-    #       title: range
-    #     selectionRange:
-    #       $ref: '#/components/schemas/Range'
-    #       description: |-
-    #         The range that should be selected and revealed when this symbol is being
-    #         picked, e.g. the name of a function. Must be contained by the
-    #         [`range`](#TypeHierarchyItem.range).
-    #       title: selectionRange
-    #     tags:
-    #       description: Tags for this item.
-    #       items:
-    #         enum:
-    #         - 1
-    #         type: number
-    #       title: tags
-    #       type: array
-    #     uri:
-    #       $ref: '#/components/schemas/DocumentUri'
-    #       description: The resource identifier of this item.
-    #       title: uri
-    #   propertyOrder:
-    #   - name
-    #   - kind
-    #   - tags
-    #   - detail
-    #   - uri
-    #   - range
-    #   - selectionRange
-    #   - data
-    #   required:
-    #   - kind
-    #   - name
-    #   - range
-    #   - selectionRange
-    #   - uri
-    #   type: object
+    TypeHierarchyItem:
+      properties:
+        data:
+          $ref: '#/components/schemas/LSPAny'
+          description: |-
+            A data entry field that is preserved between a type hierarchy prepare and
+            supertypes or subtypes requests. It could also be used to identify the
+            type hierarchy in the server, helping improve the performance on
+            resolving supertypes and subtypes.
+          title: data
+        detail:
+          description: More detail for this item, e.g. the signature of a function.
+          title: detail
+          type: string
+        kind:
+          $ref: '#/components/schemas/SymbolKind'
+          description: The kind of this item.
+          title: kind
+        name:
+          description: The name of this item.
+          title: name
+          type: string
+        range:
+          $ref: '#/components/schemas/Range'
+          description: |-
+            The range enclosing this symbol not including leading/trailing whitespace
+            but everything else, e.g. comments and code.
+          title: range
+        selectionRange:
+          $ref: '#/components/schemas/Range'
+          description: |-
+            The range that should be selected and revealed when this symbol is being
+            picked, e.g. the name of a function. Must be contained by the
+            [`range`](#TypeHierarchyItem.range).
+          title: selectionRange
+        tags:
+          description: Tags for this item.
+          items:
+            enum:
+            - 1
+            type: number
+          title: tags
+          type: array
+        uri:
+          $ref: '#/components/schemas/DocumentUri'
+          description: The resource identifier of this item.
+          title: uri
+      propertyOrder:
+      - name
+      - kind
+      - tags
+      - detail
+      - uri
+      - range
+      - selectionRange
+      - data
+      required:
+      - kind
+      - name
+      - range
+      - selectionRange
+      - uri
+      type: object
     URI:
       description: A tagging type for string properties that are actually URIs
       title: URI
@@ -3046,74 +3046,74 @@ components:
       - uri
       title: WorkspaceFolder
       type: object
-    # WorkspaceSymbol:
-    #   description: |-
-    #     A special workspace symbol that supports locations without a range.
-    #
-    #     See also SymbolInformation.
-    #   properties:
-    #     containerName:
-    #       description: |-
-    #         The name of the symbol containing this symbol. This information is for
-    #         user interface purposes (e.g. to render a qualifier in the user interface
-    #         if necessary). It can't be used to re-infer a hierarchy for the document
-    #         symbols.
-    #       title: containerName
-    #       type: string
-    #     data:
-    #       $ref: '#/components/schemas/LSPAny'
-    #       description: |-
-    #         A data entry field that is preserved on a workspace symbol between a
-    #         workspace symbol request and a workspace symbol resolve request.
-    #       title: data
-    #     kind:
-    #       $ref: '#/components/schemas/SymbolKind'
-    #       description: The kind of this symbol.
-    #       title: kind
-    #     location:
-    #       anyOf:
-    #       - $ref: '#/components/schemas/Location'
-    #       - properties:
-    #           uri:
-    #             $ref: '#/components/schemas/DocumentUri'
-    #             title: uri
-    #         propertyOrder:
-    #         - uri
-    #         required:
-    #         - uri
-    #         type: object
-    #       description: |-
-    #         The location of the symbol. Whether a server is allowed to
-    #         return a location without a range depends on the client
-    #         capability `workspace.symbol.resolveSupport`.
-    #
-    #         See SymbolInformation#location for more details.
-    #       title: location
-    #     name:
-    #       description: The name of this symbol.
-    #       title: name
-    #       type: string
-    #     tags:
-    #       description: Tags for this completion item.
-    #       items:
-    #         enum:
-    #         - 1
-    #         type: number
-    #       title: tags
-    #       type: array
-    #   propertyOrder:
-    #   - location
-    #   - data
-    #   - name
-    #   - kind
-    #   - tags
-    #   - containerName
-    #   required:
-    #   - kind
-    #   - location
-    #   - name
-    #   title: WorkspaceSymbol
-    #   type: object
+    WorkspaceSymbol:
+      description: |-
+        A special workspace symbol that supports locations without a range.
+
+        See also SymbolInformation.
+      properties:
+        containerName:
+          description: |-
+            The name of the symbol containing this symbol. This information is for
+            user interface purposes (e.g. to render a qualifier in the user interface
+            if necessary). It can't be used to re-infer a hierarchy for the document
+            symbols.
+          title: containerName
+          type: string
+        data:
+          $ref: '#/components/schemas/LSPAny'
+          description: |-
+            A data entry field that is preserved on a workspace symbol between a
+            workspace symbol request and a workspace symbol resolve request.
+          title: data
+        kind:
+          $ref: '#/components/schemas/SymbolKind'
+          description: The kind of this symbol.
+          title: kind
+        location:
+          anyOf:
+          - $ref: '#/components/schemas/Location'
+          - properties:
+              uri:
+                $ref: '#/components/schemas/DocumentUri'
+                title: uri
+            propertyOrder:
+            - uri
+            required:
+            - uri
+            type: object
+          description: |-
+            The location of the symbol. Whether a server is allowed to
+            return a location without a range depends on the client
+            capability `workspace.symbol.resolveSupport`.
+
+            See SymbolInformation#location for more details.
+          title: location
+        name:
+          description: The name of this symbol.
+          title: name
+          type: string
+        tags:
+          description: Tags for this completion item.
+          items:
+            enum:
+            - 1
+            type: number
+          title: tags
+          type: array
+      propertyOrder:
+      - location
+      - data
+      - name
+      - kind
+      - tags
+      - containerName
+      required:
+      - kind
+      - location
+      - name
+      title: WorkspaceSymbol
+      type: object
     decimal:
       description: |-
         Defines a decimal number. Since decimal numbers are very

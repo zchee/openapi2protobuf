@@ -4,7 +4,19 @@
 package protobuf
 
 import (
+	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/apipb"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
+	"google.golang.org/protobuf/types/known/sourcecontextpb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/typepb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 var builtinTypes = map[string]protoreflect.Kind{
@@ -16,24 +28,84 @@ var builtinTypes = map[string]protoreflect.Kind{
 	"boolean": protoreflect.BoolKind,
 }
 
-var knownImports = map[string]string{
-	"google.protobuf.Any":           "google/protobuf/any.proto",
-	"google.protobuf.Duration":      "google/protobuf/duration.proto",
-	"google.protobuf.Empty":         "google/protobuf/empty.proto",
-	"google.protobuf.ListValue":     "google/protobuf/struct.proto",
-	"google.protobuf.MethodOptions": "google/protobuf/descriptor.proto",
-	"google.protobuf.NullValue":     "google/protobuf/struct.proto",
-	"google.protobuf.Struct":        "google/protobuf/struct.proto",
-	"google.protobuf.Timestamp":     "google/protobuf/timestamp.proto",
-	"google.protobuf.DoubleValue":   "google/protobuf/wrappers.proto",
-	"google.protobuf.FloatValue":    "google/protobuf/wrappers.proto",
-	"google.protobuf.Int64Value":    "google/protobuf/wrappers.proto",
-	"google.protobuf.UInt64Value":   "google/protobuf/wrappers.proto",
-	"google.protobuf.Int32Value":    "google/protobuf/wrappers.proto",
-	"google.protobuf.UInt32Value":   "google/protobuf/wrappers.proto",
-	"google.protobuf.BoolValue":     "google/protobuf/wrappers.proto",
-	"google.protobuf.StringValue":   "google/protobuf/wrappers.proto",
-	"google.protobuf.BytesValue":    "google/protobuf/wrappers.proto",
+func AnyDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(anypb.File_google_protobuf_any_proto)
+}
+
+func APIDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(apipb.File_google_protobuf_api_proto)
+}
+
+func DurationDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(durationpb.File_google_protobuf_duration_proto)
+}
+
+func EmptyDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(emptypb.File_google_protobuf_empty_proto)
+}
+
+func FieldmaskDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(fieldmaskpb.File_google_protobuf_field_mask_proto)
+}
+
+func SourceContextDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(sourcecontextpb.File_google_protobuf_source_context_proto)
+}
+
+func StructDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(structpb.File_google_protobuf_struct_proto)
+}
+
+func TimestampDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(timestamppb.File_google_protobuf_timestamp_proto)
+}
+
+func TypeDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(typepb.File_google_protobuf_type_proto)
+}
+
+func WrappersDescriptor() *descriptorpb.FileDescriptorProto {
+	return protodesc.ToFileDescriptorProto(wrapperspb.File_google_protobuf_wrappers_proto)
+}
+
+const (
+	Any           = "google.protobuf.Any"
+	Duration      = "google.protobuf.Duration"
+	Empty         = "google.protobuf.Empty"
+	ListValue     = "google.protobuf.ListValue"
+	MethodOptions = "google.protobuf.MethodOptions"
+	NullValue     = "google.protobuf.NullValue"
+	Struct        = "google.protobuf.Struct"
+	Timestamp     = "google.protobuf.Timestamp"
+	DoubleValue   = "google.protobuf.DoubleValue"
+	FloatValue    = "google.protobuf.FloatValue"
+	Int64Value    = "google.protobuf.Int64Value"
+	UInt64Value   = "google.protobuf.UInt64Value"
+	Int32Value    = "google.protobuf.Int32Value"
+	UInt32Value   = "google.protobuf.UInt32Value"
+	BoolValue     = "google.protobuf.BoolValue"
+	StringValue   = "google.protobuf.StringValue"
+	BytesValue    = "google.protobuf.BytesValue"
+)
+
+var KnownImports = map[string]string{
+	Any:           "google/protobuf/any.proto",
+	Duration:      "google/protobuf/duration.proto",
+	Empty:         "google/protobuf/empty.proto",
+	ListValue:     "google/protobuf/struct.proto",
+	MethodOptions: "google/protobuf/descriptor.proto",
+	NullValue:     "google/protobuf/struct.proto",
+	Struct:        "google/protobuf/struct.proto",
+	Timestamp:     "google/protobuf/timestamp.proto",
+	DoubleValue:   "google/protobuf/wrappers.proto",
+	FloatValue:    "google/protobuf/wrappers.proto",
+	Int64Value:    "google/protobuf/wrappers.proto",
+	UInt64Value:   "google/protobuf/wrappers.proto",
+	Int32Value:    "google/protobuf/wrappers.proto",
+	UInt32Value:   "google/protobuf/wrappers.proto",
+	BoolValue:     "google/protobuf/wrappers.proto",
+	StringValue:   "google/protobuf/wrappers.proto",
+	BytesValue:    "google/protobuf/wrappers.proto",
 }
 
 var FieldTypes = map[string]protoreflect.Kind{

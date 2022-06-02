@@ -87,7 +87,7 @@ func splitByLastDot(fqn string) string {
 }
 
 func goPackage(fqn string) string {
-	return fmt.Sprintf("%s;%s", fqn, splitByLastDot(fqn))
+	return fmt.Sprintf("%s", fqn)
 }
 
 func javaPackage(fqn string) string {
@@ -137,8 +137,8 @@ func (fd *FileDescriptorProto) SetPackage(fqn string) {
 	fd.desc.Package = proto.String(fqn)
 }
 
-func (fd *FileDescriptorProto) AddDependency(fdp *FileDescriptorProto) *FileDescriptorProto {
-	fd.desc.Dependency = append(fd.desc.Dependency, fdp.desc.GetName())
+func (fd *FileDescriptorProto) AddDependency(deps string) *FileDescriptorProto {
+	fd.desc.Dependency = append(fd.desc.Dependency, deps)
 
 	return fd
 }
@@ -156,6 +156,12 @@ func (fd *FileDescriptorProto) AddMessage(msg *MessageDescriptorProto) *FileDesc
 
 	fd.msg[msg.GetName()] = true
 	fd.desc.MessageType = append(fd.desc.MessageType, msg.Build())
+
+	return fd
+}
+
+func (fd *FileDescriptorProto) AddMessageDescriptor(desc *descriptorpb.DescriptorProto) *FileDescriptorProto {
+	fd.desc.MessageType = append(fd.desc.MessageType, desc)
 
 	return fd
 }
@@ -184,6 +190,7 @@ func (fd *FileDescriptorProto) AddExtension(ext *FieldDescriptorProto) *FileDesc
 }
 
 func (fd *FileDescriptorProto) Build() *descriptorpb.FileDescriptorProto {
+	sort.Slice(fd.desc.Dependency, func(i, j int) bool { return fd.desc.Dependency[i] < fd.desc.Dependency[j] })
 	sort.Slice(fd.desc.MessageType, func(i, j int) bool { return fd.desc.MessageType[i].GetName() < fd.desc.MessageType[j].GetName() })
 	sort.Slice(fd.desc.EnumType, func(i, j int) bool { return fd.desc.EnumType[i].GetName() < fd.desc.EnumType[j].GetName() })
 	sort.Slice(fd.desc.Service, func(i, j int) bool { return fd.desc.Service[i].GetName() < fd.desc.Service[j].GetName() })
