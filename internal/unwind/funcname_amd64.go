@@ -4,8 +4,8 @@ package unwind
 
 import (
 	"strings"
-	_ "unsafe"
-) // for go:linkname
+	_ "unsafe" // for go:linkname
+)
 
 //go:noescape
 //go:linkname callers runtime.callers
