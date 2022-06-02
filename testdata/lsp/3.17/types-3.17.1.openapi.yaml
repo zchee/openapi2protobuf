@@ -19,7 +19,7 @@ components:
             The range of the text document to be manipulated. To insert
             text into a document create a range where start === end.
           title: range
-      propertyOrder:
+      x-propertyOrder:
       - annotationId
       - range
       - newText
@@ -56,7 +56,7 @@ components:
             type: number
           title: tags
           type: array
-      propertyOrder:
+      x-propertyOrder:
       - name
       - kind
       - tags
@@ -81,7 +81,7 @@ components:
             $ref: '#/components/schemas/Range'
           title: fromRanges
           type: array
-      propertyOrder:
+      x-propertyOrder:
       - from
       - fromRanges
       required:
@@ -135,7 +135,7 @@ components:
           $ref: '#/components/schemas/DocumentUri'
           description: The resource identifier of this item.
           title: uri
-      propertyOrder:
+      x-propertyOrder:
       - name
       - kind
       - tags
@@ -169,7 +169,7 @@ components:
           $ref: '#/components/schemas/CallHierarchyItem'
           description: The item that is called.
           title: to
-      propertyOrder:
+      x-propertyOrder:
       - to
       - fromRanges
       required:
@@ -198,7 +198,7 @@ components:
             before applying the change.
           title: needsConfirmation
           type: boolean
-      propertyOrder:
+      x-propertyOrder:
       - label
       - needsConfirmation
       - description
@@ -217,7 +217,7 @@ components:
         _annotations:
           additionalProperties:
             $ref: '#/components/schemas/ChangeAnnotation'
-          propertyOrder: []
+          x-propertyOrder: []
           title: _annotations
           type: object
         _counter:
@@ -229,7 +229,7 @@ components:
         size:
           title: size
           type: integer
-      propertyOrder:
+      x-propertyOrder:
       - _annotations
       - _counter
       - _size
@@ -293,7 +293,7 @@ components:
     #             This is displayed in the code actions UI.
     #           title: reason
     #           type: string
-    #       propertyOrder:
+    #       x-propertyOrder:
     #       - reason
     #       required:
     #       - reason
@@ -323,7 +323,7 @@ components:
     #       description: A short, human-readable, title for this code action.
     #       title: title
     #       type: string
-    #   propertyOrder:
+    #   x-propertyOrder:
     #   - title
     #   - kind
     #   - diagnostics
@@ -368,7 +368,7 @@ components:
     #       $ref: '#/components/schemas/CodeActionTriggerKind'
     #       description: The reason why code actions were requested.
     #       title: triggerKind
-    #   propertyOrder:
+    #   x-propertyOrder:
     #   - diagnostics
     #   - only
     #   - triggerKind
@@ -403,7 +403,7 @@ components:
           $ref: '#/components/schemas/URI'
           description: An URI to open with more information about the diagnostic error.
           title: href
-      propertyOrder:
+      x-propertyOrder:
       - href
       required:
       - href
@@ -435,7 +435,7 @@ components:
           description: The range in which this code lens is valid. Should only span
             a single line.
           title: range
-      propertyOrder:
+      x-propertyOrder:
       - range
       - command
       - data
@@ -465,7 +465,7 @@ components:
           $ref: '#/components/schemas/decimal'
           description: The red component of this color in the range [0-1].
           title: red
-      propertyOrder:
+      x-propertyOrder:
       - red
       - green
       - blue
@@ -491,7 +491,7 @@ components:
           $ref: '#/components/schemas/Range'
           description: The range in the document where this color appears.
           title: range
-      propertyOrder:
+      x-propertyOrder:
       - range
       - color
       required:
@@ -526,7 +526,7 @@ components:
             this presentation for the color.  When `falsy` the [label](#ColorPresentation.label)
             is used.
           title: textEdit
-      propertyOrder:
+      x-propertyOrder:
       - label
       - textEdit
       - additionalTextEdits
@@ -559,7 +559,7 @@ components:
           description: Title of the command, like `save`.
           title: title
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - title
       - command
       - arguments
@@ -746,7 +746,7 @@ components:
             property is used as a text.
           title: textEditText
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - label
       - labelDetails
       - kind
@@ -815,7 +815,7 @@ components:
             without any spacing. Should be used for function signatures or type annotations.
           title: detail
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - detail
       - description
       title: CompletionItemLabelDetails
@@ -874,7 +874,7 @@ components:
                   replace:
                     $ref: '#/components/schemas/Range'
                     title: replace
-                propertyOrder:
+                x-propertyOrder:
                 - insert
                 - replace
                 required:
@@ -891,7 +891,7 @@ components:
               $ref: '#/components/schemas/InsertTextMode'
               description: A default insert text mode.
               title: insertTextMode
-          propertyOrder:
+          x-propertyOrder:
           - commitCharacters
           - editRange
           - insertTextFormat
@@ -905,7 +905,7 @@ components:
             $ref: '#/components/schemas/CompletionItem'
           title: items
           type: array
-      propertyOrder:
+      x-propertyOrder:
       - isIncomplete
       - itemDefaults
       - items
@@ -935,7 +935,7 @@ components:
           $ref: '#/components/schemas/DocumentUri'
           description: The resource to create.
           title: uri
-      propertyOrder:
+      x-propertyOrder:
       - kind
       - uri
       - options
@@ -956,7 +956,7 @@ components:
           description: Overwrite existing file. Overwrite wins over `ignoreIfExists`
           title: overwrite
           type: boolean
-      propertyOrder:
+      x-propertyOrder:
       - overwrite
       - ignoreIfExists
       title: CreateFileOptions
@@ -1010,7 +1010,7 @@ components:
           $ref: '#/components/schemas/DocumentUri'
           description: The file to delete.
           title: uri
-      propertyOrder:
+      x-propertyOrder:
       - kind
       - uri
       - options
@@ -1031,7 +1031,7 @@ components:
           description: Delete the content recursively if a folder is denoted.
           title: recursive
           type: boolean
-      propertyOrder:
+      x-propertyOrder:
       - recursive
       - ignoreIfNotExists
       title: DeleteFileOptions
@@ -1100,7 +1100,7 @@ components:
     #         type: number
     #       title: tags
     #       type: array
-    #   propertyOrder:
+    #   x-propertyOrder:
     #   - range
     #   - severity
     #   - code
@@ -1131,7 +1131,7 @@ components:
           description: The message of this related diagnostic information.
           title: message
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - location
       - message
       required:
@@ -1171,7 +1171,7 @@ components:
           $ref: '#/components/schemas/Range'
           description: The range this highlight applies to.
           title: range
-      propertyOrder:
+      x-propertyOrder:
       - range
       - kind
       required:
@@ -1216,7 +1216,7 @@ components:
             user settings, and localization.
           title: tooltip
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - range
       - target
       - tooltip
@@ -1277,7 +1277,7 @@ components:
     #         type: number
     #       title: tags
     #       type: array
-    #   propertyOrder:
+    #   x-propertyOrder:
     #   - name
     #   - detail
     #   - kind
@@ -1340,7 +1340,7 @@ components:
             The zero-based start line of the range to fold. The folded area starts after the line's last character.
             To be valid, the end must be zero or larger and smaller than the number of lines in the document.
           title: startLine
-      propertyOrder:
+      x-propertyOrder:
       - startLine
       - startCharacter
       - endLine
@@ -1390,7 +1390,7 @@ components:
           description: Trim trailing whitespaces on a line.
           title: trimTrailingWhitespace
           type: boolean
-      propertyOrder:
+      x-propertyOrder:
       - tabSize
       - insertSpaces
       - trimTrailingWhitespace
@@ -1432,7 +1432,7 @@ components:
         version:
           $ref: '#/components/schemas/integer'
           title: version
-      propertyOrder:
+      x-propertyOrder:
       - _uri
       - _languageId
       - _version
@@ -1472,7 +1472,7 @@ components:
               value:
                 title: value
                 type: string
-            propertyOrder:
+            x-propertyOrder:
             - language
             - value
             required:
@@ -1488,7 +1488,7 @@ components:
                   value:
                     title: value
                     type: string
-                propertyOrder:
+                x-propertyOrder:
                 - language
                 - value
                 required:
@@ -1516,7 +1516,7 @@ components:
           $ref: '#/components/schemas/Range'
           description: An optional range
           title: range
-      propertyOrder:
+      x-propertyOrder:
       - contents
       - range
       required:
@@ -1581,7 +1581,7 @@ components:
                   description: The value of this label part.
                   title: value
                   type: string
-              propertyOrder:
+              x-propertyOrder:
               - value
               - tooltip
               - location
@@ -1636,7 +1636,7 @@ components:
           - type: string
           description: The tooltip text when you hover over this item.
           title: tooltip
-      propertyOrder:
+      x-propertyOrder:
       - position
       - label
       - kind
@@ -1698,7 +1698,7 @@ components:
           description: The value of this label part.
           title: value
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - value
       - tooltip
       - location
@@ -1747,7 +1747,7 @@ components:
             The document range where execution has stopped.
             Typically the end position of the range denotes the line where the inline values are shown.
           title: stoppedLocation
-      propertyOrder:
+      x-propertyOrder:
       - frameId
       - stoppedLocation
       required:
@@ -1772,7 +1772,7 @@ components:
             The document range for which the inline value applies.
             The range is used to extract the evaluatable expression from the underlying document.
           title: range
-      propertyOrder:
+      x-propertyOrder:
       - range
       - expression
       required:
@@ -1792,7 +1792,7 @@ components:
           description: The text of the inline value.
           title: text
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - range
       - text
       required:
@@ -1821,7 +1821,7 @@ components:
           description: If specified the name of the variable to look up.
           title: variableName
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - range
       - variableName
       - caseSensitiveLookup
@@ -1847,7 +1847,7 @@ components:
           $ref: '#/components/schemas/Range'
           description: The range if the replace is requested.
           title: replace
-      propertyOrder:
+      x-propertyOrder:
       - newText
       - insert
       - replace
@@ -1919,7 +1919,7 @@ components:
         uri:
           $ref: '#/components/schemas/DocumentUri'
           title: uri
-      propertyOrder:
+      x-propertyOrder:
       - uri
       - range
       required:
@@ -1959,7 +1959,7 @@ components:
           $ref: '#/components/schemas/DocumentUri'
           description: The target resource identifier of this link.
           title: targetUri
-      propertyOrder:
+      x-propertyOrder:
       - originSelectionRange
       - targetUri
       - targetRange
@@ -1979,7 +1979,7 @@ components:
           value:
             title: value
             type: string
-        propertyOrder:
+        x-propertyOrder:
         - language
         - value
         required:
@@ -2033,7 +2033,7 @@ components:
           description: The content itself
           title: value
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - kind
       - value
       required:
@@ -2072,7 +2072,7 @@ components:
             truth (as specified with document content ownership).
           title: version
           type: integer
-      propertyOrder:
+      x-propertyOrder:
       - version
       - uri
       required:
@@ -2114,7 +2114,7 @@ components:
     #         *Note*: a label of type string should be a substring of its containing signature label.
     #         Its intended use case is to highlight the parameter label part in the `SignatureInformation.label`.
     #       title: label
-    #   propertyOrder:
+    #   x-propertyOrder:
     #   - label
     #   - documentation
     #   required:
@@ -2159,7 +2159,7 @@ components:
           $ref: '#/components/schemas/uinteger'
           description: Line position in a document (zero-based).
           title: line
-      propertyOrder:
+      x-propertyOrder:
       - line
       - character
       required:
@@ -2191,7 +2191,7 @@ components:
           $ref: '#/components/schemas/Position'
           description: The range's start position
           title: start
-      propertyOrder:
+      x-propertyOrder:
       - start
       - end
       required:
@@ -2208,7 +2208,7 @@ components:
           description: Include the declaration of the current symbol.
           title: includeDeclaration
           type: boolean
-      propertyOrder:
+      x-propertyOrder:
       - includeDeclaration
       required:
       - includeDeclaration
@@ -2239,7 +2239,7 @@ components:
           $ref: '#/components/schemas/RenameFileOptions'
           description: Rename options.
           title: options
-      propertyOrder:
+      x-propertyOrder:
       - kind
       - oldUri
       - newUri
@@ -2262,7 +2262,7 @@ components:
           description: Overwrite target if existing. Overwrite wins over `ignoreIfExists`
           title: overwrite
           type: boolean
-      propertyOrder:
+      x-propertyOrder:
       - overwrite
       - ignoreIfExists
       title: RenameFileOptions
@@ -2278,7 +2278,7 @@ components:
           description: The resource operation kind.
           title: kind
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - kind
       - annotationId
       required:
@@ -2301,7 +2301,7 @@ components:
     #       $ref: '#/components/schemas/Range'
     #       description: The [range](#Range) of this selection range.
     #       title: range
-    #   propertyOrder:
+    #   x-propertyOrder:
     #   - range
     #   - parent
     #   required:
@@ -2373,7 +2373,7 @@ components:
             send a delta.
           title: resultId
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - resultId
       - data
       required:
@@ -2392,7 +2392,7 @@ components:
         resultId:
           title: resultId
           type: string
-      propertyOrder:
+      x-propertyOrder:
       - resultId
       - edits
       required:
@@ -2415,7 +2415,7 @@ components:
           $ref: '#/components/schemas/uinteger'
           description: The start offset of the edit.
           title: start
-      propertyOrder:
+      x-propertyOrder:
       - start
       - deleteCount
       - data
@@ -2438,7 +2438,7 @@ components:
             type: string
           title: tokenTypes
           type: array
-      propertyOrder:
+      x-propertyOrder:
       - tokenTypes
       - tokenModifiers
       required:
@@ -2482,7 +2482,7 @@ components:
     #         $ref: '#/components/schemas/SignatureInformation'
     #       title: signatures
     #       type: array
-    #   propertyOrder:
+    #   x-propertyOrder:
     #   - signatures
     #   - activeSignature
     #   - activeParameter
@@ -2525,7 +2525,7 @@ components:
     #         $ref: '#/components/schemas/ParameterInformation'
     #       title: parameters
     #       type: array
-    #   propertyOrder:
+    #   x-propertyOrder:
     #   - label
     #   - documentation
     #   - parameters
@@ -2580,7 +2580,7 @@ components:
             type: number
           title: tags
           type: array
-      propertyOrder:
+      x-propertyOrder:
       - deprecated
       - location
       - name
@@ -2656,7 +2656,7 @@ components:
             The version number of this document (it will increase after each
             change, including undo/redo).
           title: version
-      propertyOrder:
+      x-propertyOrder:
       - uri
       - languageId
       - version
@@ -2686,7 +2686,7 @@ components:
             description: The new text for the provided range.
             title: text
             type: string
-        propertyOrder:
+        x-propertyOrder:
         - range
         - rangeLength
         - text
@@ -2699,7 +2699,7 @@ components:
             description: The new text of the whole document.
             title: text
             type: string
-        propertyOrder:
+        x-propertyOrder:
         - text
         required:
         - text
@@ -2729,7 +2729,7 @@ components:
           $ref: '#/components/schemas/OptionalVersionedTextDocumentIdentifier'
           description: The text document to change.
           title: textDocument
-      propertyOrder:
+      x-propertyOrder:
       - textDocument
       - edits
       required:
@@ -2747,7 +2747,7 @@ components:
           $ref: '#/components/schemas/DocumentUri'
           description: The text document's uri.
           title: uri
-      propertyOrder:
+      x-propertyOrder:
       - uri
       required:
       - uri
@@ -2778,7 +2778,7 @@ components:
             The version number of this document (it will increase after each
             change, including undo/redo).
           title: version
-      propertyOrder:
+      x-propertyOrder:
       - uri
       - languageId
       - version
@@ -2808,7 +2808,7 @@ components:
             The range of the text document to be manipulated. To insert
             text into a document create a range where start === end.
           title: range
-      propertyOrder:
+      x-propertyOrder:
       - range
       - newText
       required:
@@ -2818,7 +2818,7 @@ components:
       type: object
     TextEditChange:
       description: A change to capture text edits for existing resources.
-      propertyOrder:
+      x-propertyOrder:
       - all
       - clear
       - add
@@ -2839,7 +2839,7 @@ components:
             - $ref: '#/components/schemas/AnnotatedTextEdit'
           title: edits
           type: array
-      propertyOrder:
+      x-propertyOrder:
       - edits
       - changeAnnotations
       - insert
@@ -2901,7 +2901,7 @@ components:
           $ref: '#/components/schemas/DocumentUri'
           description: The resource identifier of this item.
           title: uri
-      propertyOrder:
+      x-propertyOrder:
       - name
       - kind
       - tags
@@ -2936,7 +2936,7 @@ components:
           $ref: '#/components/schemas/integer'
           description: The version number of this document.
           title: version
-      propertyOrder:
+      x-propertyOrder:
       - version
       - uri
       required:
@@ -2953,7 +2953,7 @@ components:
         _textEditChanges:
           additionalProperties:
             $ref: '#/components/schemas/TextEditChangeImpl'
-          propertyOrder: []
+          x-propertyOrder: []
           title: _textEditChanges
           type: object
         _workspaceEdit:
@@ -2965,7 +2965,7 @@ components:
             Returns the underlying [WorkspaceEdit](#WorkspaceEdit) literal
             use to be returned from a workspace edit operation like rename.
           title: edit
-      propertyOrder:
+      x-propertyOrder:
       - _workspaceEdit
       - _textEditChanges
       - _changeAnnotations
@@ -3006,7 +3006,7 @@ components:
             delete file / folder operations.
 
             Whether clients honor this property depends on the client capability `workspace.changeAnnotationSupport`.
-          propertyOrder: []
+          x-propertyOrder: []
           title: changeAnnotations
           type: object
         changes:
@@ -3015,7 +3015,7 @@ components:
               $ref: '#/components/schemas/TextEdit'
             type: array
           description: Holds changes to existing resources.
-          propertyOrder: []
+          x-propertyOrder: []
           title: changes
           type: object
         documentChanges:
@@ -3038,7 +3038,7 @@ components:
             - $ref: '#/components/schemas/DeleteFile'
           title: documentChanges
           type: array
-      propertyOrder:
+      x-propertyOrder:
       - changes
       - documentChanges
       - changeAnnotations
@@ -3057,7 +3057,7 @@ components:
           $ref: '#/components/schemas/URI'
           description: The associated URI for this workspace folder.
           title: uri
-      propertyOrder:
+      x-propertyOrder:
       - uri
       - name
       required:
@@ -3096,7 +3096,7 @@ components:
               uri:
                 $ref: '#/components/schemas/DocumentUri'
                 title: uri
-            propertyOrder:
+            x-propertyOrder:
             - uri
             required:
             - uri
@@ -3120,7 +3120,7 @@ components:
             type: number
           title: tags
           type: array
-      propertyOrder:
+      x-propertyOrder:
       - location
       - data
       - name

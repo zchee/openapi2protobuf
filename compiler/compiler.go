@@ -59,6 +59,18 @@ var (
 	_ = protoimpl.X
 )
 
+var AdditionalMessages []*protobuf.MessageDescriptorProto
+
+func RegisterAdditionalMessages(descs ...*protobuf.MessageDescriptorProto) {
+	AdditionalMessages = append(AdditionalMessages, descs...)
+}
+
+var DependencyProto []string
+
+func RegisterDependencyProto(deps string) {
+	DependencyProto = append(DependencyProto, deps)
+}
+
 // Option represents an idiomatic functional option pattern to compile the Protocol Buffers structure from the OpenAPI schema.
 type Option func(o *option)
 
@@ -123,18 +135,6 @@ type compiler struct {
 
 	schemasLookupFunc lookupFunc
 	pathLookupFunc    lookupFunc
-}
-
-var AdditionalMessages []*protobuf.MessageDescriptorProto
-
-func RegisterAdditionalMessages(descs ...*protobuf.MessageDescriptorProto) {
-	AdditionalMessages = append(AdditionalMessages, descs...)
-}
-
-var DependencyProto []string
-
-func RegisterDependencyProto(deps string) {
-	DependencyProto = append(DependencyProto, deps)
 }
 
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.
@@ -263,14 +263,15 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		c.schemasLookupFunc = schemasLookupFunc
 	}()
 
-	for name, schema := range components.Schemas {
-		msg, err := c.compileSchemaRef(name, schema)
+	for name, schemaRef := range components.Schemas {
+		msg, err := c.compileSchemaRef(name, schemaRef)
 		if err != nil {
 			return err
 		}
 		if skipMessage(msg, nil) {
 			continue
 		}
+
 		c.fdesc.AddMessage(msg)
 	}
 
@@ -460,6 +461,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		fieldType := propMsg.GetFieldType()
 		field := protobuf.NewFieldDescriptorProto(normalizeFieldName(propName), fieldType)
 		field.SetNumber()
+		field.SetTypeName(propMsg.GetName())
 		if prop.Value.Type == openapi3.TypeArray {
 			field.SetRepeated()
 		}

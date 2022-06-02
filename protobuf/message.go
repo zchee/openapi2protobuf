@@ -41,6 +41,17 @@ func (md *MessageDescriptorProto) Clone() *MessageDescriptorProto {
 	return mdesc
 }
 
+func (md *MessageDescriptorProto) Copy() *MessageDescriptorProto {
+	desc := &descriptorpb.DescriptorProto{}
+	*desc = *md.desc
+
+	return &MessageDescriptorProto{
+		desc:   desc,
+		nested: make(map[string]bool),
+		field:  make(map[string]bool),
+	}
+}
+
 func (md *MessageDescriptorProto) GetName() string {
 	return md.desc.GetName()
 }
@@ -51,7 +62,6 @@ func (md *MessageDescriptorProto) SetName(name string) *MessageDescriptorProto {
 }
 
 func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *MessageDescriptorProto {
-	// fmt.Fprintf(os.Stderr, "MessageDescriptorProto: md.field: %#v\n", md.field)
 	if md.field[field.GetName()] {
 		return md
 	}
@@ -62,6 +72,16 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 	md.desc.Field = append(md.desc.Field, field.Build())
 
 	return md
+}
+
+func (md *MessageDescriptorProto) GetFieldByName(name string) *FieldDescriptorProto {
+	for _, field := range md.desc.Field {
+		if field.GetName() == name {
+			return &FieldDescriptorProto{desc: field}
+		}
+	}
+
+	return nil
 }
 
 func (md *MessageDescriptorProto) GetFieldType() *descriptorpb.FieldDescriptorProto_Type {

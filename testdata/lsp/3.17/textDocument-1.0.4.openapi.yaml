@@ -42,7 +42,7 @@ components:
         version:
           title: version
           type: integer
-      propertyOrder:
+      x-propertyOrder:
       - _uri
       - _languageId
       - _version
@@ -96,7 +96,7 @@ components:
             If a line number is negative, it defaults to 0.
           title: line
           type: integer
-      propertyOrder:
+      x-propertyOrder:
       - line
       - character
       required:
@@ -127,7 +127,7 @@ components:
           $ref: '#/components/schemas/Position'
           description: The range's start position
           title: start
-      propertyOrder:
+      x-propertyOrder:
       - start
       - end
       required:
@@ -151,7 +151,7 @@ components:
             The range of the text document to be manipulated. To insert
             text into a document create a range where start === end.
           title: range
-      propertyOrder:
+      x-propertyOrder:
       - range
       - newText
       required:
@@ -186,7 +186,7 @@ components:
             change, including undo/redo).
           title: version
           type: integer
-      propertyOrder:
+      x-propertyOrder:
       - uri
       - languageId
       - version
@@ -217,7 +217,7 @@ components:
             description: The new text for the provided range.
             title: text
             type: string
-        propertyOrder:
+        x-propertyOrder:
         - range
         - rangeLength
         - text
@@ -231,7 +231,7 @@ components:
             description: The new text of the whole document.
             title: text
             type: string
-        propertyOrder:
+        x-propertyOrder:
         - text
         required:
         - text
