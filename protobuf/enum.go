@@ -31,6 +31,10 @@ func (ed *EnumDescriptorProto) AddValue(value *EnumValueDescriptorProto) *EnumDe
 	return ed
 }
 
+func (ed *EnumDescriptorProto) GetValue() []*descriptorpb.EnumValueDescriptorProto {
+	return ed.desc.Value
+}
+
 func (ed *EnumDescriptorProto) Build() *descriptorpb.EnumDescriptorProto {
 	return ed.desc
 }

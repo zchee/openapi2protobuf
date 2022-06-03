@@ -115,7 +115,7 @@ func (md *MessageDescriptorProto) GetFieldType() *descriptorpb.FieldDescriptorPr
 }
 
 func (md *MessageDescriptorProto) IsEmptyField() bool {
-	return len(md.desc.Field) == 0
+	return len(md.desc.Field) == 0 && len(md.desc.EnumType) == 0
 }
 
 func (md *MessageDescriptorProto) AddExtension(ext *FieldDescriptorProto) *MessageDescriptorProto {

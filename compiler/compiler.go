@@ -22,8 +22,8 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
 
-	"go.lsp.dev/openapi2protobuf/internal/dump"
 	"go.lsp.dev/openapi2protobuf/internal/conv"
+	"go.lsp.dev/openapi2protobuf/internal/dump"
 	"go.lsp.dev/openapi2protobuf/internal/unwind"
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
@@ -293,11 +293,11 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 var enumMessage = protobuf.NewMessageDescriptorProto("enum")
 
 func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
-	skip := msg == nil || msg == enumMessage
+	skip := msg == nil || msg == enumMessage || msg.IsEmptyField()
 
-	if msg != nil && msg != enumMessage && msg.IsEmptyField() {
+	if msg != nil && msg.IsEmptyField() {
 		if parent != nil {
-			// fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q), parent(%q)\n", unwind.FuncNameN(3)+":", conv.NormalizeFieldName(msg.GetName()), parent.GetName())
+			fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q), parent(%q)\n", unwind.FuncNameN(2)+":", conv.NormalizeFieldName(msg.GetName()), parent.GetName())
 			return skip
 		}
 	}
@@ -307,6 +307,9 @@ func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
 
 // compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
+	if strings.ToLower(name) == "basesymbolinformation" {
+		fmt.Fprintf(os.Stderr, "%s: from: %s: BaseSymbolInformation: array.Items\n", unwind.FuncName(), unwind.FuncNameN(2))
+	}
 	if additionalProps := schemaRef.Value.AdditionalProperties; additionalProps != nil {
 		return c.compileSchemaRef(name, additionalProps)
 	}
@@ -315,11 +318,16 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 		// Enum, OneOf, AnyOf, AllOf
 		switch {
 		case isEnum(val):
+			enumMsg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(val.Title))
 			enum := c.CompileEnum(name, val)
 			if enum != nil && enum.GetName() != "" {
 				c.fdesc.AddEnum(enum)
 			}
-			return enumMessage, nil
+			enumMsg.AddEnumType(enum)
+			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), protobuf.FieldTypeMessage())
+			field.SetTypeName(enum.GetName())
+			enumMsg.AddField(field)
+			return enumMsg, nil
 
 		case isOneOf(val):
 			oneof, err := c.CompileOneOf(name, val)
@@ -407,7 +415,7 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 		return arrayMsg, nil
 	}
 	if strings.ToLower(array.Title) == "tags" {
-		fmt.Fprintf(os.Stderr, "%s: array.Items\n", unwind.FuncNameN(3))
+		fmt.Fprintf(os.Stderr, "%s: from: %s: array.Items\n", unwind.FuncName(), unwind.FuncNameN(2))
 	}
 
 	itemsMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(arrayMsg.GetName()), array.Items)
@@ -511,6 +519,9 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Enu
 	}
 
 	eb := protobuf.NewEnumDescriptorProto(conv.NormalizeMessageName(name))
+	if strings.ToLower(name) == "tags" {
+		fmt.Printf("enum.Enum: %[1]T -> %#[1]v\n", enum.Enum[0])
+	}
 
 	for i, e := range enum.Enum {
 		var enumValName string
@@ -522,7 +533,7 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Enu
 		case int64:
 			enumValName = strconv.Itoa(int(e))
 		case float64:
-			enumValName = strconv.Itoa(int(e))
+			enumValName = strconv.FormatFloat(float64(e), 'g', -1, 64)
 		default:
 			fmt.Fprintf(os.Stderr, "%s: enumValName: %T -> %s\n", unwind.FuncName(), e, e)
 		}
