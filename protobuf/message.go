@@ -10,11 +10,10 @@ import (
 )
 
 type MessageDescriptorProto struct {
-	desc     *descriptorpb.DescriptorProto
-	nested   map[string]bool
-	field    map[string]bool
-	number   int32
-	oneOfIdx int32
+	desc   *descriptorpb.DescriptorProto
+	field  map[string]bool
+	nested map[string]bool
+	number int32
 }
 
 func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
@@ -22,8 +21,8 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 		desc: &descriptorpb.DescriptorProto{
 			Name: proto.String(name),
 		},
-		nested: make(map[string]bool),
 		field:  make(map[string]bool),
+		nested: make(map[string]bool),
 	}
 }
 
@@ -32,11 +31,10 @@ func (md *MessageDescriptorProto) Clone() *MessageDescriptorProto {
 	*desc = *md.desc
 
 	mdesc := &MessageDescriptorProto{
-		desc:     desc,
-		nested:   md.nested,
-		field:    md.field,
-		number:   md.number,
-		oneOfIdx: md.oneOfIdx,
+		desc:   desc,
+		nested: md.nested,
+		field:  md.field,
+		number: md.number,
 	}
 
 	return mdesc

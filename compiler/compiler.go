@@ -352,13 +352,13 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			return c.compileBuiltin(val, protobuf.FieldTypeBool())
 
 		case openapi3.TypeInteger:
-			return c.compileBuiltin(val, IntegerFieldType(val.Format))
+			return c.compileBuiltin(val, integerFieldType(val.Format))
 
 		case openapi3.TypeNumber:
-			return c.compileBuiltin(val, NumberFieldType(val.Format))
+			return c.compileBuiltin(val, numberFieldType(val.Format))
 
 		case openapi3.TypeString:
-			return c.compileBuiltin(val, StringFieldType(val.Format))
+			return c.compileBuiltin(val, stringFieldType(val.Format))
 
 		case openapi3.TypeArray:
 			return c.compileArray(val)
@@ -392,7 +392,7 @@ func (c *compiler) compileBuiltin(schema *openapi3.Schema, fieldType *descriptor
 }
 
 func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	arrayMsg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(array.Title))
+	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(array.Title))
 
 	if ref := array.Items.Ref; ref != "" {
 		refBase := path.Base(ref)
@@ -406,31 +406,31 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(refObj.Title), protobuf.FieldTypeMessage())
 			field.SetNumber()
 			field.SetTypeName(refObj.Title)
-			arrayMsg.AddField(field)
+			msg.AddField(field)
 
 		default:
 			fmt.Fprintf(os.Stderr, "refObj: %T: %#v\n", refObj, refObj)
 		}
 
-		return arrayMsg, nil
+		return msg, nil
 	}
 	if strings.ToLower(array.Title) == "tags" {
 		fmt.Fprintf(os.Stderr, "%s: from: %s: array.Items\n", unwind.FuncName(), unwind.FuncNameN(2))
 	}
 
-	itemsMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(arrayMsg.GetName()), array.Items)
+	itemsMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(msg.GetName()), array.Items)
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
 	if strings.ToLower(array.Title) == "tags" {
 		fmt.Fprintf(os.Stderr, "array: %s\n", dump.Sdump(array))
 	}
-	if skipMessage(itemsMsg, arrayMsg) {
-		return arrayMsg, nil
+	if skipMessage(itemsMsg, msg) {
+		return msg, nil
 	}
 
 	fieldType := itemsMsg.GetFieldType()
-	field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(arrayMsg.GetName()), fieldType)
+	field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(msg.GetName()), fieldType)
 	field.SetNumber()
 	if array.Type == openapi3.TypeArray {
 		field.SetRepeated()
@@ -438,19 +438,19 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 
 	switch fieldType.Number() {
 	case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
-		arrayMsg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
+		msg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
 
 	default:
 		field.SetTypeName(fieldType.String())
 	}
 
-	arrayMsg.AddField(field)
+	msg.AddField(field)
 
-	return arrayMsg, nil
+	return msg, nil
 }
 
 func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	objMsg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(object.Title))
+	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(object.Title))
 
 	for propName, prop := range object.Properties {
 		if ref := prop.Ref; ref != "" {
@@ -466,14 +466,14 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 				if err != nil {
 					return nil, fmt.Errorf("compile object items: %w", err)
 				}
-				if skipMessage(refMsg, objMsg) {
+				if skipMessage(refMsg, msg) {
 					continue
 				}
 
 				field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(propName), protobuf.FieldTypeMessage())
 				field.SetTypeName(refMsg.GetName())
 				field.SetNumber()
-				objMsg.AddField(field)
+				msg.AddField(field)
 
 			default:
 				fmt.Fprintf(os.Stderr, "refObj: %T: %#v\n", refObj, refObj)
@@ -486,7 +486,7 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
-		if skipMessage(propMsg, objMsg) {
+		if skipMessage(propMsg, msg) {
 			continue
 		}
 
@@ -499,17 +499,17 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 
 		switch fieldType.Number() {
 		case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
-			objMsg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
+			msg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
 			field.SetTypeName(propMsg.GetName())
 
 		default:
 			field.SetTypeName(fieldType.String())
 		}
 
-		objMsg.AddField(field)
+		msg.AddField(field)
 	}
 
-	return objMsg, nil
+	return msg, nil
 }
 
 // CompileEnum compiles enum objects.
@@ -627,8 +627,8 @@ func (c *compiler) CompileTags(tags openapi3.Tags) error { return nil }
 // CompileExternalDocs compiles externalDocs object.
 func (c *compiler) CompileExternalDocs(docs *openapi3.ExternalDocs) error { return nil }
 
-// IntegerFieldType returns the FieldType of the underlying type of integer from the format.
-func IntegerFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
+// integerFieldType returns the FieldType of the underlying type of integer from the format.
+func integerFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "", "int32":
 		return protobuf.FieldTypeInt32()
@@ -641,8 +641,8 @@ func IntegerFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	}
 }
 
-// NumberFieldType returns the FieldType of the underlying type of number from the format.
-func NumberFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
+// numberFieldType returns the FieldType of the underlying type of number from the format.
+func numberFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "", "double":
 		return protobuf.FieldTypeDouble()
@@ -658,8 +658,8 @@ func NumberFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	}
 }
 
-// StringFieldType returns the FieldType of the underlying type of string from the format.
-func StringFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
+// stringFieldType returns the FieldType of the underlying type of string from the format.
+func stringFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "byte":
 		return protobuf.FieldTypeBytes()
