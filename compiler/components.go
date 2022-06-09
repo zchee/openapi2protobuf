@@ -63,7 +63,10 @@ func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
 // compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
 	if additionalProps := schemaRef.Value.AdditionalProperties; additionalProps != nil {
-		return c.compileSchemaRef(name, additionalProps)
+		if additionalProps.Ref == "" {
+			fmt.Fprintf(os.Stderr, "%s\nadditionalProps.Value.Items: %#v\n", backtrace.FuncNameN(1), additionalProps.Value.AnyOf)
+		}
+		return c.compileSchemaRef("additionalProperties", additionalProps)
 	}
 
 	if val := schemaRef.Value; val != nil {
@@ -114,13 +117,13 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 	return nil, nil
 }
 
-func isEnum(schema *openapi3.Schema) bool { return len(schema.Enum) > 0 }
+func isEnum(schema *openapi3.Schema) bool { return schema.Enum != nil }
 
-func isOneOf(schema *openapi3.Schema) bool { return len(schema.OneOf) > 0 }
+func isOneOf(schema *openapi3.Schema) bool { return schema.OneOf != nil }
 
-func isAnyOf(schema *openapi3.Schema) bool { return len(schema.AnyOf) > 0 }
+func isAnyOf(schema *openapi3.Schema) bool { return schema.AnyOf != nil }
 
-func isAllOf(schema *openapi3.Schema) bool { return len(schema.AllOf) > 0 }
+func isAllOf(schema *openapi3.Schema) bool { return schema.AllOf != nil }
 
 func (c *compiler) compileBuiltin(name string, schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) (*protobuf.MessageDescriptorProto, error) {
 	if fieldType == nil {

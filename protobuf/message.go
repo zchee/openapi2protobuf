@@ -11,8 +11,7 @@ import (
 )
 
 type MessageDescriptorProto struct {
-	desc   *descriptorpb.DescriptorProto
-	parent *MessageDescriptorProto
+	desc *descriptorpb.DescriptorProto
 
 	field       map[string]bool
 	fieldMumber int32
