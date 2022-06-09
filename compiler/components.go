@@ -113,10 +113,10 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			return c.compileBuiltin(name, val, stringFieldType(val.Format))
 
 		case openapi3.TypeArray:
-			return c.compileArray(val)
+			return c.compileArray(name, val)
 
 		case openapi3.TypeObject:
-			return c.compileObject(val)
+			return c.compileObject(name, val)
 		}
 	}
 
@@ -146,8 +146,11 @@ func (c *compiler) compileBuiltin(name string, schema *openapi3.Schema, fieldTyp
 	return msg, nil
 }
 
-func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(array.Title))
+func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	if array.Title != "" {
+		name = array.Title
+	}
+	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 
 	if ref := array.Items.Ref; ref != "" {
 		refBase := path.Base(ref)
@@ -197,8 +200,11 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 	return msg, nil
 }
 
-func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
-	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(object.Title))
+func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+	if object.Title != "" {
+		name = object.Title
+	}
+	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 
 	for propName, prop := range object.Properties {
 		if ref := prop.Ref; ref != "" {
@@ -344,7 +350,7 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 	for i, ref := range anyOf.AnyOf {
 		anyOfMsgName := ref.Value.Title
 		if anyOfMsgName == "" {
-			anyOfMsgName = name + "_" + strconv.Itoa(i)
+			anyOfMsgName = name + "_" + strconv.Itoa(i+1)
 		}
 		anyOfMsg, err := c.compileSchemaRef(anyOfMsgName, ref)
 		if err != nil {

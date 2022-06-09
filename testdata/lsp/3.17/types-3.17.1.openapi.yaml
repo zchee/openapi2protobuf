@@ -20,13 +20,13 @@ components:
             text into a document create a range where start === end.
           title: range
       x-propertyOrder:
-      - annotationId
-      - range
-      - newText
+        - annotationId
+        - range
+        - newText
       required:
-      - annotationId
-      - newText
-      - range
+        - annotationId
+        - newText
+        - range
       title: AnnotatedTextEdit
       type: object
     BaseSymbolInformation:
@@ -57,13 +57,13 @@ components:
           title: tags
           type: array
       x-propertyOrder:
-      - name
-      - kind
-      - tags
-      - containerName
+        - name
+        - kind
+        - tags
+        - containerName
       required:
-      - kind
-      - name
+        - kind
+        - name
       title: BaseSymbolInformation
       type: object
     CallHierarchyIncomingCall:
@@ -82,11 +82,11 @@ components:
           title: fromRanges
           type: array
       x-propertyOrder:
-      - from
-      - fromRanges
+        - from
+        - fromRanges
       required:
-      - from
-      - fromRanges
+        - from
+        - fromRanges
       title: CallHierarchyIncomingCall
       type: object
     CallHierarchyItem:
@@ -136,20 +136,20 @@ components:
           description: The resource identifier of this item.
           title: uri
       x-propertyOrder:
-      - name
-      - kind
-      - tags
-      - detail
-      - uri
-      - range
-      - selectionRange
-      - data
+        - name
+        - kind
+        - tags
+        - detail
+        - uri
+        - range
+        - selectionRange
+        - data
       required:
-      - kind
-      - name
-      - range
-      - selectionRange
-      - uri
+        - kind
+        - name
+        - range
+        - selectionRange
+        - uri
       title: CallHierarchyItem
       type: object
     CallHierarchyOutgoingCall:
@@ -170,11 +170,11 @@ components:
           description: The item that is called.
           title: to
       x-propertyOrder:
-      - to
-      - fromRanges
+        - to
+        - fromRanges
       required:
-      - fromRanges
-      - to
+        - fromRanges
+        - to
       title: CallHierarchyOutgoingCall
       type: object
     ChangeAnnotation:
@@ -199,11 +199,11 @@ components:
           title: needsConfirmation
           type: boolean
       x-propertyOrder:
-      - label
-      - needsConfirmation
-      - description
+        - label
+        - needsConfirmation
+        - description
       required:
-      - label
+        - label
       title: ChangeAnnotation
       type: object
     ChangeAnnotationIdentifier:
@@ -230,18 +230,18 @@ components:
           title: size
           type: integer
       x-propertyOrder:
-      - _annotations
-      - _counter
-      - _size
-      - all
-      - size
-      - manage
-      - nextId
+        - _annotations
+        - _counter
+        - _size
+        - all
+        - size
+        - manage
+        - nextId
       required:
-      - _annotations
-      - _counter
-      - _size
-      - size
+        - _annotations
+        - _counter
+        - _size
+        - size
       title: ChangeAnnotations
       type: object
     # CodeAction:
@@ -390,8 +390,8 @@ components:
     CodeActionTriggerKind:
       description: The reason why code actions were requested.
       enum:
-      - 1
-      - 2
+        - 1
+        - 2
       title: CodeActionTriggerKind
       type: number
     CodeDescription:
@@ -404,9 +404,9 @@ components:
           description: An URI to open with more information about the diagnostic error.
           title: href
       x-propertyOrder:
-      - href
+        - href
       required:
-      - href
+        - href
       title: CodeDescription
       type: object
     CodeLens:
@@ -436,11 +436,11 @@ components:
             a single line.
           title: range
       x-propertyOrder:
-      - range
-      - command
-      - data
+        - range
+        - command
+        - data
       required:
-      - range
+        - range
       title: CodeLens
       type: object
     Color:
@@ -466,15 +466,15 @@ components:
           description: The red component of this color in the range [0-1].
           title: red
       x-propertyOrder:
-      - red
-      - green
-      - blue
-      - alpha
+        - red
+        - green
+        - blue
+        - alpha
       required:
-      - alpha
-      - blue
-      - green
-      - red
+        - alpha
+        - blue
+        - green
+        - red
       title: Color
       type: object
     ColorInformation:
@@ -492,11 +492,11 @@ components:
           description: The range in the document where this color appears.
           title: range
       x-propertyOrder:
-      - range
-      - color
+        - range
+        - color
       required:
-      - color
-      - range
+        - color
+        - range
       title: ColorInformation
       type: object
     ColorPresentation:
@@ -527,11 +527,11 @@ components:
             is used.
           title: textEdit
       x-propertyOrder:
-      - label
-      - textEdit
-      - additionalTextEdits
+        - label
+        - textEdit
+        - additionalTextEdits
       required:
-      - label
+        - label
       title: ColorPresentation
       type: object
     Command:
@@ -560,12 +560,12 @@ components:
           title: title
           type: string
       x-propertyOrder:
-      - title
-      - command
-      - arguments
+        - title
+        - command
+        - arguments
       required:
-      - command
-      - title
+        - command
+        - title
       title: Command
       type: object
     CompletionItem:
@@ -747,27 +747,27 @@ components:
           title: textEditText
           type: string
       x-propertyOrder:
-      - label
-      - labelDetails
-      - kind
-      - tags
-      - detail
-      - documentation
-      - deprecated
-      - preselect
-      - sortText
-      - filterText
-      - insertText
-      - insertTextFormat
-      - insertTextMode
-      - textEdit
-      - textEditText
-      - additionalTextEdits
-      - commitCharacters
-      - command
-      - data
+        - label
+        - labelDetails
+        - kind
+        - tags
+        - detail
+        - documentation
+        - deprecated
+        - preselect
+        - sortText
+        - filterText
+        - insertText
+        - insertTextFormat
+        - insertTextMode
+        - textEdit
+        - textEditText
+        - additionalTextEdits
+        - commitCharacters
+        - command
+        - data
       required:
-      - label
+        - label
       title: CompletionItem
       type: object
     CompletionItemKind:
@@ -825,7 +825,7 @@ components:
         Completion item tags are extra annotations that tweak the rendering of a completion
         item.
       enum:
-      - 1
+        - 1
       title: CompletionItemTag
       type: number
     CompletionList:
@@ -875,11 +875,11 @@ components:
                     $ref: '#/components/schemas/Range'
                     title: replace
                 x-propertyOrder:
-                - insert
-                - replace
+                  - insert
+                  - replace
                 required:
-                - insert
-                - replace
+                  - insert
+                  - replace
                 type: object
               description: A default edit range.
               title: editRange
@@ -892,11 +892,11 @@ components:
               description: A default insert text mode.
               title: insertTextMode
           x-propertyOrder:
-          - commitCharacters
-          - editRange
-          - insertTextFormat
-          - insertTextMode
-          - data
+            - commitCharacters
+            - editRange
+            - insertTextFormat
+            - insertTextMode
+            - data
           title: itemDefaults
           type: object
         items:
@@ -906,12 +906,12 @@ components:
           title: items
           type: array
       x-propertyOrder:
-      - isIncomplete
-      - itemDefaults
-      - items
+        - isIncomplete
+        - itemDefaults
+        - items
       required:
-      - isIncomplete
-      - items
+        - isIncomplete
+        - items
       title: CompletionList
       type: object
     CreateFile:
@@ -936,13 +936,13 @@ components:
           description: The resource to create.
           title: uri
       x-propertyOrder:
-      - kind
-      - uri
-      - options
-      - annotationId
+        - kind
+        - uri
+        - options
+        - annotationId
       required:
-      - kind
-      - uri
+        - kind
+        - uri
       title: CreateFile
       type: object
     CreateFileOptions:
@@ -957,8 +957,8 @@ components:
           title: overwrite
           type: boolean
       x-propertyOrder:
-      - overwrite
-      - ignoreIfExists
+        - overwrite
+        - ignoreIfExists
       title: CreateFileOptions
       type: object
     Declaration:
@@ -999,7 +999,7 @@ components:
         kind:
           description: A delete
           enum:
-          - delete
+            - delete
           title: kind
           type: string
         options:
@@ -1011,13 +1011,13 @@ components:
           description: The file to delete.
           title: uri
       x-propertyOrder:
-      - kind
-      - uri
-      - options
-      - annotationId
+        - kind
+        - uri
+        - options
+        - annotationId
       required:
-      - kind
-      - uri
+        - kind
+        - uri
       title: DeleteFile
       type: object
     DeleteFileOptions:
@@ -1032,8 +1032,8 @@ components:
           title: recursive
           type: boolean
       x-propertyOrder:
-      - recursive
-      - ignoreIfNotExists
+        - recursive
+        - ignoreIfNotExists
       title: DeleteFileOptions
       type: object
     # Diagnostic:
@@ -1132,27 +1132,27 @@ components:
           title: message
           type: string
       x-propertyOrder:
-      - location
-      - message
+        - location
+        - message
       required:
-      - location
-      - message
+        - location
+        - message
       title: DiagnosticRelatedInformation
       type: object
     DiagnosticSeverity:
       description: The diagnostic's severity.
       enum:
-      - 1
-      - 2
-      - 3
-      - 4
+        - 1
+        - 2
+        - 3
+        - 4
       title: DiagnosticSeverity
       type: number
     DiagnosticTag:
       description: The diagnostic tags.
       enum:
-      - 1
-      - 2
+        - 1
+        - 2
       title: DiagnosticTag
       type: number
     DocumentHighlight:
@@ -1172,18 +1172,18 @@ components:
           description: The range this highlight applies to.
           title: range
       x-propertyOrder:
-      - range
-      - kind
+        - range
+        - kind
       required:
-      - range
+        - range
       title: DocumentHighlight
       type: object
     DocumentHighlightKind:
       description: A document highlight kind.
       enum:
-      - 1
-      - 2
-      - 3
+        - 1
+        - 2
+        - 3
       title: DocumentHighlightKind
       type: number
     DocumentLink:
@@ -1217,12 +1217,12 @@ components:
           title: tooltip
           type: string
       x-propertyOrder:
-      - range
-      - target
-      - tooltip
-      - data
+        - range
+        - target
+        - tooltip
+        - data
       required:
-      - range
+        - range
       title: DocumentLink
       type: object
     # DocumentSymbol:
@@ -1341,15 +1341,15 @@ components:
             To be valid, the end must be zero or larger and smaller than the number of lines in the document.
           title: startLine
       x-propertyOrder:
-      - startLine
-      - startCharacter
-      - endLine
-      - endCharacter
-      - kind
-      - collapsedText
+        - startLine
+        - startCharacter
+        - endLine
+        - endCharacter
+        - kind
+        - collapsedText
       required:
-      - endLine
-      - startLine
+        - endLine
+        - startLine
       title: FoldingRange
       type: object
     FoldingRangeKind:
@@ -1391,14 +1391,14 @@ components:
           title: trimTrailingWhitespace
           type: boolean
       x-propertyOrder:
-      - tabSize
-      - insertSpaces
-      - trimTrailingWhitespace
-      - insertFinalNewline
-      - trimFinalNewlines
+        - tabSize
+        - insertSpaces
+        - trimTrailingWhitespace
+        - insertFinalNewline
+        - trimFinalNewlines
       required:
-      - insertSpaces
-      - tabSize
+        - insertSpaces
+        - tabSize
       title: FormattingOptions
       type: object
     FullTextDocument:
@@ -1433,30 +1433,30 @@ components:
           $ref: '#/components/schemas/integer'
           title: version
       x-propertyOrder:
-      - _uri
-      - _languageId
-      - _version
-      - _content
-      - _lineOffsets
-      - uri
-      - languageId
-      - version
-      - getText
-      - update
-      - getLineOffsets
-      - positionAt
-      - offsetAt
-      - lineCount
+        - _uri
+        - _languageId
+        - _version
+        - _content
+        - _lineOffsets
+        - uri
+        - languageId
+        - version
+        - getText
+        - update
+        - getLineOffsets
+        - positionAt
+        - offsetAt
+        - lineCount
       required:
-      - _content
-      - _languageId
-      - _lineOffsets
-      - _uri
-      - _version
-      - languageId
-      - lineCount
-      - uri
-      - version
+        - _content
+        - _languageId
+        - _lineOffsets
+        - _uri
+        - _version
+        - languageId
+        - lineCount
+        - uri
+        - version
       title: FullTextDocument
       type: object
     Hover:
@@ -1473,11 +1473,11 @@ components:
                 title: value
                 type: string
             x-propertyOrder:
-            - language
-            - value
+              - language
+              - value
             required:
-            - language
-            - value
+              - language
+              - value
             type: object
           - items:
               anyOf:
@@ -1489,11 +1489,11 @@ components:
                     title: value
                     type: string
                 x-propertyOrder:
-                - language
-                - value
+                  - language
+                  - value
                 required:
-                - language
-                - value
+                  - language
+                  - value
                 type: object
               - type: string
               description: |-
@@ -1517,10 +1517,10 @@ components:
           description: An optional range
           title: range
       x-propertyOrder:
-      - contents
-      - range
+        - contents
+        - range
       required:
-      - contents
+        - contents
       title: Hover
       type: object
     InlayHint:
@@ -1582,12 +1582,12 @@ components:
                   title: value
                   type: string
               x-propertyOrder:
-              - value
-              - tooltip
-              - location
-              - command
+                - value
+                - tooltip
+                - location
+                - command
               required:
-              - value
+                - value
               type: object
             type: array
           - type: string
@@ -1637,24 +1637,24 @@ components:
           description: The tooltip text when you hover over this item.
           title: tooltip
       x-propertyOrder:
-      - position
-      - label
-      - kind
-      - textEdits
-      - tooltip
-      - paddingLeft
-      - paddingRight
-      - data
+        - position
+        - label
+        - kind
+        - textEdits
+        - tooltip
+        - paddingLeft
+        - paddingRight
+        - data
       required:
-      - label
-      - position
+        - label
+        - position
       title: InlayHint
       type: object
     InlayHintKind:
       description: Inlay hint kinds.
       enum:
-      - 1
-      - 2
+        - 1
+        - 2
       title: InlayHintKind
       type: number
     InlayHintLabelPart:
@@ -1699,12 +1699,12 @@ components:
           title: value
           type: string
       x-propertyOrder:
-      - value
-      - tooltip
-      - location
-      - command
+        - value
+        - tooltip
+        - location
+        - command
       required:
-      - value
+        - value
       title: InlayHintLabelPart
       type: object
     InlineValue:
@@ -1748,11 +1748,11 @@ components:
             Typically the end position of the range denotes the line where the inline values are shown.
           title: stoppedLocation
       x-propertyOrder:
-      - frameId
-      - stoppedLocation
+        - frameId
+        - stoppedLocation
       required:
-      - frameId
-      - stoppedLocation
+        - frameId
+        - stoppedLocation
       title: InlineValueContext
       type: object
     InlineValueEvaluatableExpression:
@@ -1773,10 +1773,10 @@ components:
             The range is used to extract the evaluatable expression from the underlying document.
           title: range
       x-propertyOrder:
-      - range
-      - expression
+        - range
+        - expression
       required:
-      - range
+        - range
       title: InlineValueEvaluatableExpression
       type: object
     InlineValueText:
@@ -1793,11 +1793,11 @@ components:
           title: text
           type: string
       x-propertyOrder:
-      - range
-      - text
+        - range
+        - text
       required:
-      - range
-      - text
+        - range
+        - text
       title: InlineValueText
       type: object
     InlineValueVariableLookup:
@@ -1822,12 +1822,12 @@ components:
           title: variableName
           type: string
       x-propertyOrder:
-      - range
-      - variableName
-      - caseSensitiveLookup
+        - range
+        - variableName
+        - caseSensitiveLookup
       required:
-      - caseSensitiveLookup
-      - range
+        - caseSensitiveLookup
+        - range
       title: InlineValueVariableLookup
       type: object
     InsertReplaceEdit:
@@ -1848,13 +1848,13 @@ components:
           description: The range if the replace is requested.
           title: replace
       x-propertyOrder:
-      - newText
-      - insert
-      - replace
+        - newText
+        - insert
+        - replace
       required:
-      - insert
-      - newText
-      - replace
+        - insert
+        - newText
+        - replace
       title: InsertReplaceEdit
       type: object
     InsertTextFormat:
@@ -1862,8 +1862,8 @@ components:
         Defines whether the insert text in a completion item should be interpreted as
         plain text or a snippet.
       enum:
-      - 1
-      - 2
+        - 1
+        - 2
       title: InsertTextFormat
       type: number
     InsertTextMode:
@@ -1871,8 +1871,8 @@ components:
         How whitespace and indentation is handled during completion
         item insertion.
       enum:
-      - 1
-      - 2
+        - 1
+        - 2
       title: InsertTextMode
       type: number
     LSPAny:
@@ -1899,8 +1899,6 @@ components:
       title: LSPAny
     LSPArray:
       items: {}
-        # $ref: '#/components/schemas/LSPAny'
-      # title: LSPArray
       type: array
     # LSPObject:
     #   additionalProperties: true
@@ -1920,11 +1918,11 @@ components:
           $ref: '#/components/schemas/DocumentUri'
           title: uri
       x-propertyOrder:
-      - uri
-      - range
+        - uri
+        - range
       required:
-      - range
-      - uri
+        - range
+        - uri
       title: Location
       type: object
     LocationLink:
@@ -1960,14 +1958,14 @@ components:
           description: The target resource identifier of this link.
           title: targetUri
       x-propertyOrder:
-      - originSelectionRange
-      - targetUri
-      - targetRange
-      - targetSelectionRange
+        - originSelectionRange
+        - targetUri
+        - targetRange
+        - targetSelectionRange
       required:
-      - targetRange
-      - targetSelectionRange
-      - targetUri
+        - targetRange
+        - targetSelectionRange
+        - targetUri
       title: LocationLink
       type: object
     MarkedString:
@@ -1980,11 +1978,11 @@ components:
             title: value
             type: string
         x-propertyOrder:
-        - language
-        - value
+          - language
+          - value
         required:
-        - language
-        - value
+          - language
+          - value
         type: object
       - type: string
       description: |-
@@ -2034,11 +2032,11 @@ components:
           title: value
           type: string
       x-propertyOrder:
-      - kind
-      - value
+        - kind
+        - value
       required:
-      - kind
-      - value
+        - kind
+        - value
       title: MarkupContent
       type: object
     MarkupKind:
@@ -2049,8 +2047,8 @@ components:
         Please note that `MarkupKinds` must not start with a `$`. This kinds
         are reserved for internal usage.
       enum:
-      - markdown
-      - plaintext
+        - markdown
+        - plaintext
       title: MarkupKind
       type: string
     OptionalVersionedTextDocumentIdentifier:
@@ -2073,11 +2071,11 @@ components:
           title: version
           type: integer
       x-propertyOrder:
-      - version
-      - uri
+        - version
+        - uri
       required:
-      - uri
-      - version
+        - uri
+        - version
       title: OptionalVersionedTextDocumentIdentifier
       type: object
     # ParameterInformation:
@@ -2160,11 +2158,11 @@ components:
           description: Line position in a document (zero-based).
           title: line
       x-propertyOrder:
-      - line
-      - character
+        - line
+        - character
       required:
-      - character
-      - line
+        - character
+        - line
       title: Position
       type: object
     Range:
@@ -2192,11 +2190,11 @@ components:
           description: The range's start position
           title: start
       x-propertyOrder:
-      - start
-      - end
+        - start
+        - end
       required:
-      - end
-      - start
+        - end
+        - start
       title: Range
       type: object
     ReferenceContext:
@@ -2209,9 +2207,9 @@ components:
           title: includeDeclaration
           type: boolean
       x-propertyOrder:
-      - includeDeclaration
+        - includeDeclaration
       required:
-      - includeDeclaration
+        - includeDeclaration
       title: ReferenceContext
       type: object
     RenameFile:
@@ -2224,7 +2222,7 @@ components:
         kind:
           description: A rename
           enum:
-          - rename
+            - rename
           title: kind
           type: string
         newUri:
@@ -2240,15 +2238,15 @@ components:
           description: Rename options.
           title: options
       x-propertyOrder:
-      - kind
-      - oldUri
-      - newUri
-      - options
-      - annotationId
+        - kind
+        - oldUri
+        - newUri
+        - options
+        - annotationId
       required:
-      - kind
-      - newUri
-      - oldUri
+        - kind
+        - newUri
+        - oldUri
       title: RenameFile
       type: object
     RenameFileOptions:
@@ -2263,8 +2261,8 @@ components:
           title: overwrite
           type: boolean
       x-propertyOrder:
-      - overwrite
-      - ignoreIfExists
+        - overwrite
+        - ignoreIfExists
       title: RenameFileOptions
       type: object
     ResourceOperation:
@@ -2279,10 +2277,10 @@ components:
           title: kind
           type: string
       x-propertyOrder:
-      - kind
-      - annotationId
+        - kind
+        - annotationId
       required:
-      - kind
+        - kind
       title: ResourceOperation
       type: object
     # SelectionRange:
@@ -2314,16 +2312,16 @@ components:
         an clients can specify additional token types via the
         corresponding client capabilities.
       enum:
-      - abstract
-      - async
-      - declaration
-      - defaultLibrary
-      - definition
-      - deprecated
-      - documentation
-      - modification
-      - readonly
-      - static
+        - abstract
+        - async
+        - declaration
+        - defaultLibrary
+        - definition
+        - deprecated
+        - documentation
+        - modification
+        - readonly
+        - static
       title: SemanticTokenModifiers
       type: string
     SemanticTokenTypes:
@@ -2332,29 +2330,29 @@ components:
         an clients can specify additional token types via the
         corresponding client capabilities.
       enum:
-      - class
-      - comment
-      - decorator
-      - enum
-      - enumMember
-      - event
-      - function
-      - interface
-      - keyword
-      - macro
-      - method
-      - modifier
-      - namespace
-      - number
-      - operator
-      - parameter
-      - property
-      - regexp
-      - string
-      - struct
-      - type
-      - typeParameter
-      - variable
+        - class
+        - comment
+        - decorator
+        - enum
+        - enumMember
+        - event
+        - function
+        - interface
+        - keyword
+        - macro
+        - method
+        - modifier
+        - namespace
+        - number
+        - operator
+        - parameter
+        - property
+        - regexp
+        - string
+        - struct
+        - type
+        - typeParameter
+        - variable
       title: SemanticTokenTypes
       type: string
     SemanticTokens:
@@ -2374,10 +2372,10 @@ components:
           title: resultId
           type: string
       x-propertyOrder:
-      - resultId
-      - data
+        - resultId
+        - data
       required:
-      - data
+        - data
       title: SemanticTokens
       type: object
     SemanticTokensDelta:
@@ -2393,10 +2391,10 @@ components:
           title: resultId
           type: string
       x-propertyOrder:
-      - resultId
-      - edits
+        - resultId
+        - edits
       required:
-      - edits
+        - edits
       title: SemanticTokensDelta
       type: object
     SemanticTokensEdit:
@@ -2416,12 +2414,12 @@ components:
           description: The start offset of the edit.
           title: start
       x-propertyOrder:
-      - start
-      - deleteCount
-      - data
+        - start
+        - deleteCount
+        - data
       required:
-      - deleteCount
-      - start
+        - deleteCount
+        - start
       title: SemanticTokensEdit
       type: object
     SemanticTokensLegend:
@@ -2439,11 +2437,11 @@ components:
           title: tokenTypes
           type: array
       x-propertyOrder:
-      - tokenTypes
-      - tokenModifiers
+        - tokenTypes
+        - tokenModifiers
       required:
-      - tokenModifiers
-      - tokenTypes
+        - tokenModifiers
+        - tokenTypes
       title: SemanticTokensLegend
       type: object
     # SignatureHelp:
@@ -2576,58 +2574,58 @@ components:
           description: Tags for this completion item.
           items:
             enum:
-            - 1
+              - 1
             type: number
           title: tags
           type: array
       x-propertyOrder:
-      - deprecated
-      - location
-      - name
-      - kind
-      - tags
-      - containerName
+        - deprecated
+        - location
+        - name
+        - kind
+        - tags
+        - containerName
       required:
-      - kind
-      - location
-      - name
+        - kind
+        - location
+        - name
       title: SymbolInformation
       type: object
     SymbolKind:
       description: A symbol kind.
       enum:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-      - 13
-      - 14
-      - 15
-      - 16
-      - 17
-      - 18
-      - 19
-      - 20
-      - 21
-      - 22
-      - 23
-      - 24
-      - 25
-      - 26
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        - 20
+        - 21
+        - 22
+        - 23
+        - 24
+        - 25
+        - 26
       title: SymbolKind
       type: number
     SymbolTag:
       description: Symbol tags are extra annotations that tweak the rendering of a symbol.
       enum:
-      - 1
+        - 1
       title: SymbolTag
       type: number
     TextDocument:
@@ -2657,18 +2655,18 @@ components:
             change, including undo/redo).
           title: version
       x-propertyOrder:
-      - uri
-      - languageId
-      - version
-      - getText
-      - positionAt
-      - offsetAt
-      - lineCount
+        - uri
+        - languageId
+        - version
+        - getText
+        - positionAt
+        - offsetAt
+        - lineCount
       required:
-      - languageId
-      - lineCount
-      - uri
-      - version
+        - languageId
+        - lineCount
+        - uri
+        - version
       title: TextDocument
       type: object
     TextDocumentContentChangeEvent:
@@ -2687,12 +2685,12 @@ components:
             title: text
             type: string
         x-propertyOrder:
-        - range
-        - rangeLength
-        - text
+          - range
+          - rangeLength
+          - text
         required:
-        - range
-        - text
+          - range
+          - text
         type: object
       - properties:
           text:
@@ -2730,11 +2728,11 @@ components:
           description: The text document to change.
           title: textDocument
       x-propertyOrder:
-      - textDocument
-      - edits
+        - textDocument
+        - edits
       required:
-      - edits
-      - textDocument
+        - edits
+        - textDocument
       title: TextDocumentEdit
       type: object
     TextDocumentIdentifier:
@@ -2748,9 +2746,9 @@ components:
           description: The text document's uri.
           title: uri
       x-propertyOrder:
-      - uri
+        - uri
       required:
-      - uri
+        - uri
       title: TextDocumentIdentifier
       type: object
     TextDocumentItem:
@@ -2779,15 +2777,15 @@ components:
             change, including undo/redo).
           title: version
       x-propertyOrder:
-      - uri
-      - languageId
-      - version
-      - text
+        - uri
+        - languageId
+        - version
+        - text
       required:
-      - languageId
-      - text
-      - uri
-      - version
+        - languageId
+        - text
+        - uri
+        - version
       title: TextDocumentItem
       type: object
     TextEdit:
@@ -2809,22 +2807,22 @@ components:
             text into a document create a range where start === end.
           title: range
       x-propertyOrder:
-      - range
-      - newText
+        - range
+        - newText
       required:
-      - newText
-      - range
+        - newText
+        - range
       title: TextEdit
       type: object
     TextEditChange:
       description: A change to capture text edits for existing resources.
       x-propertyOrder:
-      - all
-      - clear
-      - add
-      - insert
-      - replace
-      - delete
+        - all
+        - clear
+        - add
+        - insert
+        - replace
+        - delete
       title: TextEditChange
       type: object
     TextEditChangeImpl:
@@ -2840,18 +2838,18 @@ components:
           title: edits
           type: array
       x-propertyOrder:
-      - edits
-      - changeAnnotations
-      - insert
-      - replace
-      - delete
-      - add
-      - all
-      - clear
-      - assertChangeAnnotations
+        - edits
+        - changeAnnotations
+        - insert
+        - replace
+        - delete
+        - add
+        - all
+        - clear
+        - assertChangeAnnotations
       required:
-      - changeAnnotations
-      - edits
+        - changeAnnotations
+        - edits
       title: TextEditChangeImpl
       type: object
     TypeHierarchyItem:
@@ -2893,7 +2891,7 @@ components:
           description: Tags for this item.
           items:
             enum:
-            - 1
+              - 1
             type: number
           title: tags
           type: array
@@ -2902,20 +2900,20 @@ components:
           description: The resource identifier of this item.
           title: uri
       x-propertyOrder:
-      - name
-      - kind
-      - tags
-      - detail
-      - uri
-      - range
-      - selectionRange
-      - data
+        - name
+        - kind
+        - tags
+        - detail
+        - uri
+        - range
+        - selectionRange
+        - data
       required:
-      - kind
-      - name
-      - range
-      - selectionRange
-      - uri
+        - kind
+        - name
+        - range
+        - selectionRange
+        - uri
       title: TypeHierarchyItem
       type: object
     URI:
@@ -2937,11 +2935,11 @@ components:
           description: The version number of this document.
           title: version
       x-propertyOrder:
-      - version
-      - uri
+        - version
+        - uri
       required:
-      - uri
-      - version
+        - uri
+        - version
       title: VersionedTextDocumentIdentifier
       type: object
     WorkspaceChange:
@@ -2966,21 +2964,21 @@ components:
             use to be returned from a workspace edit operation like rename.
           title: edit
       x-propertyOrder:
-      - _workspaceEdit
-      - _textEditChanges
-      - _changeAnnotations
-      - edit
-      - getTextEditChange
-      - initDocumentChanges
-      - initChanges
-      - createFile
-      - renameFile
-      - deleteFile
+        - _workspaceEdit
+        - _textEditChanges
+        - _changeAnnotations
+        - edit
+        - getTextEditChange
+        - initDocumentChanges
+        - initChanges
+        - createFile
+        - renameFile
+        - deleteFile
       required:
-      - _changeAnnotations
-      - _textEditChanges
-      - _workspaceEdit
-      - edit
+        - _changeAnnotations
+        - _textEditChanges
+        - _workspaceEdit
+        - edit
       title: WorkspaceChange
       type: object
     WorkspaceEdit:
@@ -3039,9 +3037,9 @@ components:
           title: documentChanges
           type: array
       x-propertyOrder:
-      - changes
-      - documentChanges
-      - changeAnnotations
+        - changes
+        - documentChanges
+        - changeAnnotations
       title: WorkspaceEdit
       type: object
     WorkspaceFolder:
@@ -3058,11 +3056,11 @@ components:
           description: The associated URI for this workspace folder.
           title: uri
       x-propertyOrder:
-      - uri
-      - name
+        - uri
+        - name
       required:
-      - name
-      - uri
+        - name
+        - uri
       title: WorkspaceFolder
       type: object
     WorkspaceSymbol:
@@ -3097,9 +3095,9 @@ components:
                 $ref: '#/components/schemas/DocumentUri'
                 title: uri
             x-propertyOrder:
-            - uri
+              - uri
             required:
-            - uri
+              - uri
             type: object
           description: |-
             The location of the symbol. Whether a server is allowed to
@@ -3116,21 +3114,21 @@ components:
           description: Tags for this completion item.
           items:
             enum:
-            - 1
+              - 1
             type: number
           title: tags
           type: array
       x-propertyOrder:
-      - location
-      - data
-      - name
-      - kind
-      - tags
-      - containerName
+        - location
+        - data
+        - name
+        - kind
+        - tags
+        - containerName
       required:
-      - kind
-      - location
-      - name
+        - kind
+        - location
+        - name
       title: WorkspaceSymbol
       type: object
     decimal:

@@ -5,17 +5,17 @@ package go.lsp.dev.types;
 
 import "google/protobuf/any.proto";
 
-option go_package = "go.lsp.dev.types";
-
-option cc_enable_arenas = true;
-
-option csharp_namespace = "Go.Lsp.Dev.Types";
-
 option java_package = "dev.lsp.go";
 
 option java_outer_classname = "Types";
 
 option java_multiple_files = true;
+
+option go_package = "go.lsp.dev.types";
+
+option cc_enable_arenas = true;
+
+option csharp_namespace = "Go.Lsp.Dev.Types";
 
 message AnnotatedTextEdit {
   ChangeAnnotationIdentifier annotation_id = 1;
@@ -113,11 +113,11 @@ message ChangeAnnotations {
   int32 size = 4;
 
   message ChangeAnnotation {
-    string label = 1;
+    string description = 1;
 
-    bool needs_confirmation = 2;
+    string label = 2;
 
-    string description = 3;
+    bool needs_confirmation = 3;
   }
 }
 
@@ -234,37 +234,11 @@ message CompletionItem {
     }
 
     message InsertReplaceEdit {
-      Range insert = 1;
+      string new_text = 1;
 
-      string new_text = 2;
+      Range replace = 2;
 
-      Range replace = 3;
-    }
-  }
-
-  message Documentation {
-    oneof documentation {
-      MarkupContent markup_content = 1;
-
-      Documentation1 documentation_1 = 2;
-    }
-
-    message MarkupContent {
-      MarkupKind kind = 1;
-
-      string value = 2;
-    }
-
-    message Documentation1 {
-      string documentation_1 = 1;
-    }
-  }
-
-  message CommitCharacters {
-    CommitCharacters commit_characters = 1;
-
-    message CommitCharacters {
-      string commit_characters = 1;
+      Range insert = 3;
     }
   }
 
@@ -278,8 +252,34 @@ message CompletionItem {
     }
   }
 
+  message CommitCharacters {
+    CommitCharacters commit_characters = 1;
+
+    message CommitCharacters {
+      string commit_characters = 1;
+    }
+  }
+
   message AdditionalTextEdits {
     TextEdit text_edit = 1;
+  }
+
+  message Documentation {
+    oneof documentation {
+      MarkupContent markup_content = 1;
+
+      Documentation2 documentation_2 = 2;
+    }
+
+    message MarkupContent {
+      MarkupKind kind = 1;
+
+      string value = 2;
+    }
+
+    message Documentation2 {
+      string documentation_2 = 1;
+    }
   }
 }
 
@@ -357,13 +357,13 @@ message CompletionList {
   repeated Items items = 3;
 
   message ItemDefaults {
-    repeated CommitCharacters commit_characters = 1;
+    InsertTextMode insert_text_mode = 1;
 
-    EditRange edit_range = 2;
+    repeated CommitCharacters commit_characters = 2;
 
-    InsertTextFormat insert_text_format = 3;
+    EditRange edit_range = 3;
 
-    InsertTextMode insert_text_mode = 4;
+    InsertTextFormat insert_text_format = 4;
 
     message CommitCharacters {
       CommitCharacters commit_characters = 1;
@@ -377,7 +377,7 @@ message CompletionList {
       oneof edit_range {
         Range range = 1;
 
-        editRange_2 edit_range_2 = 2;
+        EditRange2 edit_range_2 = 2;
       }
 
       message Range {
@@ -386,7 +386,7 @@ message CompletionList {
         Position start = 2;
       }
 
-      message editRange_2 {
+      message EditRange2 {
         Range insert = 1;
 
         Range replace = 2;
@@ -429,7 +429,7 @@ message Declaration {
   oneof declaration {
     Location location = 1;
 
-    Declaration_2 declaration_2 = 2;
+    Declaration2 declaration_2 = 2;
   }
 
   message Location {
@@ -438,7 +438,7 @@ message Declaration {
     DocumentUri uri = 2;
   }
 
-  message Declaration_2 {
+  message Declaration2 {
     Location location = 1;
   }
 }
@@ -447,7 +447,7 @@ message Definition {
   oneof definition {
     Location location = 1;
 
-    Definition_2 definition_2 = 2;
+    Definition2 definition_2 = 2;
   }
 
   message Location {
@@ -456,7 +456,7 @@ message Definition {
     DocumentUri uri = 2;
   }
 
-  message Definition_2 {
+  message Definition2 {
     Location location = 1;
   }
 }
@@ -604,9 +604,11 @@ message Hover {
     oneof contents {
       MarkupContent markup_content = 1;
 
-      contents_2 contents_2 = 2;
+      Contents2 contents_2 = 2;
 
-      contents_3 contents_3 = 3;
+      Contents3 contents_3 = 3;
+
+      Contents4 contents_4 = 4;
     }
 
     message MarkupContent {
@@ -615,36 +617,36 @@ message Hover {
       string value = 2;
     }
 
-    message contents_2 {
+    message Contents2 {
       string language = 1;
 
       string value = 2;
     }
 
-    message contents_3 {
-        = 1;
+    message Contents3 {
+      Contents3 contents_3 = 1;
 
-      message  {
-        oneof  {
-          ._1 _1 = 1;
+      message Contents3 {
+        oneof contents_3 {
+          Contents31 contents_31 = 1;
 
-          .1 1 = 2;
+          Contents32 contents_32 = 2;
         }
 
-        message _1 {
+        message Contents31 {
           string language = 1;
 
           string value = 2;
         }
 
-        message 1 {
-          string _1 = 1;
+        message Contents32 {
+          string contents_3_2 = 1;
         }
       }
     }
 
-    message Contents3 {
-      string contents_3 = 1;
+    message Contents4 {
+      string contents_4 = 1;
     }
   }
 }
@@ -666,18 +668,20 @@ message InlayHint {
 
   message Label {
     oneof label {
-      label_1 label_1 = 1;
+      Label1 label_1 = 1;
+
+      Label2 label_2 = 2;
     }
 
-    message label_1 {
-        = 1;
+    message Label1 {
+      Label1 label_1 = 1;
 
-      message  {
+      message Label1 {
         Command command = 1;
 
         Location location = 2;
 
-        .Tooltip tooltip = 3;
+        Tooltip tooltip = 3;
 
         string value = 4;
 
@@ -685,7 +689,7 @@ message InlayHint {
           oneof tooltip {
             MarkupContent markup_content = 1;
 
-            Tooltip1 tooltip_1 = 2;
+            Tooltip2 tooltip_2 = 2;
           }
 
           message MarkupContent {
@@ -694,15 +698,15 @@ message InlayHint {
             string value = 2;
           }
 
-          message Tooltip1 {
-            string tooltip_1 = 1;
+          message Tooltip2 {
+            string tooltip_2 = 1;
           }
         }
       }
     }
 
-    message Label1 {
-      string label_1 = 1;
+    message Label2 {
+      string label_2 = 1;
     }
   }
 
@@ -714,7 +718,7 @@ message InlayHint {
     oneof tooltip {
       MarkupContent markup_content = 1;
 
-      Tooltip1 tooltip_1 = 2;
+      Tooltip2 tooltip_2 = 2;
     }
 
     message MarkupContent {
@@ -723,8 +727,8 @@ message InlayHint {
       MarkupKind kind = 2;
     }
 
-    message Tooltip1 {
-      string tooltip_1 = 1;
+    message Tooltip2 {
+      string tooltip_2 = 1;
     }
   }
 }
@@ -750,7 +754,7 @@ message InlayHintLabelPart {
     oneof tooltip {
       MarkupContent markup_content = 1;
 
-      Tooltip1 tooltip_1 = 2;
+      Tooltip2 tooltip_2 = 2;
     }
 
     message MarkupContent {
@@ -759,8 +763,8 @@ message InlayHintLabelPart {
       string value = 2;
     }
 
-    message Tooltip1 {
-      string tooltip_1 = 1;
+    message Tooltip2 {
+      string tooltip_2 = 1;
     }
   }
 }
@@ -775,9 +779,9 @@ message InlineValue {
   }
 
   message InlineValueText {
-    string text = 1;
+    Range range = 1;
 
-    Range range = 2;
+    string text = 2;
   }
 
   message InlineValueVariableLookup {
@@ -881,17 +885,19 @@ message LocationLink {
 
 message MarkedString {
   oneof marked_string {
-    MarkedString_1 marked_string_1 = 1;
+    MarkedString1 marked_string_1 = 1;
+
+    MarkedString2 marked_string_2 = 2;
   }
 
-  message MarkedString_1 {
+  message MarkedString1 {
     string language = 1;
 
     string value = 2;
   }
 
-  message MarkedString1 {
-    string marked_string_1 = 1;
+  message MarkedString2 {
+    string marked_string_2 = 1;
   }
 }
 
@@ -1195,20 +1201,20 @@ message TextDocument {
 
 message TextDocumentContentChangeEvent {
   oneof text_document_content_change_event {
-    TextDocumentContentChangeEvent_1 text_document_content_change_event_1 = 1;
+    TextDocumentContentChangeEvent1 text_document_content_change_event_1 = 1;
 
-    TextDocumentContentChangeEvent_2 text_document_content_change_event_2 = 2;
+    TextDocumentContentChangeEvent2 text_document_content_change_event_2 = 2;
   }
 
-  message TextDocumentContentChangeEvent_1 {
-    string text = 1;
+  message TextDocumentContentChangeEvent1 {
+    Range range = 1;
 
-    Range range = 2;
+    Uinteger range_length = 2;
 
-    Uinteger range_length = 3;
+    string text = 3;
   }
 
-  message TextDocumentContentChangeEvent_2 {
+  message TextDocumentContentChangeEvent2 {
     string text = 1;
   }
 }
@@ -1235,11 +1241,11 @@ message TextDocumentEdit {
       }
 
       message AnnotatedTextEdit {
-        Range range = 1;
+        ChangeAnnotationIdentifier annotation_id = 1;
 
-        ChangeAnnotationIdentifier annotation_id = 2;
+        string new_text = 2;
 
-        string new_text = 3;
+        Range range = 3;
       }
     }
   }
@@ -1347,9 +1353,9 @@ message WorkspaceChange {
   WorkspaceEdit edit = 4;
 
   message TextEditChangeImpl {
-    ChangeAnnotations change_annotations = 1;
+    repeated Edits edits = 1;
 
-    repeated Edits edits = 2;
+    ChangeAnnotations change_annotations = 2;
 
     message Edits {
       Edits edits = 1;
@@ -1368,11 +1374,11 @@ message WorkspaceChange {
         }
 
         message AnnotatedTextEdit {
-          string new_text = 1;
+          ChangeAnnotationIdentifier annotation_id = 1;
 
-          Range range = 2;
+          string new_text = 2;
 
-          ChangeAnnotationIdentifier annotation_id = 3;
+          Range range = 3;
         }
       }
     }
@@ -1380,11 +1386,23 @@ message WorkspaceChange {
 }
 
 message WorkspaceEdit {
-   changes = 1;
+  Changes changes = 1;
 
   repeated DocumentChanges document_changes = 2;
 
   ChangeAnnotation change_annotations = 3;
+
+  message ChangeAnnotation {
+    string description = 1;
+
+    string label = 2;
+
+    bool needs_confirmation = 3;
+  }
+
+  message Changes {
+    TextEdit text_edit = 1;
+  }
 
   message DocumentChanges {
     DocumentChanges document_changes = 1;
@@ -1449,15 +1467,15 @@ message WorkspaceEdit {
       }
 
       message RenameFile {
-        DocumentUri old_uri = 1;
+        DocumentUri new_uri = 1;
 
-        RenameFileOptions options = 2;
+        DocumentUri old_uri = 2;
 
-        ChangeAnnotationIdentifier annotation_id = 3;
+        RenameFileOptions options = 3;
 
-        Kind kind = 4;
+        ChangeAnnotationIdentifier annotation_id = 4;
 
-        DocumentUri new_uri = 5;
+        Kind kind = 5;
 
         message Kind {
           enum Kind {
@@ -1467,13 +1485,13 @@ message WorkspaceEdit {
       }
 
       message DeleteFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
+        Kind kind = 1;
 
-        Kind kind = 2;
+        DeleteFileOptions options = 2;
 
-        DeleteFileOptions options = 3;
+        DocumentUri uri = 3;
 
-        DocumentUri uri = 4;
+        ChangeAnnotationIdentifier annotation_id = 4;
 
         message Kind {
           enum Kind {
@@ -1482,18 +1500,6 @@ message WorkspaceEdit {
         }
       }
     }
-  }
-
-  message ChangeAnnotation {
-    string description = 1;
-
-    string label = 2;
-
-    bool needs_confirmation = 3;
-  }
-
-  message  {
-    TextEdit text_edit = 1;
   }
 }
 
@@ -1514,21 +1520,11 @@ message WorkspaceSymbol {
 
   string container_name = 5;
 
-  message Tags {
-    Tags tags = 1;
-
-    message Tags {
-      enum Tags {
-        Tags_1 = 1;
-      }
-    }
-  }
-
   message Location {
     oneof location {
       Location location = 1;
 
-      location_2 location_2 = 2;
+      Location2 location_2 = 2;
     }
 
     message Location {
@@ -1537,8 +1533,18 @@ message WorkspaceSymbol {
       DocumentUri uri = 2;
     }
 
-    message location_2 {
+    message Location2 {
       DocumentUri uri = 1;
+    }
+  }
+
+  message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
     }
   }
 }
