@@ -56,19 +56,8 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 	return nil
 }
 
-var enumMessage = protobuf.NewMessageDescriptorProto("enum")
-
 func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
-	skip := msg == nil || msg.IsEmptyField()
-
-	if msg != nil && msg.IsEmptyField() {
-		if parent != nil {
-			fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q), parent(%q)\n", backtrace.FuncNameN(2)+":", conv.NormalizeFieldName(msg.GetName()), parent.GetName())
-			return skip
-		}
-	}
-
-	return skip
+	return msg == nil || msg.IsEmptyField()
 }
 
 // compileSchemaRef compiles schema reference.

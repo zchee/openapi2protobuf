@@ -244,138 +244,138 @@ components:
         - size
       title: ChangeAnnotations
       type: object
-    # CodeAction:
-    #   description: |-
-    #     A code action represents a change that can be performed in code, e.g. to fix a problem or
-    #     to refactor code.
-    #
-    #     A CodeAction must set either `edit` and/or a `command`. If both are supplied, the `edit` is applied first, then the `command` is executed.
-    #   properties:
-    #     command:
-    #       $ref: '#/components/schemas/Command'
-    #       description: |-
-    #         A command this code action executes. If a code action
-    #         provides a edit and a command, first the edit is
-    #         executed and then the command.
-    #       title: command
-    #     data:
-    #       $ref: '#/components/schemas/LSPAny'
-    #       description: |-
-    #         A data entry field that is preserved on a code action between
-    #         a `textDocument/codeAction` and a `codeAction/resolve` request.
-    #       title: data
-    #     diagnostics:
-    #       description: The diagnostics that this code action resolves.
-    #       items:
-    #         $ref: '#/components/schemas/Diagnostic'
-    #       title: diagnostics
-    #       type: array
-    #     disabled:
-    #       description: |-
-    #         Marks that the code action cannot currently be applied.
-    #
-    #         Clients should follow the following guidelines regarding disabled code actions:
-    #
-    #           - Disabled code actions are not shown in automatic [lightbulb](https://code.visualstudio.com/docs/editor/editingevolved#_code-action)
-    #             code action menu.
-    #
-    #           - Disabled actions are shown as faded out in the code action menu when the user request a more specific type
-    #             of code action, such as refactorings.
-    #
-    #           - If the user has a [keybinding](https://code.visualstudio.com/docs/editor/refactoring#_keybindings-for-code-actions)
-    #             that auto applies a code action and only a disabled code actions are returned, the client should show the user an
-    #             error message with `reason` in the editor.
-    #       properties:
-    #         reason:
-    #           description: |-
-    #             Human readable description of why the code action is currently disabled.
-    #
-    #             This is displayed in the code actions UI.
-    #           title: reason
-    #           type: string
-    #       x-propertyOrder:
-    #       - reason
-    #       required:
-    #       - reason
-    #       title: disabled
-    #       type: object
-    #     edit:
-    #       $ref: '#/components/schemas/WorkspaceEdit'
-    #       description: The workspace edit this code action performs.
-    #       title: edit
-    #     isPreferred:
-    #       description: |-
-    #         Marks this as a preferred action. Preferred actions are used by the `auto fix` command and can be targeted
-    #         by keybindings.
-    #
-    #         A quick fix should be marked preferred if it properly addresses the underlying error.
-    #         A refactoring should be marked preferred if it is the most reasonable choice of actions to take.
-    #       title: isPreferred
-    #       type: boolean
-    #     kind:
-    #       $ref: '#/components/schemas/CodeActionKind'
-    #       description: |-
-    #         The kind of the code action.
-    #
-    #         Used to filter code actions.
-    #       title: kind
-    #     title:
-    #       description: A short, human-readable, title for this code action.
-    #       title: title
-    #       type: string
-    #   x-propertyOrder:
-    #   - title
-    #   - kind
-    #   - diagnostics
-    #   - isPreferred
-    #   - disabled
-    #   - edit
-    #   - command
-    #   - data
-    #   required:
-    #   - title
-    #   title: CodeAction
-    #   type: object
-    # CodeActionContext:
-    #   description: |-
-    #     Contains additional diagnostic information about the context in which
-    #     a [code action](#CodeActionProvider.provideCodeActions) is run.
-    #     The CodeActionContext namespace provides helper functions to work with
-    #     [CodeActionContext](#CodeActionContext) literals.
-    #   properties:
-    #     diagnostics:
-    #       description: |-
-    #         An array of diagnostics known on the client side overlapping the range provided to the
-    #         `textDocument/codeAction` request. They are provided so that the server knows which
-    #         errors are currently presented to the user for the given range. There is no guarantee
-    #         that these accurately reflect the error state of the resource. The primary parameter
-    #         to compute code actions is the provided range.
-    #       items:
-    #         $ref: '#/components/schemas/Diagnostic'
-    #       title: diagnostics
-    #       type: array
-    #     only:
-    #       description: |-
-    #         Requested kind of actions to return.
-    #
-    #         Actions not of this kind are filtered out by the client before being shown. So servers
-    #         can omit computing them.
-    #       items:
-    #         type: string
-    #       title: only
-    #       type: array
-    #     triggerKind:
-    #       $ref: '#/components/schemas/CodeActionTriggerKind'
-    #       description: The reason why code actions were requested.
-    #       title: triggerKind
-    #   x-propertyOrder:
-    #   - diagnostics
-    #   - only
-    #   - triggerKind
-    #   required:
-    #   - diagnostics
-    #   title: CodeActionContext
-    #   type: object
+    CodeAction:
+      description: |-
+        A code action represents a change that can be performed in code, e.g. to fix a problem or
+        to refactor code.
+
+        A CodeAction must set either `edit` and/or a `command`. If both are supplied, the `edit` is applied first, then the `command` is executed.
+      properties:
+        command:
+          $ref: '#/components/schemas/Command'
+          description: |-
+            A command this code action executes. If a code action
+            provides a edit and a command, first the edit is
+            executed and then the command.
+          title: command
+        data:
+          $ref: '#/components/schemas/LSPAny'
+          description: |-
+            A data entry field that is preserved on a code action between
+            a `textDocument/codeAction` and a `codeAction/resolve` request.
+          title: data
+        diagnostics:
+          description: The diagnostics that this code action resolves.
+          items:
+            $ref: '#/components/schemas/Diagnostic'
+          title: diagnostics
+          type: array
+        disabled:
+          description: |-
+            Marks that the code action cannot currently be applied.
+
+            Clients should follow the following guidelines regarding disabled code actions:
+
+              - Disabled code actions are not shown in automatic [lightbulb](https://code.visualstudio.com/docs/editor/editingevolved#_code-action)
+                code action menu.
+
+              - Disabled actions are shown as faded out in the code action menu when the user request a more specific type
+                of code action, such as refactorings.
+
+              - If the user has a [keybinding](https://code.visualstudio.com/docs/editor/refactoring#_keybindings-for-code-actions)
+                that auto applies a code action and only a disabled code actions are returned, the client should show the user an
+                error message with `reason` in the editor.
+          properties:
+            reason:
+              description: |-
+                Human readable description of why the code action is currently disabled.
+
+                This is displayed in the code actions UI.
+              title: reason
+              type: string
+          x-propertyOrder:
+            - reason
+          required:
+            - reason
+          title: disabled
+          type: object
+        edit:
+          $ref: '#/components/schemas/WorkspaceEdit'
+          description: The workspace edit this code action performs.
+          title: edit
+        isPreferred:
+          description: |-
+            Marks this as a preferred action. Preferred actions are used by the `auto fix` command and can be targeted
+            by keybindings.
+
+            A quick fix should be marked preferred if it properly addresses the underlying error.
+            A refactoring should be marked preferred if it is the most reasonable choice of actions to take.
+          title: isPreferred
+          type: boolean
+        kind:
+          $ref: '#/components/schemas/CodeActionKind'
+          description: |-
+            The kind of the code action.
+
+            Used to filter code actions.
+          title: kind
+        title:
+          description: A short, human-readable, title for this code action.
+          title: title
+          type: string
+      x-propertyOrder:
+        - title
+        - kind
+        - diagnostics
+        - isPreferred
+        - disabled
+        - edit
+        - command
+        - data
+      required:
+        - title
+      title: CodeAction
+      type: object
+    CodeActionContext:
+      description: |-
+        Contains additional diagnostic information about the context in which
+        a [code action](#CodeActionProvider.provideCodeActions) is run.
+        The CodeActionContext namespace provides helper functions to work with
+        [CodeActionContext](#CodeActionContext) literals.
+      properties:
+        diagnostics:
+          description: |-
+            An array of diagnostics known on the client side overlapping the range provided to the
+            `textDocument/codeAction` request. They are provided so that the server knows which
+            errors are currently presented to the user for the given range. There is no guarantee
+            that these accurately reflect the error state of the resource. The primary parameter
+            to compute code actions is the provided range.
+          items:
+            $ref: '#/components/schemas/Diagnostic'
+          title: diagnostics
+          type: array
+        only:
+          description: |-
+            Requested kind of actions to return.
+
+            Actions not of this kind are filtered out by the client before being shown. So servers
+            can omit computing them.
+          items:
+            type: string
+          title: only
+          type: array
+        triggerKind:
+          $ref: '#/components/schemas/CodeActionTriggerKind'
+          description: The reason why code actions were requested.
+          title: triggerKind
+      x-propertyOrder:
+        - diagnostics
+        - only
+        - triggerKind
+      required:
+        - diagnostics
+      title: CodeActionContext
+      type: object
     CodeActionKind:
       description: |-
         The kind of a code action.
@@ -1036,85 +1036,95 @@ components:
         - ignoreIfNotExists
       title: DeleteFileOptions
       type: object
-    # Diagnostic:
-    #   description: |-
-    #     Represents a diagnostic, such as a compiler error or warning. Diagnostic objects
-    #     are only valid in the scope of a resource.
-    #     The Diagnostic namespace provides helper functions to work with
-    #     [Diagnostic](#Diagnostic) literals.
-    #   properties:
-    #     code:
-    #       description: The diagnostic's code, which usually appear in the user interface.
-    #       title: code
-    #       type:
-    #       - string
-    #       - integer
-    #     codeDescription:
-    #       $ref: '#/components/schemas/CodeDescription'
-    #       description: |-
-    #         An optional property to describe the error code.
-    #         Requires the code field (above) to be present/not null.
-    #       title: codeDescription
-    #     data:
-    #       $ref: '#/components/schemas/LSPAny'
-    #       description: |-
-    #         A data entry field that is preserved between a `textDocument/publishDiagnostics`
-    #         notification and `textDocument/codeAction` request.
-    #       title: data
-    #     message:
-    #       description: The diagnostic's message. It usually appears in the user interface
-    #       title: message
-    #       type: string
-    #     range:
-    #       $ref: '#/components/schemas/Range'
-    #       description: The range at which the message applies
-    #       title: range
-    #     relatedInformation:
-    #       description: |-
-    #         An array of related diagnostic information, e.g. when symbol-names within
-    #         a scope collide all components/schemas can be marked via this property.
-    #       items:
-    #         $ref: '#/components/schemas/DiagnosticRelatedInformation'
-    #       title: relatedInformation
-    #       type: array
-    #     severity:
-    #       $ref: '#/components/schemas/DiagnosticSeverity'
-    #       description: |-
-    #         The diagnostic's severity. Can be omitted. If omitted it is up to the
-    #         client to interpret diagnostics as error, warning, info or hint.
-    #       title: severity
-    #     source:
-    #       description: |-
-    #         A human-readable string describing the source of this
-    #         diagnostic, e.g. 'typescript' or 'super lint'. It usually
-    #         appears in the user interface.
-    #       title: source
-    #       type: string
-    #     tags:
-    #       description: Additional metadata about the diagnostic.
-    #       items:
-    #         description: The diagnostic tags.
-    #         enum:
-    #         - 1
-    #         - 2
-    #         type: number
-    #       title: tags
-    #       type: array
-    #   x-propertyOrder:
-    #   - range
-    #   - severity
-    #   - code
-    #   - codeDescription
-    #   - source
-    #   - message
-    #   - tags
-    #   - relatedInformation
-    #   - data
-    #   required:
-    #   - message
-    #   - range
-    #   title: Diagnostic
-    #   type: object
+    Diagnostic:
+      additionalProperties: true
+      defaultProperties: []
+      description: |-
+        Represents a diagnostic, such as a compiler error or warning. Diagnostic objects
+        are only valid in the scope of a resource.
+        The Diagnostic namespace provides helper functions to work with
+        [Diagnostic](#Diagnostic) literals.
+      nullable: false
+      properties:
+        code:
+          anyOf:
+            - type: string
+              nullable: false
+            - type: integer
+              nullable: false
+          description: The diagnostic's code, which usually appear in the user interface.
+          title: code
+        codeDescription:
+          $ref: '#/components/schemas/CodeDescription'
+          description: |-
+            An optional property to describe the error code.
+            Requires the code field (above) to be present/not null.
+          title: codeDescription
+        data:
+          $ref: '#/components/schemas/LSPAny'
+          description: |-
+            A data entry field that is preserved between a `textDocument/publishDiagnostics`
+            notification and `textDocument/codeAction` request.
+          title: data
+        message:
+          description: The diagnostic's message. It usually appears in the user interface
+          nullable: false
+          title: message
+          type: string
+        range:
+          $ref: '#/components/schemas/Range'
+          description: The range at which the message applies
+          title: range
+        relatedInformation:
+          description: |-
+            An array of related diagnostic information, e.g. when symbol-names within
+            a scope collide all components/schemas can be marked via this property.
+          items:
+            $ref: '#/components/schemas/DiagnosticRelatedInformation'
+          nullable: false
+          title: relatedInformation
+          type: array
+        severity:
+          $ref: '#/components/schemas/DiagnosticSeverity'
+          description: |-
+            The diagnostic's severity. Can be omitted. If omitted it is up to the
+            client to interpret diagnostics as error, warning, info or hint.
+          title: severity
+        source:
+          description: |-
+            A human-readable string describing the source of this
+            diagnostic, e.g. 'typescript' or 'super lint'. It usually
+            appears in the user interface.
+          nullable: false
+          title: source
+          type: string
+        tags:
+          description: Additional metadata about the diagnostic.
+          items:
+            description: The diagnostic tags.
+            enum:
+            - 1
+            - 2
+            nullable: false
+            type: number
+          nullable: false
+          title: tags
+          type: array
+      x-propertyOrder:
+        - range
+        - severity
+        - code
+        - codeDescription
+        - source
+        - message
+        - tags
+        - relatedInformation
+        - data
+      required:
+        - message
+        - range
+      title: Diagnostic
+      type: object
     DiagnosticRelatedInformation:
       description: |-
         Represents a related message and source code location for a diagnostic. This should be
@@ -1225,74 +1235,74 @@ components:
         - range
       title: DocumentLink
       type: object
-    # DocumentSymbol:
-    #   description: |-
-    #     Represents programming constructs like variables, classes, interfaces etc.
-    #     that appear in a document. Document symbols can be hierarchical and they
-    #     have two ranges: one that encloses its definition and one that points to
-    #     its most interesting range, e.g. the range of an identifier.
-    #   properties:
-    #     children:
-    #       description: Children of this symbol, e.g. properties of a class.
-    #       items:
-    #         $ref: '#/components/schemas/DocumentSymbol'
-    #       title: children
-    #       type: array
-    #     deprecated:
-    #       description: Indicates if this symbol is deprecated.
-    #       title: deprecated
-    #       type: boolean
-    #     detail:
-    #       description: More detail for this symbol, e.g the signature of a function.
-    #       title: detail
-    #       type: string
-    #     kind:
-    #       $ref: '#/components/schemas/SymbolKind'
-    #       description: The kind of this symbol.
-    #       title: kind
-    #     name:
-    #       description: |-
-    #         The name of this symbol. Will be displayed in the user interface and therefore must not be
-    #         an empty string or a string only consisting of white spaces.
-    #       title: name
-    #       type: string
-    #     range:
-    #       $ref: '#/components/schemas/Range'
-    #       description: |-
-    #         The range enclosing this symbol not including leading/trailing whitespace but everything else
-    #         like comments. This information is typically used to determine if the the clients cursor is
-    #         inside the symbol to reveal in the symbol in the UI.
-    #       title: range
-    #     selectionRange:
-    #       $ref: '#/components/schemas/Range'
-    #       description: |-
-    #         The range that should be selected and revealed when this symbol is being picked, e.g the name of a function.
-    #         Must be contained by the the `range`.
-    #       title: selectionRange
-    #     tags:
-    #       description: Tags for this document symbol.
-    #       items:
-    #         enum:
-    #         - 1
-    #         type: number
-    #       title: tags
-    #       type: array
-    #   x-propertyOrder:
-    #   - name
-    #   - detail
-    #   - kind
-    #   - tags
-    #   - deprecated
-    #   - range
-    #   - selectionRange
-    #   - children
-    #   required:
-    #   - kind
-    #   - name
-    #   - range
-    #   - selectionRange
-    #   title: DocumentSymbol
-    #   type: object
+    DocumentSymbol:
+      description: |-
+        Represents programming constructs like variables, classes, interfaces etc.
+        that appear in a document. Document symbols can be hierarchical and they
+        have two ranges: one that encloses its definition and one that points to
+        its most interesting range, e.g. the range of an identifier.
+      properties:
+        children:
+          description: Children of this symbol, e.g. properties of a class.
+          items:
+            $ref: '#/components/schemas/DocumentSymbol'
+          title: children
+          type: array
+        deprecated:
+          description: Indicates if this symbol is deprecated.
+          title: deprecated
+          type: boolean
+        detail:
+          description: More detail for this symbol, e.g the signature of a function.
+          title: detail
+          type: string
+        kind:
+          $ref: '#/components/schemas/SymbolKind'
+          description: The kind of this symbol.
+          title: kind
+        name:
+          description: |-
+            The name of this symbol. Will be displayed in the user interface and therefore must not be
+            an empty string or a string only consisting of white spaces.
+          title: name
+          type: string
+        range:
+          $ref: '#/components/schemas/Range'
+          description: |-
+            The range enclosing this symbol not including leading/trailing whitespace but everything else
+            like comments. This information is typically used to determine if the the clients cursor is
+            inside the symbol to reveal in the symbol in the UI.
+          title: range
+        selectionRange:
+          $ref: '#/components/schemas/Range'
+          description: |-
+            The range that should be selected and revealed when this symbol is being picked, e.g the name of a function.
+            Must be contained by the the `range`.
+          title: selectionRange
+        tags:
+          description: Tags for this document symbol.
+          items:
+            enum:
+              - 1
+            type: number
+          title: tags
+          type: array
+      x-propertyOrder:
+        - name
+        - detail
+        - kind
+        - tags
+        - deprecated
+        - range
+        - selectionRange
+        - children
+      required:
+        - kind
+        - name
+        - range
+        - selectionRange
+      title: DocumentSymbol
+      type: object
     DocumentUri:
       description: A tagging type for string properties that are actually document URIs.
       title: DocumentUri
@@ -1360,10 +1370,13 @@ components:
       type: string
     FormattingOptions:
       # additionalProperties:
-      #   type:
-      #   - string
-      #   - integer
-      #   - boolean
+      #   anyOf:
+      #     - type: string
+      #       nullable: false
+      #     - type: integer
+      #       nullable: false
+      #     - type: boolean
+      #       nullable: false
       description: |-
         Value-object describing what options formatting should use.
         The FormattingOptions namespace provides helper functions to work with
@@ -1900,10 +1913,6 @@ components:
     LSPArray:
       items: {}
       type: array
-    # LSPObject:
-    #   additionalProperties: true
-    #   properties: {}
-    #   type: object
     Location:
       description: |-
         Represents a location inside a resource, such as a line
@@ -2095,13 +2104,14 @@ components:
     #       title: documentation
     #     label:
     #       anyOf:
-    #       - items:
-    #         - type: integer
-    #         - type: integer
-    #         maxItems: 2
-    #         minItems: 2
-    #         type: array
-    #       - type: string
+    #         - items:
+    #             type: integer
+    #           maxItems: 2
+    #           minItems: 2
+    #           type: array
+    #           nullable: false
+    #         - type: string
+    #           nullable: false
     #       description: |-
     #         The label of this parameter information.
     #
@@ -2113,10 +2123,10 @@ components:
     #         Its intended use case is to highlight the parameter label part in the `SignatureInformation.label`.
     #       title: label
     #   x-propertyOrder:
-    #   - label
-    #   - documentation
+    #     - label
+    #     - documentation
     #   required:
-    #   - label
+    #     - label
     #   title: ParameterInformation
     #   type: object
     Position:
@@ -2300,10 +2310,10 @@ components:
     #       description: The [range](#Range) of this selection range.
     #       title: range
     #   x-propertyOrder:
-    #   - range
-    #   - parent
+    #     - range
+    #     - parent
     #   required:
-    #   - range
+    #     - range
     #   title: SelectionRange
     #   type: object
     SemanticTokenModifiers:
@@ -2481,11 +2491,11 @@ components:
     #       title: signatures
     #       type: array
     #   x-propertyOrder:
-    #   - signatures
-    #   - activeSignature
-    #   - activeParameter
+    #     - signatures
+    #     - activeSignature
+    #     - activeParameter
     #   required:
-    #   - signatures
+    #     - signatures
     #   title: SignatureHelp
     #   type: object
     # SignatureInformation:
@@ -2524,12 +2534,12 @@ components:
     #       title: parameters
     #       type: array
     #   x-propertyOrder:
-    #   - label
-    #   - documentation
-    #   - parameters
-    #   - activeParameter
+    #     - label
+    #     - documentation
+    #     - parameters
+    #     - activeParameter
     #   required:
-    #   - label
+    #     - label
     #   title: SignatureInformation
     #   type: object
     SymbolInformation:

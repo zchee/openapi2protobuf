@@ -179,16 +179,22 @@ func (fd *FileDescriptorProto) CleanupMessage() {
 		names[msg.GetName()] = true
 	}
 
-	for i, msg := range fd.desc.MessageType {
-		for j, nested := range msg.NestedType {
-			for k, nested2 := range nested.NestedType {
-				if names[nested2.GetName()] && len(fd.desc.MessageType[i].NestedType[j].NestedType) > 1 {
-					fd.desc.MessageType[i].NestedType[j].NestedType = append(fd.desc.MessageType[i].NestedType[j].NestedType[:k], fd.desc.MessageType[i].NestedType[j].NestedType[k+1:]...)
-				}
-			}
-
-			if names[nested.GetName()] && len(fd.desc.MessageType[i].NestedType) > 1 {
+	for i := range fd.desc.MessageType {
+		for j, nested := range fd.desc.MessageType[i].NestedType {
+			if len(fd.desc.MessageType[i].NestedType) > 1 && names[nested.GetName()] {
 				fd.desc.MessageType[i].NestedType = append(fd.desc.MessageType[i].NestedType[:j], fd.desc.MessageType[i].NestedType[j+1:]...)
+
+				// for k, nested2 := range fd.desc.MessageType[i].NestedType[j].NestedType {
+				// 	if len(fd.desc.MessageType[i].NestedType[j].NestedType) > 1 && names[nested2.GetName()] {
+				// 		fd.desc.MessageType[i].NestedType[j].NestedType = append(fd.desc.MessageType[i].NestedType[j].NestedType[:k], fd.desc.MessageType[i].NestedType[j].NestedType[k+1:]...)
+				// 	}
+				//
+				// 	for q, nested3 := range fd.desc.MessageType[i].NestedType[j].NestedType[k].NestedType {
+				// 		if len(fd.desc.MessageType[i].NestedType[j].NestedType[k].NestedType) > 1 && names[nested3.GetName()] {
+				// 			fd.desc.MessageType[i].NestedType[j].NestedType[k].NestedType = append(fd.desc.MessageType[i].NestedType[j].NestedType[k].NestedType[:q], fd.desc.MessageType[i].NestedType[j].NestedType[k].NestedType[q+1:]...)
+				// 		}
+				// 	}
+				// }
 			}
 		}
 	}

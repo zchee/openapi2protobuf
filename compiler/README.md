@@ -5,6 +5,10 @@ package go.lsp.dev.types;
 
 import "google/protobuf/any.proto";
 
+option java_package = "dev.lsp.go";
+
+option java_outer_classname = "Types";
+
 option java_multiple_files = true;
 
 option go_package = "go.lsp.dev.types";
@@ -12,10 +16,6 @@ option go_package = "go.lsp.dev.types";
 option cc_enable_arenas = true;
 
 option csharp_namespace = "Go.Lsp.Dev.Types";
-
-option java_package = "dev.lsp.go";
-
-option java_outer_classname = "Types";
 
 message AnnotatedTextEdit {
   ChangeAnnotationIdentifier annotation_id = 1;
@@ -113,11 +113,51 @@ message ChangeAnnotations {
   int32 size = 4;
 
   message ChangeAnnotation {
-    string label = 1;
+    string description = 1;
 
-    bool needs_confirmation = 2;
+    string label = 2;
 
-    string description = 3;
+    bool needs_confirmation = 3;
+  }
+}
+
+message CodeAction {
+  string title = 1;
+
+  CodeActionKind kind = 2;
+
+  repeated Diagnostics diagnostics = 3;
+
+  bool is_preferred = 4;
+
+  string disabled = 5;
+
+  WorkspaceEdit edit = 6;
+
+  Command command = 7;
+
+  message Diagnostics {
+    Diagnostic diagnostic = 1;
+  }
+}
+
+message CodeActionContext {
+  repeated Diagnostics diagnostics = 1;
+
+  repeated Only only = 2;
+
+  CodeActionTriggerKind trigger_kind = 3;
+
+  message Diagnostics {
+    Diagnostic diagnostic = 1;
+  }
+
+  message Only {
+    Only only = 1;
+
+    message Only {
+      string only = 1;
+    }
   }
 }
 
@@ -220,16 +260,22 @@ message CompletionItem {
 
   Command command = 18;
 
-  message CommitCharacters {
-    CommitCharacters commit_characters = 1;
+  message Documentation {
+    oneof documentation {
+      MarkupContent markup_content = 1;
 
-    message CommitCharacters {
-      string commit_characters = 1;
+      Documentation2 documentation_2 = 2;
     }
-  }
 
-  message AdditionalTextEdits {
-    TextEdit text_edit = 1;
+    message MarkupContent {
+      string value = 1;
+
+      MarkupKind kind = 2;
+    }
+
+    message Documentation2 {
+      string documentation_2 = 1;
+    }
   }
 
   message Tags {
@@ -242,16 +288,16 @@ message CompletionItem {
     }
   }
 
-  message Documentation {
-    oneof documentation {
-      MarkupContent markup_content = 1;
+  message CommitCharacters {
+    CommitCharacters commit_characters = 1;
 
-      Documentation2 documentation_2 = 2;
+    message CommitCharacters {
+      string commit_characters = 1;
     }
+  }
 
-    message Documentation2 {
-      string documentation_2 = 1;
-    }
+  message AdditionalTextEdits {
+    TextEdit text_edit = 1;
   }
 }
 
@@ -329,21 +375,13 @@ message CompletionList {
   repeated Items items = 3;
 
   message ItemDefaults {
-    repeated CommitCharacters commit_characters = 1;
+    EditRange edit_range = 1;
 
-    EditRange edit_range = 2;
+    InsertTextFormat insert_text_format = 2;
 
-    InsertTextFormat insert_text_format = 3;
+    InsertTextMode insert_text_mode = 3;
 
-    InsertTextMode insert_text_mode = 4;
-
-    message CommitCharacters {
-      CommitCharacters commit_characters = 1;
-
-      message CommitCharacters {
-        string commit_characters = 1;
-      }
-    }
+    repeated CommitCharacters commit_characters = 4;
 
     message EditRange {
       oneof edit_range {
@@ -362,6 +400,14 @@ message CompletionList {
         Range insert = 1;
 
         Range replace = 2;
+      }
+    }
+
+    message CommitCharacters {
+      CommitCharacters commit_characters = 1;
+
+      message CommitCharacters {
+        string commit_characters = 1;
       }
     }
   }
@@ -443,6 +489,56 @@ message DeleteFileOptions {
   bool ignore_if_not_exists = 2;
 }
 
+message Diagnostic {
+  Range range = 1;
+
+  DiagnosticSeverity severity = 2;
+
+  Code code = 3;
+
+  CodeDescription code_description = 4;
+
+  string source = 5;
+
+  string message = 6;
+
+  repeated Tags tags = 7;
+
+  repeated RelatedInformation related_information = 8;
+
+  message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+
+        Tags_2 = 2;
+      }
+    }
+  }
+
+  message Code {
+    oneof code {
+      Code1 code_1 = 1;
+
+      Code2 code_2 = 2;
+    }
+
+    message Code1 {
+      string code_1 = 1;
+    }
+
+    message Code2 {
+      int32 code_2 = 1;
+    }
+  }
+
+  message RelatedInformation {
+    DiagnosticRelatedInformation diagnostic_related_information = 1;
+  }
+}
+
 message DiagnosticRelatedInformation {
   Location location = 1;
 
@@ -491,6 +587,38 @@ message DocumentLink {
   string target = 2;
 
   string tooltip = 3;
+}
+
+message DocumentSymbol {
+  string name = 1;
+
+  string detail = 2;
+
+  SymbolKind kind = 3;
+
+  repeated Tags tags = 4;
+
+  bool deprecated = 5;
+
+  Range range = 6;
+
+  Range selection_range = 7;
+
+  repeated Children children = 8;
+
+  message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
+    }
+  }
+
+  message Children {
+    DocumentSymbol document_symbol = 1;
+  }
 }
 
 message DocumentUri {
@@ -571,6 +699,12 @@ message Hover {
       Contents4 contents_4 = 4;
     }
 
+    message MarkupContent {
+      MarkupKind kind = 1;
+
+      string value = 2;
+    }
+
     message Contents2 {
       string language = 1;
 
@@ -588,9 +722,9 @@ message Hover {
         }
 
         message Contents31 {
-          string value = 1;
+          string language = 1;
 
-          string language = 2;
+          string value = 2;
         }
 
         message Contents32 {
@@ -631,6 +765,12 @@ message InlayHint {
       Tooltip2 tooltip_2 = 2;
     }
 
+    message MarkupContent {
+      string value = 1;
+
+      MarkupKind kind = 2;
+    }
+
     message Tooltip2 {
       string tooltip_2 = 1;
     }
@@ -663,9 +803,9 @@ message InlayHint {
           }
 
           message MarkupContent {
-            MarkupKind kind = 1;
+            string value = 1;
 
-            string value = 2;
+            MarkupKind kind = 2;
           }
 
           message Tooltip2 {
@@ -703,6 +843,12 @@ message InlayHintLabelPart {
       MarkupContent markup_content = 1;
 
       Tooltip2 tooltip_2 = 2;
+    }
+
+    message MarkupContent {
+      MarkupKind kind = 1;
+
+      string value = 2;
     }
 
     message Tooltip2 {
@@ -1137,11 +1283,11 @@ message TextDocumentContentChangeEvent {
   }
 
   message TextDocumentContentChangeEvent1 {
-    Range range = 1;
+    Uinteger range_length = 1;
 
-    Uinteger range_length = 2;
+    string text = 2;
 
-    string text = 3;
+    Range range = 3;
   }
 
   message TextDocumentContentChangeEvent2 {
@@ -1223,11 +1369,11 @@ message TextEditChangeImpl {
       }
 
       message AnnotatedTextEdit {
-        ChangeAnnotationIdentifier annotation_id = 1;
+        string new_text = 1;
 
-        string new_text = 2;
+        Range range = 2;
 
-        Range range = 3;
+        ChangeAnnotationIdentifier annotation_id = 3;
       }
     }
   }
@@ -1298,9 +1444,9 @@ message WorkspaceChange {
         }
 
         message TextEdit {
-          Range range = 1;
+          string new_text = 1;
 
-          string new_text = 2;
+          Range range = 2;
         }
 
         message AnnotatedTextEdit {
@@ -1389,15 +1535,15 @@ message WorkspaceEdit {
       }
 
       message RenameFile {
-        DocumentUri new_uri = 1;
+        Kind kind = 1;
 
-        DocumentUri old_uri = 2;
+        DocumentUri new_uri = 2;
 
-        RenameFileOptions options = 3;
+        DocumentUri old_uri = 3;
 
-        ChangeAnnotationIdentifier annotation_id = 4;
+        RenameFileOptions options = 4;
 
-        Kind kind = 5;
+        ChangeAnnotationIdentifier annotation_id = 5;
 
         message Kind {
           enum Kind {
