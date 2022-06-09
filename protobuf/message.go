@@ -4,16 +4,20 @@
 package protobuf
 
 import (
-	"go.lsp.dev/openapi2protobuf/internal/conv"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
+
+	"go.lsp.dev/openapi2protobuf/internal/conv"
 )
 
 type MessageDescriptorProto struct {
 	desc   *descriptorpb.DescriptorProto
-	field  map[string]bool
-	nested map[string]bool
-	number int32
+	parent *MessageDescriptorProto
+
+	field       map[string]bool
+	fieldMumber int32
+	enum        map[string]bool
+	nested      map[string]bool
 }
 
 func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
@@ -22,6 +26,7 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 			Name: proto.String(name),
 		},
 		field:  make(map[string]bool),
+		enum:   make(map[string]bool),
 		nested: make(map[string]bool),
 	}
 }
@@ -31,10 +36,10 @@ func (md *MessageDescriptorProto) Clone() *MessageDescriptorProto {
 	*desc = *md.desc
 
 	mdesc := &MessageDescriptorProto{
-		desc:   desc,
-		nested: md.nested,
-		field:  md.field,
-		number: md.number,
+		desc:        desc,
+		field:       md.field,
+		fieldMumber: md.fieldMumber,
+		nested:      md.nested,
 	}
 
 	return mdesc
@@ -54,8 +59,8 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 		return md
 	}
 
-	md.number++
-	field.desc.Number = proto.Int32(md.number)
+	md.fieldMumber++
+	field.desc.Number = proto.Int32(md.fieldMumber)
 	md.field[field.GetName()] = true
 	md.desc.Field = append(md.desc.Field, field.Build())
 
@@ -148,6 +153,7 @@ func (md *MessageDescriptorProto) AddNestedMessage(nested *MessageDescriptorProt
 
 func (md *MessageDescriptorProto) AddEnumType(enum *EnumDescriptorProto) *MessageDescriptorProto {
 	md.desc.EnumType = append(md.desc.EnumType, enum.Build())
+
 	return md
 }
 

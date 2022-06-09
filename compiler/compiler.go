@@ -293,7 +293,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 var enumMessage = protobuf.NewMessageDescriptorProto("enum")
 
 func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
-	skip := msg == nil || msg == enumMessage || msg.IsEmptyField()
+	skip := msg == nil || msg == enumMessage
 
 	if msg != nil && msg.IsEmptyField() {
 		if parent != nil {
@@ -319,15 +319,12 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 		switch {
 		case isEnum(val):
 			enumMsg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(val.Title))
-			enum := c.CompileEnum(name, val)
-			if enum != nil && enum.GetName() != "" {
-				c.fdesc.AddEnum(enum)
-			}
-			enumMsg.AddEnumType(enum)
-			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), protobuf.FieldTypeMessage())
-			field.SetTypeName(enum.GetName())
+			enumMsg.AddEnumType(c.CompileEnum(name, val))
+			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), protobuf.FieldTypeEnum())
+			field.SetTypeName(enumMsg.GetName())
+			field.SetNumber()
 			enumMsg.AddField(field)
-			return enumMsg, nil
+			return enumMessage, nil
 
 		case isOneOf(val):
 			oneof, err := c.CompileOneOf(name, val)
@@ -371,13 +368,13 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 	return nil, nil
 }
 
-func isEnum(schema *openapi3.Schema) bool { return schema.Enum != nil }
+func isEnum(schema *openapi3.Schema) bool { return len(schema.Enum) > 0 }
 
-func isOneOf(schema *openapi3.Schema) bool { return schema.OneOf != nil }
+func isOneOf(schema *openapi3.Schema) bool { return len(schema.OneOf) > 0 }
 
-func isAnyOf(schema *openapi3.Schema) bool { return schema.AnyOf != nil }
+func isAnyOf(schema *openapi3.Schema) bool { return len(schema.AnyOf) > 0 }
 
-func isAllOf(schema *openapi3.Schema) bool { return schema.AllOf != nil }
+func isAllOf(schema *openapi3.Schema) bool { return len(schema.AllOf) > 0 }
 
 func (c *compiler) compileBuiltin(schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) (*protobuf.MessageDescriptorProto, error) {
 	if fieldType == nil {
