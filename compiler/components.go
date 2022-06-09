@@ -51,6 +51,8 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		c.fdesc.AddMessage(msg)
 	}
 
+	c.fdesc.CleanupMessage()
+
 	return nil
 }
 

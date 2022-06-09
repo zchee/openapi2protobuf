@@ -173,6 +173,27 @@ func (fd *FileDescriptorProto) AddExtension(ext *FieldDescriptorProto) *FileDesc
 	return fd
 }
 
+func (fd *FileDescriptorProto) CleanupMessage() {
+	names := make(map[string]bool)
+	for _, msg := range fd.desc.MessageType {
+		names[msg.GetName()] = true
+	}
+
+	for i, msg := range fd.desc.MessageType {
+		for j, nested := range msg.NestedType {
+			for k, nested2 := range nested.NestedType {
+				if names[nested2.GetName()] && len(fd.desc.MessageType[i].NestedType[j].NestedType) > 1 {
+					fd.desc.MessageType[i].NestedType[j].NestedType = append(fd.desc.MessageType[i].NestedType[j].NestedType[:k], fd.desc.MessageType[i].NestedType[j].NestedType[k+1:]...)
+				}
+			}
+
+			if names[nested.GetName()] && len(fd.desc.MessageType[i].NestedType) > 1 {
+				fd.desc.MessageType[i].NestedType = append(fd.desc.MessageType[i].NestedType[:j], fd.desc.MessageType[i].NestedType[j+1:]...)
+			}
+		}
+	}
+}
+
 func (fd *FileDescriptorProto) Build() *descriptorpb.FileDescriptorProto {
 	sort.Slice(fd.desc.Dependency, func(i, j int) bool { return fd.desc.Dependency[i] < fd.desc.Dependency[j] })
 	sort.Slice(fd.desc.MessageType, func(i, j int) bool { return fd.desc.MessageType[i].GetName() < fd.desc.MessageType[j].GetName() })
