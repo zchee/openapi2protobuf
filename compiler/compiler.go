@@ -507,7 +507,9 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 			continue
 		}
 
-		nestedMsg.SetName(name + "_" + strconv.Itoa(i+1))
+		if nestedMsg.GetName() == "" {
+			nestedMsg.SetName(name + "_" + strconv.Itoa(i+1))
+		}
 		msg.AddNestedMessage(nestedMsg)
 
 		field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(nestedMsg.GetName()), protobuf.FieldTypeMessage())

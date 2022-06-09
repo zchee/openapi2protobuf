@@ -5,6 +5,8 @@ package go.lsp.dev.types;
 
 import "google/protobuf/any.proto";
 
+option csharp_namespace = "Go.Lsp.Dev.Types";
+
 option java_package = "dev.lsp.go";
 
 option java_outer_classname = "Types";
@@ -14,8 +16,6 @@ option java_multiple_files = true;
 option go_package = "go.lsp.dev.types";
 
 option cc_enable_arenas = true;
-
-option csharp_namespace = "Go.Lsp.Dev.Types";
 
 message AnnotatedTextEdit {
   ChangeAnnotationIdentifier annotation_id = 1;
@@ -220,28 +220,6 @@ message CompletionItem {
 
   Command command = 18;
 
-  message Documentation {
-    oneof documentation {
-      MarkupContent markup_content = 1;
-
-      documentation_2 documentation_2 = 2;
-    }
-
-    message MarkupContent {
-      string value = 1;
-
-      MarkupKind kind = 2;
-    }
-
-    message documentation_2 {
-      string  = 1;
-    }
-  }
-
-  message AdditionalTextEdits {
-    TextEdit text_edit = 1;
-  }
-
   message TextEdit {
     oneof text_edit {
       TextEdit text_edit = 1;
@@ -256,11 +234,29 @@ message CompletionItem {
     }
 
     message InsertReplaceEdit {
-      Range insert = 1;
+      string new_text = 1;
 
-      string new_text = 2;
+      Range replace = 2;
 
-      Range replace = 3;
+      Range insert = 3;
+    }
+  }
+
+  message Documentation {
+    oneof documentation {
+      MarkupContent markup_content = 1;
+
+      documentation_2 documentation_2 = 2;
+    }
+
+    message MarkupContent {
+      MarkupKind kind = 1;
+
+      string value = 2;
+    }
+
+    message documentation_2 {
+      string  = 1;
     }
   }
 
@@ -280,6 +276,10 @@ message CompletionItem {
     message  {
       string  = 1;
     }
+  }
+
+  message AdditionalTextEdits {
+    TextEdit text_edit = 1;
   }
 }
 
@@ -356,18 +356,22 @@ message CompletionList {
 
   repeated Items items = 3;
 
-  message Items {
-    CompletionItem completion_item = 1;
-  }
-
   message ItemDefaults {
-    EditRange edit_range = 1;
+    repeated CommitCharacters commit_characters = 1;
 
-    InsertTextFormat insert_text_format = 2;
+    EditRange edit_range = 2;
 
-    InsertTextMode insert_text_mode = 3;
+    InsertTextFormat insert_text_format = 3;
 
-    repeated CommitCharacters commit_characters = 4;
+    InsertTextMode insert_text_mode = 4;
+
+    message CommitCharacters {
+       commit_characters = 1;
+
+      message  {
+        string  = 1;
+      }
+    }
 
     message EditRange {
       oneof edit_range {
@@ -388,14 +392,10 @@ message CompletionList {
         Range replace = 2;
       }
     }
+  }
 
-    message CommitCharacters {
-       commit_characters = 1;
-
-      message  {
-        string  = 1;
-      }
-    }
+  message Items {
+    CompletionItem completion_item = 1;
   }
 }
 
@@ -618,9 +618,9 @@ message Hover {
     }
 
     message contents_2 {
-      string value = 1;
+      string language = 1;
 
-      string language = 2;
+      string value = 2;
     }
 
     message contents_3 {
@@ -666,6 +666,10 @@ message InlayHint {
 
   bool padding_right = 7;
 
+  message TextEdits {
+    TextEdit text_edit = 1;
+  }
+
   message Tooltip {
     oneof tooltip {
       MarkupContent markup_content = 1;
@@ -695,13 +699,13 @@ message InlayHint {
         = 1;
 
       message  {
-        string value = 1;
+        Command command = 1;
 
-        Command command = 2;
+        Location location = 2;
 
-        Location location = 3;
+        .Tooltip tooltip = 3;
 
-        .Tooltip tooltip = 4;
+        string value = 4;
 
         message Tooltip {
           oneof tooltip {
@@ -711,9 +715,9 @@ message InlayHint {
           }
 
           message MarkupContent {
-            MarkupKind kind = 1;
+            string value = 1;
 
-            string value = 2;
+            MarkupKind kind = 2;
           }
 
           message tooltip_2 {
@@ -726,10 +730,6 @@ message InlayHint {
     message label_2 {
       string  = 1;
     }
-  }
-
-  message TextEdits {
-    TextEdit text_edit = 1;
   }
 }
 
@@ -785,11 +785,11 @@ message InlineValue {
   }
 
   message InlineValueVariableLookup {
-    Range range = 1;
+    bool case_sensitive_lookup = 1;
 
-    string variable_name = 2;
+    Range range = 2;
 
-    bool case_sensitive_lookup = 3;
+    string variable_name = 3;
   }
 
   message InlineValueEvaluatableExpression {
@@ -1086,16 +1086,16 @@ message SemanticTokensLegend {
 
   repeated TokenModifiers token_modifiers = 2;
 
-  message TokenTypes {
-     token_types = 1;
+  message TokenModifiers {
+     token_modifiers = 1;
 
     message  {
       string  = 1;
     }
   }
 
-  message TokenModifiers {
-     token_modifiers = 1;
+  message TokenTypes {
+     token_types = 1;
 
     message  {
       string  = 1;
@@ -1207,11 +1207,11 @@ message TextDocumentContentChangeEvent {
   }
 
   message TextDocumentContentChangeEvent_1 {
-    Range range = 1;
+    string text = 1;
 
-    Uinteger range_length = 2;
+    Range range = 2;
 
-    string text = 3;
+    Uinteger range_length = 3;
   }
 
   message TextDocumentContentChangeEvent_2 {
@@ -1241,11 +1241,11 @@ message TextDocumentEdit {
       }
 
       message AnnotatedTextEdit {
-        ChangeAnnotationIdentifier annotation_id = 1;
+        Range range = 1;
 
-        string new_text = 2;
+        ChangeAnnotationIdentifier annotation_id = 2;
 
-        Range range = 3;
+        string new_text = 3;
       }
     }
   }
@@ -1287,9 +1287,9 @@ message TextEditChangeImpl {
       }
 
       message TextEdit {
-        Range range = 1;
+        string new_text = 1;
 
-        string new_text = 2;
+        Range range = 2;
       }
 
       message AnnotatedTextEdit {
@@ -1353,9 +1353,9 @@ message WorkspaceChange {
   WorkspaceEdit edit = 4;
 
   message TextEditChangeImpl {
-    repeated Edits edits = 1;
+    ChangeAnnotations change_annotations = 1;
 
-    ChangeAnnotations change_annotations = 2;
+    repeated Edits edits = 2;
 
     message Edits {
       Edits edits = 1;
@@ -1374,11 +1374,11 @@ message WorkspaceChange {
         }
 
         message AnnotatedTextEdit {
-          Range range = 1;
+          ChangeAnnotationIdentifier annotation_id = 1;
 
-          ChangeAnnotationIdentifier annotation_id = 2;
+          string new_text = 2;
 
-          string new_text = 3;
+          Range range = 3;
         }
       }
     }
@@ -1391,14 +1391,6 @@ message WorkspaceEdit {
   repeated DocumentChanges document_changes = 2;
 
   ChangeAnnotation change_annotations = 3;
-
-  message ChangeAnnotation {
-    string description = 1;
-
-    string label = 2;
-
-    bool needs_confirmation = 3;
-  }
 
   message  {
     TextEdit text_edit = 1;
@@ -1451,13 +1443,13 @@ message WorkspaceEdit {
       }
 
       message CreateFile {
-        DocumentUri uri = 1;
+        ChangeAnnotationIdentifier annotation_id = 1;
 
-        ChangeAnnotationIdentifier annotation_id = 2;
+        Kind kind = 2;
 
-        Kind kind = 3;
+        CreateFileOptions options = 3;
 
-        CreateFileOptions options = 4;
+        DocumentUri uri = 4;
 
         message Kind {
           enum Kind {
@@ -1467,15 +1459,15 @@ message WorkspaceEdit {
       }
 
       message RenameFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
+        DocumentUri new_uri = 1;
 
-        Kind kind = 2;
+        DocumentUri old_uri = 2;
 
-        DocumentUri new_uri = 3;
+        RenameFileOptions options = 3;
 
-        DocumentUri old_uri = 4;
+        ChangeAnnotationIdentifier annotation_id = 4;
 
-        RenameFileOptions options = 5;
+        Kind kind = 5;
 
         message Kind {
           enum Kind {
@@ -1485,13 +1477,13 @@ message WorkspaceEdit {
       }
 
       message DeleteFile {
-        DocumentUri uri = 1;
+        ChangeAnnotationIdentifier annotation_id = 1;
 
-        ChangeAnnotationIdentifier annotation_id = 2;
+        Kind kind = 2;
 
-        Kind kind = 3;
+        DeleteFileOptions options = 3;
 
-        DeleteFileOptions options = 4;
+        DocumentUri uri = 4;
 
         message Kind {
           enum Kind {
@@ -1500,6 +1492,14 @@ message WorkspaceEdit {
         }
       }
     }
+  }
+
+  message ChangeAnnotation {
+    string description = 1;
+
+    string label = 2;
+
+    bool needs_confirmation = 3;
   }
 }
 
