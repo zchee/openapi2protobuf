@@ -22,9 +22,9 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
 
+	"go.lsp.dev/openapi2protobuf/internal/backtrace"
 	"go.lsp.dev/openapi2protobuf/internal/conv"
 	"go.lsp.dev/openapi2protobuf/internal/dump"
-	"go.lsp.dev/openapi2protobuf/internal/unwind"
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 	"go.lsp.dev/openapi2protobuf/protobuf/printer"
@@ -297,7 +297,7 @@ func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
 
 	if msg != nil && msg.IsEmptyField() {
 		if parent != nil {
-			fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q), parent(%q)\n", unwind.FuncNameN(2)+":", conv.NormalizeFieldName(msg.GetName()), parent.GetName())
+			fmt.Fprintf(os.Stderr, "%-70s skipMessage(%q), parent(%q)\n", backtrace.FuncNameN(2)+":", conv.NormalizeFieldName(msg.GetName()), parent.GetName())
 			return skip
 		}
 	}
@@ -308,7 +308,7 @@ func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
 // compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
 	if strings.ToLower(name) == "basesymbolinformation" {
-		fmt.Fprintf(os.Stderr, "%s: from: %s: BaseSymbolInformation: array.Items\n", unwind.FuncName(), unwind.FuncNameN(2))
+		fmt.Fprintf(os.Stderr, "%s: from: %s: BaseSymbolInformation: array.Items\n", backtrace.FuncName(), backtrace.FuncNameN(2))
 	}
 	if additionalProps := schemaRef.Value.AdditionalProperties; additionalProps != nil {
 		return c.compileSchemaRef(name, additionalProps)
@@ -412,7 +412,7 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 		return msg, nil
 	}
 	if strings.ToLower(array.Title) == "tags" {
-		fmt.Fprintf(os.Stderr, "%s: from: %s: array.Items\n", unwind.FuncName(), unwind.FuncNameN(2))
+		fmt.Fprintf(os.Stderr, "%s: from: %s: array.Items\n", backtrace.FuncName(), backtrace.FuncNameN(2))
 	}
 
 	itemsMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(msg.GetName()), array.Items)
@@ -532,7 +532,7 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Enu
 		case float64:
 			enumValName = strconv.FormatFloat(float64(e), 'g', -1, 64)
 		default:
-			fmt.Fprintf(os.Stderr, "%s: enumValName: %T -> %s\n", unwind.FuncName(), e, e)
+			fmt.Fprintf(os.Stderr, "%s: enumValName: %T -> %s\n", backtrace.FuncName(), e, e)
 		}
 		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+enumValName, int32(i+1))
 		eb.AddValue(enumVal)

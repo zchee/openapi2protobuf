@@ -21,7 +21,7 @@ import (
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 
-	"go.lsp.dev/openapi2protobuf/internal/unwind"
+	"go.lsp.dev/openapi2protobuf/internal/backtrace"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 )
 
@@ -216,14 +216,14 @@ func (p *Printer) PrintProtoFiles(fds []*desc.FileDescriptor, open func(name str
 	for _, fd := range fds {
 		w, err := open(fd.GetName())
 		if err != nil {
-			return fmt.Errorf("%s: failed to open %s: %v", unwind.FuncName(), fd.GetName(), err)
+			return fmt.Errorf("%s: failed to open %s: %v", backtrace.FuncName(), fd.GetName(), err)
 		}
 		err = func() error {
 			defer w.Close()
 			return p.PrintProtoFile(fd, w)
 		}()
 		if err != nil {
-			return fmt.Errorf("%s: failed to write %s: %v", unwind.FuncName(), fd.GetName(), err)
+			return fmt.Errorf("%s: failed to write %s: %v", backtrace.FuncName(), fd.GetName(), err)
 		}
 	}
 	return nil
@@ -237,7 +237,7 @@ func (p *Printer) PrintProtosToFileSystem(fds []*desc.FileDescriptor, rootDir st
 		fullPath := filepath.Join(rootDir, name)
 		dir := filepath.Dir(fullPath)
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-			return nil, fmt.Errorf("%s: %w", unwind.FuncName(), err)
+			return nil, fmt.Errorf("%s: %w", backtrace.FuncName(), err)
 		}
 
 		return os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
@@ -276,7 +276,7 @@ func (p *Printer) PrintProtoFile(fd *desc.FileDescriptor, out io.Writer) error {
 func (p *Printer) PrintProtoToString(dsc desc.Descriptor) (string, error) {
 	var buf strings.Builder
 	if err := p.printProto(dsc, &buf); err != nil {
-		return "", fmt.Errorf("%s: %w", unwind.FuncName(), err)
+		return "", fmt.Errorf("%s: %w", backtrace.FuncName(), err)
 	}
 
 	return buf.String(), nil

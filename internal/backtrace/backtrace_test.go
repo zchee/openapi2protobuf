@@ -1,4 +1,4 @@
-package unwind
+package backtrace
 
 import (
 	"testing"

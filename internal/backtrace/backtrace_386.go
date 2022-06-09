@@ -1,6 +1,6 @@
 //go:build go1.11 && 386
 
-package unwind
+package backtrace
 
 import _ "unsafe"
 

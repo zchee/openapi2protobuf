@@ -1,6 +1,6 @@
 //go:build !go1.12
 
-package unwind
+package backtrace
 
 import "runtime"
 

@@ -1,6 +1,6 @@
-//go:build go1.13
+//go:build go1.12 && !go1.13
 
-package unwind
+package backtrace
 
 import (
 	"runtime"
@@ -46,13 +46,13 @@ func Name(pc uintptr) string {
 
 	// attempt to determine name, walking inlining data
 	name := funcname(info)
-	inldata := funcdata(info, 4)
+	inldata := funcdata(info, 2)
 	if inldata == nil {
 		return name
 	}
 
 	inltree := (*[1 << 20]inlinedCall)(inldata)
-	ix := pcdatavalue(info, 2, pc, nil)
+	ix := pcdatavalue(info, 1, pc, nil)
 	if ix < 0 {
 		return name
 	}
