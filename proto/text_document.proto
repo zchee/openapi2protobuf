@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package go.lsp.dev.text_document;
+
+import "google/protobuf/any.proto";
+
+option go_package = "go.lsp.dev.text_document";
+
+option cc_enable_arenas = true;
+
+option csharp_namespace = "Go.Lsp.Dev.TextDocument";
+
+option java_package = "dev.lsp.go";
+
+option java_outer_classname = "TextDocument";
+
+option java_multiple_files = true;
+
+message CharCode {
+  enum CharCode {
+    CharCode_10 = 1;
+
+    CharCode_13 = 2;
+  }
+}
+
+message DocumentUri {
+  string document_uri = 1;
+}
+
+message FullTextDocument {
+  DocumentUri _uri = 1;
+
+  string _language_id = 2;
+
+  int32 _version = 3;
+
+  string _content = 4;
+
+  repeated LineOffsets _line_offsets = 5;
+
+  string uri = 6;
+
+  string language_id = 7;
+
+  int32 version = 8;
+
+  int32 line_count = 9;
+
+  message LineOffsets {
+    LineOffsets line_offsets = 1;
+
+    message LineOffsets {
+      int32 line_offsets = 1;
+    }
+  }
+}
+
+message LSPAny {
+  google.protobuf.Any any = 1;
+}
+
+message LSPArray {
+  repeated google.protobuf.Any array = 1;
+}
+
+message LSPObject {
+  option map_entry = true;
+
+  map<string, google.protobuf.Any> object = 1;
+}
+
+message Position {
+  int32 line = 1;
+
+  int32 character = 2;
+}
+
+message Range {
+  Position start = 1;
+
+  Position end = 2;
+}
+
+message TextDocument {
+  DocumentUri uri = 1;
+
+  string language_id = 2;
+
+  int32 version = 3;
+
+  int32 line_count = 4;
+}
+
+message TextDocumentContentChangeEvent {
+  oneof text_document_content_change_event {
+    TextDocumentContentChangeEvent1 text_document_content_change_event_1 = 1;
+
+    TextDocumentContentChangeEvent2 text_document_content_change_event_2 = 2;
+  }
+
+  message TextDocumentContentChangeEvent1 {
+    Range range = 1;
+
+    int32 range_length = 2;
+
+    string text = 3;
+  }
+
+  message TextDocumentContentChangeEvent2 {
+    string text = 1;
+  }
+}
+
+message TextEdit {
+  Range range = 1;
+
+  string new_text = 2;
+}
+
