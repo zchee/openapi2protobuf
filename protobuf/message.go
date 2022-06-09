@@ -106,19 +106,23 @@ func (md *MessageDescriptorProto) GetFieldByName(name string) *FieldDescriptorPr
 }
 
 func (md *MessageDescriptorProto) GetFieldType() *descriptorpb.FieldDescriptorProto_Type {
-	if len(md.desc.EnumType) > 1 {
-		return descriptorpb.FieldDescriptorProto_TYPE_ENUM.Enum()
-	}
-
 	if len(md.desc.Field) == 1 {
 		return md.desc.Field[0].GetType().Enum()
+	}
+
+	if len(md.desc.Field) > 1 {
+		return descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum()
+	}
+
+	if len(md.desc.EnumType) > 1 {
+		return descriptorpb.FieldDescriptorProto_TYPE_ENUM.Enum()
 	}
 
 	return descriptorpb.FieldDescriptorProto_TYPE_MESSAGE.Enum()
 }
 
 func (md *MessageDescriptorProto) IsEmptyField() bool {
-	return len(md.desc.Field) == 0 && len(md.desc.EnumType) == 0
+	return len(md.desc.Field) == 0 && len(md.desc.EnumType) == 0 && len(md.desc.NestedType) == 0
 }
 
 func (md *MessageDescriptorProto) AddExtension(ext *FieldDescriptorProto) *MessageDescriptorProto {

@@ -1,96 +1,3 @@
-```go
-array: &openapi3.Schema{
-   ExtensionProps: openapi3.ExtensionProps{
-     Extensions: map[string]interface {}{},
-   },
-   OneOf: (openapi3.SchemaRefs)(nil),
-   AnyOf: (openapi3.SchemaRefs)(nil),
-   AllOf: (openapi3.SchemaRefs)(nil),
-   Not: (*openapi3.SchemaRef)(nil),
-   Type: "array",
-   Title: "tags",
-   Format: "",
-   Description: "Tags for this completion item.",
-   Enum: ([]interface {})(nil),
-   Default: nil,
-   Example: nil,
-   ExternalDocs: (*openapi3.ExternalDocs)(nil),
-   UniqueItems: false,
-   ExclusiveMin: false,
-   ExclusiveMax: false,
-   Nullable: false,
-   ReadOnly: false,
-   WriteOnly: false,
-   AllowEmptyValue: false,
-   Deprecated: false,
-   XML: (*openapi3.XML)(nil),
-   Min: (*float64)(nil),
-   Max: (*float64)(nil),
-   MultipleOf: (*float64)(nil),
-   MinLength: 0,
-   MaxLength: (*uint64)(nil),
-   Pattern: "",
-   compiledPattern: (*regexp.Regexp)(nil),
-   MinItems: 0,
-   MaxItems: (*uint64)(nil),
-   Items: &openapi3.SchemaRef{
-     Ref: "",
-     Value: &openapi3.Schema{
-       ExtensionProps: openapi3.ExtensionProps{
-         Extensions: map[string]interface {}{},
-       },
-       OneOf: (openapi3.SchemaRefs)(nil),
-       AnyOf: (openapi3.SchemaRefs)(nil),
-       AllOf: (openapi3.SchemaRefs)(nil),
-       Not: (*openapi3.SchemaRef)(nil),
-       Type: "number",
-       Title: "",
-       Format: "",
-       Description: "",
-       Enum: []interface {}{
-         1.000000,
-       },
-       Default: nil,
-       Example: nil,
-       ExternalDocs: (*openapi3.ExternalDocs)(nil),
-       UniqueItems: false,
-       ExclusiveMin: false,
-       ExclusiveMax: false,
-       Nullable: false,
-       ReadOnly: false,
-       WriteOnly: false,
-       AllowEmptyValue: false,
-       Deprecated: false,
-       XML: (*openapi3.XML)(nil),
-       Min: (*float64)(nil),
-       Max: (*float64)(nil),
-       MultipleOf: (*float64)(nil),
-       MinLength: 0,
-       MaxLength: (*uint64)(nil),
-       Pattern: "",
-       compiledPattern: (*regexp.Regexp)(nil),
-       MinItems: 0,
-       MaxItems: (*uint64)(nil),
-       Items: (*openapi3.SchemaRef)(nil),
-       Required: ([]string)(nil),
-       Properties: (openapi3.Schemas)(nil),
-       MinProps: 0,
-       MaxProps: (*uint64)(nil),
-       AdditionalPropertiesAllowed: (*bool)(nil),
-       AdditionalProperties: (*openapi3.SchemaRef)(nil),
-       Discriminator: (*openapi3.Discriminator)(nil),
-     },
-   },
-   Required: ([]string)(nil),
-   Properties: (openapi3.Schemas)(nil),
-   MinProps: 0,
-   MaxProps: (*uint64)(nil),
-   AdditionalPropertiesAllowed: (*bool)(nil),
-   AdditionalProperties: (*openapi3.SchemaRef)(nil),
-   Discriminator: (*openapi3.Discriminator)(nil),
-}
-```
-
 ```proto
 syntax = "proto3";
 
@@ -110,9 +17,6 @@ option cc_enable_arenas = true;
 
 option csharp_namespace = "Go.Lsp.Dev.Types";
 
-message  {
-}
-
 message AnnotatedTextEdit {
   ChangeAnnotationIdentifier annotation_id = 1;
 
@@ -124,11 +28,20 @@ message AnnotatedTextEdit {
 message BaseSymbolInformation {
   string name = 1;
 
-  repeated Tags tags = 2;
+  SymbolKind kind = 2;
 
-  string container_name = 3;
+  repeated Tags tags = 3;
+
+  string container_name = 4;
 
   message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
+    }
   }
 }
 
@@ -145,17 +58,26 @@ message CallHierarchyIncomingCall {
 message CallHierarchyItem {
   string name = 1;
 
-  repeated Tags tags = 2;
+  SymbolKind kind = 2;
 
-  string detail = 3;
+  repeated Tags tags = 3;
 
-  DocumentUri uri = 4;
+  string detail = 4;
 
-  Range range = 5;
+  DocumentUri uri = 5;
 
-  Range selection_range = 6;
+  Range range = 6;
+
+  Range selection_range = 7;
 
   message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
+    }
   }
 }
 
@@ -191,16 +113,24 @@ message ChangeAnnotations {
   int32 size = 4;
 
   message ChangeAnnotation {
-    bool needs_confirmation = 1;
+    string description = 1;
 
-    string description = 2;
+    string label = 2;
 
-    string label = 3;
+    bool needs_confirmation = 3;
   }
 }
 
 message CodeActionKind {
   string code_action_kind = 1;
+}
+
+message CodeActionTriggerKind {
+  enum CodeActionTriggerKind {
+    CodeActionTriggerKind_1 = 1;
+
+    CodeActionTriggerKind_2 = 2;
+  }
 }
 
 message CodeDescription {
@@ -258,31 +188,37 @@ message CompletionItem {
 
   CompletionItemLabelDetails label_details = 2;
 
-  repeated Tags tags = 3;
+  CompletionItemKind kind = 3;
 
-  string detail = 4;
+  repeated Tags tags = 4;
 
-  Documentation documentation = 5;
+  string detail = 5;
 
-  bool deprecated = 6;
+  Documentation documentation = 6;
 
-  bool preselect = 7;
+  bool deprecated = 7;
 
-  string sort_text = 8;
+  bool preselect = 8;
 
-  string filter_text = 9;
+  string sort_text = 9;
 
-  string insert_text = 10;
+  string filter_text = 10;
 
-  TextEdit text_edit = 11;
+  string insert_text = 11;
 
-  string text_edit_text = 12;
+  InsertTextFormat insert_text_format = 12;
 
-  repeated AdditionalTextEdits additional_text_edits = 13;
+  InsertTextMode insert_text_mode = 13;
 
-  repeated string commit_characters = 14;
+  TextEdit text_edit = 14;
 
-  Command command = 15;
+  string text_edit_text = 15;
+
+  repeated AdditionalTextEdits additional_text_edits = 16;
+
+  repeated CommitCharacters commit_characters = 17;
+
+  Command command = 18;
 
   message Documentation {
     oneof documentation {
@@ -293,14 +229,13 @@ message CompletionItem {
 
     message MarkupContent {
       string value = 1;
+
+      MarkupKind kind = 2;
     }
 
     message documentation_2 {
       string  = 1;
     }
-  }
-
-  message Tags {
   }
 
   message AdditionalTextEdits {
@@ -328,12 +263,90 @@ message CompletionItem {
       Range replace = 3;
     }
   }
+
+  message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
+    }
+  }
+
+  message CommitCharacters {
+     commit_characters = 1;
+
+    message  {
+      string  = 1;
+    }
+  }
+}
+
+message CompletionItemKind {
+  enum CompletionItemKind {
+    CompletionItemKind_1 = 1;
+
+    CompletionItemKind_2 = 2;
+
+    CompletionItemKind_3 = 3;
+
+    CompletionItemKind_4 = 4;
+
+    CompletionItemKind_5 = 5;
+
+    CompletionItemKind_6 = 6;
+
+    CompletionItemKind_7 = 7;
+
+    CompletionItemKind_8 = 8;
+
+    CompletionItemKind_9 = 9;
+
+    CompletionItemKind_10 = 10;
+
+    CompletionItemKind_11 = 11;
+
+    CompletionItemKind_12 = 12;
+
+    CompletionItemKind_13 = 13;
+
+    CompletionItemKind_14 = 14;
+
+    CompletionItemKind_15 = 15;
+
+    CompletionItemKind_16 = 16;
+
+    CompletionItemKind_17 = 17;
+
+    CompletionItemKind_18 = 18;
+
+    CompletionItemKind_19 = 19;
+
+    CompletionItemKind_20 = 20;
+
+    CompletionItemKind_21 = 21;
+
+    CompletionItemKind_22 = 22;
+
+    CompletionItemKind_23 = 23;
+
+    CompletionItemKind_24 = 24;
+
+    CompletionItemKind_25 = 25;
+  }
 }
 
 message CompletionItemLabelDetails {
   string detail = 1;
 
   string description = 2;
+}
+
+message CompletionItemTag {
+  enum CompletionItemTag {
+    CompletionItemTag_1 = 1;
+  }
 }
 
 message CompletionList {
@@ -343,10 +356,18 @@ message CompletionList {
 
   repeated Items items = 3;
 
-  message ItemDefaults {
-    repeated string commit_characters = 1;
+  message Items {
+    CompletionItem completion_item = 1;
+  }
 
-    EditRange edit_range = 2;
+  message ItemDefaults {
+    EditRange edit_range = 1;
+
+    InsertTextFormat insert_text_format = 2;
+
+    InsertTextMode insert_text_mode = 3;
+
+    repeated CommitCharacters commit_characters = 4;
 
     message EditRange {
       oneof edit_range {
@@ -356,9 +377,9 @@ message CompletionList {
       }
 
       message Range {
-        Position end = 1;
+        Position start = 1;
 
-        Position start = 2;
+        Position end = 2;
       }
 
       message editRange_2 {
@@ -367,19 +388,31 @@ message CompletionList {
         Range replace = 2;
       }
     }
-  }
 
-  message Items {
-    CompletionItem completion_item = 1;
+    message CommitCharacters {
+       commit_characters = 1;
+
+      message  {
+        string  = 1;
+      }
+    }
   }
 }
 
 message CreateFile {
-  DocumentUri uri = 1;
+  Kind kind = 1;
 
-  CreateFileOptions options = 2;
+  DocumentUri uri = 2;
 
-  ChangeAnnotationIdentifier annotation_id = 3;
+  CreateFileOptions options = 3;
+
+  ChangeAnnotationIdentifier annotation_id = 4;
+
+  message Kind {
+    enum Kind {
+      Kind_Create = 1;
+    }
+  }
 }
 
 message CreateFileOptions {
@@ -429,11 +462,19 @@ message Definition {
 }
 
 message DeleteFile {
-  DocumentUri uri = 1;
+  Kind kind = 1;
 
-  DeleteFileOptions options = 2;
+  DocumentUri uri = 2;
 
-  ChangeAnnotationIdentifier annotation_id = 3;
+  DeleteFileOptions options = 3;
+
+  ChangeAnnotationIdentifier annotation_id = 4;
+
+  message Kind {
+    enum Kind {
+      Kind_Delete = 1;
+    }
+  }
 }
 
 message DeleteFileOptions {
@@ -448,8 +489,40 @@ message DiagnosticRelatedInformation {
   string message = 2;
 }
 
+message DiagnosticSeverity {
+  enum DiagnosticSeverity {
+    DiagnosticSeverity_1 = 1;
+
+    DiagnosticSeverity_2 = 2;
+
+    DiagnosticSeverity_3 = 3;
+
+    DiagnosticSeverity_4 = 4;
+  }
+}
+
+message DiagnosticTag {
+  enum DiagnosticTag {
+    DiagnosticTag_1 = 1;
+
+    DiagnosticTag_2 = 2;
+  }
+}
+
 message DocumentHighlight {
   Range range = 1;
+
+  DocumentHighlightKind kind = 2;
+}
+
+message DocumentHighlightKind {
+  enum DocumentHighlightKind {
+    DocumentHighlightKind_1 = 1;
+
+    DocumentHighlightKind_2 = 2;
+
+    DocumentHighlightKind_3 = 3;
+  }
 }
 
 message DocumentLink {
@@ -503,7 +576,7 @@ message FullTextDocument {
 
   string _content = 4;
 
-  repeated int32 _line_offsets = 5;
+  repeated LineOffsets _line_offsets = 5;
 
   string uri = 6;
 
@@ -512,6 +585,14 @@ message FullTextDocument {
   Integer version = 8;
 
   int32 line_count = 9;
+
+  message LineOffsets {
+     line_offsets = 1;
+
+    message  {
+      int32  = 1;
+    }
+  }
 }
 
 message Hover {
@@ -531,17 +612,19 @@ message Hover {
     }
 
     message MarkupContent {
-      string value = 1;
-    }
-
-    message contents_2 {
-      string language = 1;
+      MarkupKind kind = 1;
 
       string value = 2;
     }
 
+    message contents_2 {
+      string value = 1;
+
+      string language = 2;
+    }
+
     message contents_3 {
-      repeated   = 1;
+        = 1;
 
       message  {
         oneof  {
@@ -573,17 +656,15 @@ message InlayHint {
 
   Label label = 2;
 
-  repeated TextEdits text_edits = 3;
+  InlayHintKind kind = 3;
 
-  Tooltip tooltip = 4;
+  repeated TextEdits text_edits = 4;
 
-  bool padding_left = 5;
+  Tooltip tooltip = 5;
 
-  bool padding_right = 6;
+  bool padding_left = 6;
 
-  message TextEdits {
-    TextEdit text_edit = 1;
-  }
+  bool padding_right = 7;
 
   message Tooltip {
     oneof tooltip {
@@ -593,7 +674,9 @@ message InlayHint {
     }
 
     message MarkupContent {
-      string value = 1;
+      MarkupKind kind = 1;
+
+      string value = 2;
     }
 
     message tooltip_2 {
@@ -609,16 +692,16 @@ message InlayHint {
     }
 
     message label_1 {
-      repeated   = 1;
+        = 1;
 
       message  {
-        Command command = 1;
+        string value = 1;
 
-        Location location = 2;
+        Command command = 2;
 
-        .Tooltip tooltip = 3;
+        Location location = 3;
 
-        string value = 4;
+        .Tooltip tooltip = 4;
 
         message Tooltip {
           oneof tooltip {
@@ -628,7 +711,9 @@ message InlayHint {
           }
 
           message MarkupContent {
-            string value = 1;
+            MarkupKind kind = 1;
+
+            string value = 2;
           }
 
           message tooltip_2 {
@@ -641,6 +726,18 @@ message InlayHint {
     message label_2 {
       string  = 1;
     }
+  }
+
+  message TextEdits {
+    TextEdit text_edit = 1;
+  }
+}
+
+message InlayHintKind {
+  enum InlayHintKind {
+    InlayHintKind_1 = 1;
+
+    InlayHintKind_2 = 2;
   }
 }
 
@@ -661,7 +758,9 @@ message InlayHintLabelPart {
     }
 
     message MarkupContent {
-      string value = 1;
+      MarkupKind kind = 1;
+
+      string value = 2;
     }
 
     message tooltip_2 {
@@ -686,11 +785,11 @@ message InlineValue {
   }
 
   message InlineValueVariableLookup {
-    bool case_sensitive_lookup = 1;
+    Range range = 1;
 
-    Range range = 2;
+    string variable_name = 2;
 
-    string variable_name = 3;
+    bool case_sensitive_lookup = 3;
   }
 
   message InlineValueEvaluatableExpression {
@@ -732,6 +831,22 @@ message InsertReplaceEdit {
   Range insert = 2;
 
   Range replace = 3;
+}
+
+message InsertTextFormat {
+  enum InsertTextFormat {
+    InsertTextFormat_1 = 1;
+
+    InsertTextFormat_2 = 2;
+  }
+}
+
+message InsertTextMode {
+  enum InsertTextMode {
+    InsertTextMode_1 = 1;
+
+    InsertTextMode_2 = 2;
+  }
 }
 
 message Integer {
@@ -787,7 +902,17 @@ message MarkedString {
 }
 
 message MarkupContent {
-  string value = 1;
+  MarkupKind kind = 1;
+
+  string value = 2;
+}
+
+message MarkupKind {
+  enum MarkupKind {
+    MarkupKind_Markdown = 1;
+
+    MarkupKind_Plaintext = 2;
+  }
 }
 
 message OptionalVersionedTextDocumentIdentifier {
@@ -813,13 +938,21 @@ message ReferenceContext {
 }
 
 message RenameFile {
-  DocumentUri old_uri = 1;
+  Kind kind = 1;
 
-  DocumentUri new_uri = 2;
+  DocumentUri old_uri = 2;
 
-  RenameFileOptions options = 3;
+  DocumentUri new_uri = 3;
 
-  ChangeAnnotationIdentifier annotation_id = 4;
+  RenameFileOptions options = 4;
+
+  ChangeAnnotationIdentifier annotation_id = 5;
+
+  message Kind {
+    enum Kind {
+      Kind_Rename = 1;
+    }
+  }
 }
 
 message RenameFileOptions {
@@ -834,10 +967,92 @@ message ResourceOperation {
   ChangeAnnotationIdentifier annotation_id = 2;
 }
 
+message SemanticTokenModifiers {
+  enum SemanticTokenModifiers {
+    SemanticTokenModifiers_Abstract = 1;
+
+    SemanticTokenModifiers_Async = 2;
+
+    SemanticTokenModifiers_Declaration = 3;
+
+    SemanticTokenModifiers_DefaultLibrary = 4;
+
+    SemanticTokenModifiers_Definition = 5;
+
+    SemanticTokenModifiers_Deprecated = 6;
+
+    SemanticTokenModifiers_Documentation = 7;
+
+    SemanticTokenModifiers_Modification = 8;
+
+    SemanticTokenModifiers_Readonly = 9;
+
+    SemanticTokenModifiers_Static = 10;
+  }
+}
+
+message SemanticTokenTypes {
+  enum SemanticTokenTypes {
+    SemanticTokenTypes_Class = 1;
+
+    SemanticTokenTypes_Comment = 2;
+
+    SemanticTokenTypes_Decorator = 3;
+
+    SemanticTokenTypes_Enum = 4;
+
+    SemanticTokenTypes_EnumMember = 5;
+
+    SemanticTokenTypes_Event = 6;
+
+    SemanticTokenTypes_Function = 7;
+
+    SemanticTokenTypes_Interface = 8;
+
+    SemanticTokenTypes_Keyword = 9;
+
+    SemanticTokenTypes_Macro = 10;
+
+    SemanticTokenTypes_Method = 11;
+
+    SemanticTokenTypes_Modifier = 12;
+
+    SemanticTokenTypes_Namespace = 13;
+
+    SemanticTokenTypes_Number = 14;
+
+    SemanticTokenTypes_Operator = 15;
+
+    SemanticTokenTypes_Parameter = 16;
+
+    SemanticTokenTypes_Property = 17;
+
+    SemanticTokenTypes_Regexp = 18;
+
+    SemanticTokenTypes_String = 19;
+
+    SemanticTokenTypes_Struct = 20;
+
+    SemanticTokenTypes_Type = 21;
+
+    SemanticTokenTypes_TypeParameter = 22;
+
+    SemanticTokenTypes_Variable = 23;
+  }
+}
+
 message SemanticTokens {
   string result_id = 1;
 
-  repeated int32 data = 2;
+  repeated Data data = 2;
+
+  message Data {
+     data = 1;
+
+    message  {
+      int32  = 1;
+    }
+  }
 }
 
 message SemanticTokensDelta {
@@ -855,13 +1070,37 @@ message SemanticTokensEdit {
 
   Uinteger delete_count = 2;
 
-  repeated int32 data = 3;
+  repeated Data data = 3;
+
+  message Data {
+     data = 1;
+
+    message  {
+      int32  = 1;
+    }
+  }
 }
 
 message SemanticTokensLegend {
-  repeated string token_types = 1;
+  repeated TokenTypes token_types = 1;
 
-  repeated string token_modifiers = 2;
+  repeated TokenModifiers token_modifiers = 2;
+
+  message TokenTypes {
+     token_types = 1;
+
+    message  {
+      string  = 1;
+    }
+  }
+
+  message TokenModifiers {
+     token_modifiers = 1;
+
+    message  {
+      string  = 1;
+    }
+  }
 }
 
 message SymbolInformation {
@@ -871,11 +1110,82 @@ message SymbolInformation {
 
   string name = 3;
 
-  repeated Tags tags = 4;
+  SymbolKind kind = 4;
 
-  string container_name = 5;
+  repeated Tags tags = 5;
+
+  string container_name = 6;
 
   message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
+    }
+  }
+}
+
+message SymbolKind {
+  enum SymbolKind {
+    SymbolKind_1 = 1;
+
+    SymbolKind_2 = 2;
+
+    SymbolKind_3 = 3;
+
+    SymbolKind_4 = 4;
+
+    SymbolKind_5 = 5;
+
+    SymbolKind_6 = 6;
+
+    SymbolKind_7 = 7;
+
+    SymbolKind_8 = 8;
+
+    SymbolKind_9 = 9;
+
+    SymbolKind_10 = 10;
+
+    SymbolKind_11 = 11;
+
+    SymbolKind_12 = 12;
+
+    SymbolKind_13 = 13;
+
+    SymbolKind_14 = 14;
+
+    SymbolKind_15 = 15;
+
+    SymbolKind_16 = 16;
+
+    SymbolKind_17 = 17;
+
+    SymbolKind_18 = 18;
+
+    SymbolKind_19 = 19;
+
+    SymbolKind_20 = 20;
+
+    SymbolKind_21 = 21;
+
+    SymbolKind_22 = 22;
+
+    SymbolKind_23 = 23;
+
+    SymbolKind_24 = 24;
+
+    SymbolKind_25 = 25;
+
+    SymbolKind_26 = 26;
+  }
+}
+
+message SymbolTag {
+  enum SymbolTag {
+    SymbolTag_1 = 1;
   }
 }
 
@@ -915,62 +1225,7 @@ message TextDocumentEdit {
   repeated Edits edits = 2;
 
   message Edits {
-    repeated  edits = 1;
-
-    message Edits {
-      oneof edits {
-        TextEdit text_edit = 1;
-
-        AnnotatedTextEdit annotated_text_edit = 2;
-      }
-
-      message TextEdit {
-        string new_text = 1;
-
-        Range range = 2;
-      }
-
-      message AnnotatedTextEdit {
-        Range range = 1;
-
-        ChangeAnnotationIdentifier annotation_id = 2;
-
-        string new_text = 3;
-      }
-    }
-  }
-}
-
-message TextDocumentIdentifier {
-  DocumentUri uri = 1;
-}
-
-message TextDocumentItem {
-  DocumentUri uri = 1;
-
-  string language_id = 2;
-
-  Integer version = 3;
-
-  string text = 4;
-}
-
-message TextEdit {
-  Range range = 1;
-
-  string new_text = 2;
-}
-
-message TextEditChange {
-}
-
-message TextEditChangeImpl {
-  repeated Edits edits = 1;
-
-  ChangeAnnotations change_annotations = 2;
-
-  message Edits {
-    repeated  edits = 1;
+    Edits edits = 1;
 
     message Edits {
       oneof edits {
@@ -996,20 +1251,81 @@ message TextEditChangeImpl {
   }
 }
 
+message TextDocumentIdentifier {
+  DocumentUri uri = 1;
+}
+
+message TextDocumentItem {
+  DocumentUri uri = 1;
+
+  string language_id = 2;
+
+  Integer version = 3;
+
+  string text = 4;
+}
+
+message TextEdit {
+  Range range = 1;
+
+  string new_text = 2;
+}
+
+message TextEditChangeImpl {
+  repeated Edits edits = 1;
+
+  ChangeAnnotations change_annotations = 2;
+
+  message Edits {
+    Edits edits = 1;
+
+    message Edits {
+      oneof edits {
+        TextEdit text_edit = 1;
+
+        AnnotatedTextEdit annotated_text_edit = 2;
+      }
+
+      message TextEdit {
+        Range range = 1;
+
+        string new_text = 2;
+      }
+
+      message AnnotatedTextEdit {
+        ChangeAnnotationIdentifier annotation_id = 1;
+
+        string new_text = 2;
+
+        Range range = 3;
+      }
+    }
+  }
+}
+
 message TypeHierarchyItem {
   string name = 1;
 
-  repeated Tags tags = 2;
+  SymbolKind kind = 2;
 
-  string detail = 3;
+  repeated Tags tags = 3;
 
-  DocumentUri uri = 4;
+  string detail = 4;
 
-  Range range = 5;
+  DocumentUri uri = 5;
 
-  Range selection_range = 6;
+  Range range = 6;
+
+  Range selection_range = 7;
 
   message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
+    }
   }
 }
 
@@ -1037,12 +1353,12 @@ message WorkspaceChange {
   WorkspaceEdit edit = 4;
 
   message TextEditChangeImpl {
-    ChangeAnnotations change_annotations = 1;
+    repeated Edits edits = 1;
 
-    repeated Edits edits = 2;
+    ChangeAnnotations change_annotations = 2;
 
     message Edits {
-      repeated  edits = 1;
+      Edits edits = 1;
 
       message Edits {
         oneof edits {
@@ -1052,17 +1368,17 @@ message WorkspaceChange {
         }
 
         message TextEdit {
-          Range range = 1;
+          string new_text = 1;
 
-          string new_text = 2;
+          Range range = 2;
         }
 
         message AnnotatedTextEdit {
-          ChangeAnnotationIdentifier annotation_id = 1;
+          Range range = 1;
 
-          string new_text = 2;
+          ChangeAnnotationIdentifier annotation_id = 2;
 
-          Range range = 3;
+          string new_text = 3;
         }
       }
     }
@@ -1089,7 +1405,7 @@ message WorkspaceEdit {
   }
 
   message DocumentChanges {
-    repeated  document_changes = 1;
+    DocumentChanges document_changes = 1;
 
     message DocumentChanges {
       oneof document_changes {
@@ -1108,7 +1424,7 @@ message WorkspaceEdit {
         OptionalVersionedTextDocumentIdentifier text_document = 2;
 
         message Edits {
-          repeated  edits = 1;
+          Edits edits = 1;
 
           message Edits {
             oneof edits {
@@ -1118,9 +1434,9 @@ message WorkspaceEdit {
             }
 
             message TextEdit {
-              Range range = 1;
+              string new_text = 1;
 
-              string new_text = 2;
+              Range range = 2;
             }
 
             message AnnotatedTextEdit {
@@ -1135,29 +1451,53 @@ message WorkspaceEdit {
       }
 
       message CreateFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
+        DocumentUri uri = 1;
 
-        CreateFileOptions options = 2;
+        ChangeAnnotationIdentifier annotation_id = 2;
 
-        DocumentUri uri = 3;
+        Kind kind = 3;
+
+        CreateFileOptions options = 4;
+
+        message Kind {
+          enum Kind {
+            Kind_Create = 1;
+          }
+        }
       }
 
       message RenameFile {
         ChangeAnnotationIdentifier annotation_id = 1;
 
-        DocumentUri new_uri = 2;
+        Kind kind = 2;
 
-        DocumentUri old_uri = 3;
+        DocumentUri new_uri = 3;
 
-        RenameFileOptions options = 4;
+        DocumentUri old_uri = 4;
+
+        RenameFileOptions options = 5;
+
+        message Kind {
+          enum Kind {
+            Kind_Rename = 1;
+          }
+        }
       }
 
       message DeleteFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
+        DocumentUri uri = 1;
 
-        DeleteFileOptions options = 2;
+        ChangeAnnotationIdentifier annotation_id = 2;
 
-        DocumentUri uri = 3;
+        Kind kind = 3;
+
+        DeleteFileOptions options = 4;
+
+        message Kind {
+          enum Kind {
+            Kind_Delete = 1;
+          }
+        }
       }
     }
   }
@@ -1174,9 +1514,11 @@ message WorkspaceSymbol {
 
   string name = 2;
 
-  repeated Tags tags = 3;
+  SymbolKind kind = 3;
 
-  string container_name = 4;
+  repeated Tags tags = 4;
+
+  string container_name = 5;
 
   message Location {
     oneof location {
@@ -1197,253 +1539,13 @@ message WorkspaceSymbol {
   }
 
   message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
+    }
   }
 }
-
-enum CodeActionTriggerKind {
-  CodeActionTriggerKind_1 = 1;
-
-  CodeActionTriggerKind_2 = 2;
-}
-
-enum CompletionItemKind {
-  CompletionItemKind_1 = 1;
-
-  CompletionItemKind_2 = 2;
-
-  CompletionItemKind_3 = 3;
-
-  CompletionItemKind_4 = 4;
-
-  CompletionItemKind_5 = 5;
-
-  CompletionItemKind_6 = 6;
-
-  CompletionItemKind_7 = 7;
-
-  CompletionItemKind_8 = 8;
-
-  CompletionItemKind_9 = 9;
-
-  CompletionItemKind_10 = 10;
-
-  CompletionItemKind_11 = 11;
-
-  CompletionItemKind_12 = 12;
-
-  CompletionItemKind_13 = 13;
-
-  CompletionItemKind_14 = 14;
-
-  CompletionItemKind_15 = 15;
-
-  CompletionItemKind_16 = 16;
-
-  CompletionItemKind_17 = 17;
-
-  CompletionItemKind_18 = 18;
-
-  CompletionItemKind_19 = 19;
-
-  CompletionItemKind_20 = 20;
-
-  CompletionItemKind_21 = 21;
-
-  CompletionItemKind_22 = 22;
-
-  CompletionItemKind_23 = 23;
-
-  CompletionItemKind_24 = 24;
-
-  CompletionItemKind_25 = 25;
-}
-
-enum CompletionItemTag {
-  CompletionItemTag_1 = 1;
-}
-
-enum DiagnosticSeverity {
-  DiagnosticSeverity_1 = 1;
-
-  DiagnosticSeverity_2 = 2;
-
-  DiagnosticSeverity_3 = 3;
-
-  DiagnosticSeverity_4 = 4;
-}
-
-enum DiagnosticTag {
-  DiagnosticTag_1 = 1;
-
-  DiagnosticTag_2 = 2;
-}
-
-enum DocumentHighlightKind {
-  DocumentHighlightKind_1 = 1;
-
-  DocumentHighlightKind_2 = 2;
-
-  DocumentHighlightKind_3 = 3;
-}
-
-enum InlayHintKind {
-  InlayHintKind_1 = 1;
-
-  InlayHintKind_2 = 2;
-}
-
-enum InsertTextFormat {
-  InsertTextFormat_1 = 1;
-
-  InsertTextFormat_2 = 2;
-}
-
-enum InsertTextMode {
-  InsertTextMode_1 = 1;
-
-  InsertTextMode_2 = 2;
-}
-
-enum Kind {
-  Kind_Create = 1;
-}
-
-enum MarkupKind {
-  MarkupKind_Markdown = 1;
-
-  MarkupKind_Plaintext = 2;
-}
-
-enum SemanticTokenModifiers {
-  SemanticTokenModifiers_Abstract = 1;
-
-  SemanticTokenModifiers_Async = 2;
-
-  SemanticTokenModifiers_Declaration = 3;
-
-  SemanticTokenModifiers_DefaultLibrary = 4;
-
-  SemanticTokenModifiers_Definition = 5;
-
-  SemanticTokenModifiers_Deprecated = 6;
-
-  SemanticTokenModifiers_Documentation = 7;
-
-  SemanticTokenModifiers_Modification = 8;
-
-  SemanticTokenModifiers_Readonly = 9;
-
-  SemanticTokenModifiers_Static = 10;
-}
-
-enum SemanticTokenTypes {
-  SemanticTokenTypes_Class = 1;
-
-  SemanticTokenTypes_Comment = 2;
-
-  SemanticTokenTypes_Decorator = 3;
-
-  SemanticTokenTypes_Enum = 4;
-
-  SemanticTokenTypes_EnumMember = 5;
-
-  SemanticTokenTypes_Event = 6;
-
-  SemanticTokenTypes_Function = 7;
-
-  SemanticTokenTypes_Interface = 8;
-
-  SemanticTokenTypes_Keyword = 9;
-
-  SemanticTokenTypes_Macro = 10;
-
-  SemanticTokenTypes_Method = 11;
-
-  SemanticTokenTypes_Modifier = 12;
-
-  SemanticTokenTypes_Namespace = 13;
-
-  SemanticTokenTypes_Number = 14;
-
-  SemanticTokenTypes_Operator = 15;
-
-  SemanticTokenTypes_Parameter = 16;
-
-  SemanticTokenTypes_Property = 17;
-
-  SemanticTokenTypes_Regexp = 18;
-
-  SemanticTokenTypes_String = 19;
-
-  SemanticTokenTypes_Struct = 20;
-
-  SemanticTokenTypes_Type = 21;
-
-  SemanticTokenTypes_TypeParameter = 22;
-
-  SemanticTokenTypes_Variable = 23;
-}
-
-enum SymbolKind {
-  SymbolKind_1 = 1;
-
-  SymbolKind_2 = 2;
-
-  SymbolKind_3 = 3;
-
-  SymbolKind_4 = 4;
-
-  SymbolKind_5 = 5;
-
-  SymbolKind_6 = 6;
-
-  SymbolKind_7 = 7;
-
-  SymbolKind_8 = 8;
-
-  SymbolKind_9 = 9;
-
-  SymbolKind_10 = 10;
-
-  SymbolKind_11 = 11;
-
-  SymbolKind_12 = 12;
-
-  SymbolKind_13 = 13;
-
-  SymbolKind_14 = 14;
-
-  SymbolKind_15 = 15;
-
-  SymbolKind_16 = 16;
-
-  SymbolKind_17 = 17;
-
-  SymbolKind_18 = 18;
-
-  SymbolKind_19 = 19;
-
-  SymbolKind_20 = 20;
-
-  SymbolKind_21 = 21;
-
-  SymbolKind_22 = 22;
-
-  SymbolKind_23 = 23;
-
-  SymbolKind_24 = 24;
-
-  SymbolKind_25 = 25;
-
-  SymbolKind_26 = 26;
-}
-
-enum SymbolTag {
-  SymbolTag_1 = 1;
-}
-
-enum Tags {
-  Tags_1 = 1;
-}
-
 ```

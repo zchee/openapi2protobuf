@@ -15,64 +15,28 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/go-openapi/jsonpointer"
 	"github.com/jhump/protoreflect/desc"
-	"google.golang.org/protobuf/encoding/prototext"
+	"github.com/jhump/protoreflect/desc/protoprint"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	"go.lsp.dev/openapi2protobuf/internal/backtrace"
 	"go.lsp.dev/openapi2protobuf/internal/conv"
-	"go.lsp.dev/openapi2protobuf/internal/dump"
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
-	"go.lsp.dev/openapi2protobuf/protobuf/printer"
 	"go.lsp.dev/openapi2protobuf/protobuf/types"
 )
 
-var _ = jsonpointer.GetForToken
-var _ = descriptorpb.Default_EnumOptions_Deprecated
-var _ desc.Descriptor
-var _ printer.Printer
-var _ = prototext.Format
-
-var (
-	// UnsafeEnabled specifies whether package unsafe can be used.
-	_ = protoimpl.UnsafeEnabled
-
-	// Types used by generated code in init functions.
-	_ protoimpl.DescBuilder
-	_ protoimpl.TypeBuilder
-
-	// Types used by generated code to implement EnumType, MessageType, and ExtensionType.
-	_ protoimpl.EnumInfo
-	_ protoimpl.MessageInfo
-	_ protoimpl.ExtensionInfo
-
-	// Types embedded in generated messages.
-	_ protoimpl.MessageState
-	_ protoimpl.SizeCache
-	_ protoimpl.WeakFields
-	_ protoimpl.UnknownFields
-	_ protoimpl.ExtensionFields
-	_ protoimpl.ExtensionFieldV1
-
-	_ protoimpl.Pointer
-
-	_ = protoimpl.X
-)
-
-var AdditionalMessages []*protobuf.MessageDescriptorProto
+var additionalMessages []*protobuf.MessageDescriptorProto
 
 func RegisterAdditionalMessages(descs ...*protobuf.MessageDescriptorProto) {
-	AdditionalMessages = append(AdditionalMessages, descs...)
+	additionalMessages = append(additionalMessages, descs...)
 }
 
-var DependencyProto []string
+var dependencyProto []string
 
 func RegisterDependencyProto(deps string) {
-	DependencyProto = append(DependencyProto, deps)
+	dependencyProto = append(dependencyProto, deps)
 }
 
 // Option represents an idiomatic functional option pattern to compile the Protocol Buffers structure from the OpenAPI schema.
@@ -144,7 +108,7 @@ type compiler struct {
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.
 func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*descriptorpb.FileDescriptorProto, error) {
 	opt := &option{
-		additionalMessages: AdditionalMessages,
+		additionalMessages: additionalMessages,
 	}
 	for _, o := range options {
 		o(opt)
@@ -160,7 +124,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	for _, msg := range c.opt.additionalMessages {
 		c.fdesc.AddMessage(msg)
 	}
-	for _, deps := range DependencyProto {
+	for _, deps := range dependencyProto {
 		c.fdesc.AddDependency(deps)
 	}
 
@@ -200,11 +164,9 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	fd := c.fdesc.Build()
-	// fmt.Fprintln(os.Stdout, prototext.Format(fd))
-	// dumpFileDescriptor(fd)
 
 	// add dependency proto
-	depsFileDescriptor := make([]*desc.FileDescriptor, 0, len(DependencyProto))
+	depsFileDescriptor := make([]*desc.FileDescriptor, 0, len(dependencyProto))
 	for _, deps := range c.fdesc.GetDependency() {
 		if depDesc, ok := types.Descriptor[deps]; ok {
 			knownDesc, err := desc.CreateFileDescriptor(depDesc)
@@ -221,7 +183,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		return nil, fmt.Errorf("could not convert to desc: %w", err)
 	}
 
-	p := printer.Printer{}
+	p := protoprint.Printer{}
 	var sb strings.Builder
 	if err := p.PrintProtoFile(fdesc, &sb); err != nil {
 		return nil, fmt.Errorf("could not print proto: %w", err)
@@ -293,7 +255,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 var enumMessage = protobuf.NewMessageDescriptorProto("enum")
 
 func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
-	skip := msg == nil || msg == enumMessage
+	skip := msg == nil || msg.IsEmptyField()
 
 	if msg != nil && msg.IsEmptyField() {
 		if parent != nil {
@@ -307,9 +269,6 @@ func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
 
 // compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
-	if strings.ToLower(name) == "basesymbolinformation" {
-		fmt.Fprintf(os.Stderr, "%s: from: %s: BaseSymbolInformation: array.Items\n", backtrace.FuncName(), backtrace.FuncNameN(2))
-	}
 	if additionalProps := schemaRef.Value.AdditionalProperties; additionalProps != nil {
 		return c.compileSchemaRef(name, additionalProps)
 	}
@@ -318,13 +277,7 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 		// Enum, OneOf, AnyOf, AllOf
 		switch {
 		case isEnum(val):
-			enumMsg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(val.Title))
-			enumMsg.AddEnumType(c.CompileEnum(name, val))
-			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), protobuf.FieldTypeEnum())
-			field.SetTypeName(enumMsg.GetName())
-			field.SetNumber()
-			enumMsg.AddField(field)
-			return enumMessage, nil
+			return c.CompileEnum(name, val), nil
 
 		case isOneOf(val):
 			oneof, err := c.CompileOneOf(name, val)
@@ -411,34 +364,23 @@ func (c *compiler) compileArray(array *openapi3.Schema) (*protobuf.MessageDescri
 
 		return msg, nil
 	}
-	if strings.ToLower(array.Title) == "tags" {
-		fmt.Fprintf(os.Stderr, "%s: from: %s: array.Items\n", backtrace.FuncName(), backtrace.FuncNameN(2))
-	}
 
 	itemsMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(msg.GetName()), array.Items)
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
-	if strings.ToLower(array.Title) == "tags" {
-		fmt.Fprintf(os.Stderr, "array: %s\n", dump.Sdump(array))
-	}
 	if skipMessage(itemsMsg, msg) {
 		return msg, nil
 	}
 
-	fieldType := itemsMsg.GetFieldType()
+	fieldType := msg.GetFieldType()
 	field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(msg.GetName()), fieldType)
 	field.SetNumber()
-	if array.Type == openapi3.TypeArray {
-		field.SetRepeated()
-	}
+	field.SetTypeName(itemsMsg.GetName())
 
 	switch fieldType.Number() {
 	case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
 		msg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
-
-	default:
-		field.SetTypeName(fieldType.String())
 	}
 
 	msg.AddField(field)
@@ -510,15 +452,13 @@ func (c *compiler) compileObject(object *openapi3.Schema) (*protobuf.MessageDesc
 }
 
 // CompileEnum compiles enum objects.
-func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.EnumDescriptorProto {
+func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.MessageDescriptorProto {
 	if enum.Title != "" {
 		name = enum.Title
 	}
 
+	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 	eb := protobuf.NewEnumDescriptorProto(conv.NormalizeMessageName(name))
-	if strings.ToLower(name) == "tags" {
-		fmt.Printf("enum.Enum: %[1]T -> %#[1]v\n", enum.Enum[0])
-	}
 
 	for i, e := range enum.Enum {
 		var enumValName string
@@ -534,11 +474,14 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Enu
 		default:
 			fmt.Fprintf(os.Stderr, "%s: enumValName: %T -> %s\n", backtrace.FuncName(), e, e)
 		}
+
 		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+enumValName, int32(i+1))
 		eb.AddValue(enumVal)
 	}
 
-	return eb
+	msg.AddEnumType(eb)
+
+	return msg
 }
 
 // CompileOneOf compiles oneOf objects.
