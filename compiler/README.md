@@ -5,6 +5,10 @@ package go.lsp.dev.types;
 
 import "google/protobuf/any.proto";
 
+option go_package = "go.lsp.dev.types";
+
+option cc_enable_arenas = true;
+
 option csharp_namespace = "Go.Lsp.Dev.Types";
 
 option java_package = "dev.lsp.go";
@@ -12,10 +16,6 @@ option java_package = "dev.lsp.go";
 option java_outer_classname = "Types";
 
 option java_multiple_files = true;
-
-option go_package = "go.lsp.dev.types";
-
-option cc_enable_arenas = true;
 
 message AnnotatedTextEdit {
   ChangeAnnotationIdentifier annotation_id = 1;
@@ -113,11 +113,11 @@ message ChangeAnnotations {
   int32 size = 4;
 
   message ChangeAnnotation {
-    string description = 1;
+    string label = 1;
 
-    string label = 2;
+    bool needs_confirmation = 2;
 
-    bool needs_confirmation = 3;
+    string description = 3;
   }
 }
 
@@ -234,11 +234,11 @@ message CompletionItem {
     }
 
     message InsertReplaceEdit {
-      string new_text = 1;
+      Range insert = 1;
 
-      Range replace = 2;
+      string new_text = 2;
 
-      Range insert = 3;
+      Range replace = 3;
     }
   }
 
@@ -246,7 +246,7 @@ message CompletionItem {
     oneof documentation {
       MarkupContent markup_content = 1;
 
-      documentation_2 documentation_2 = 2;
+      Documentation1 documentation_1 = 2;
     }
 
     message MarkupContent {
@@ -255,8 +255,16 @@ message CompletionItem {
       string value = 2;
     }
 
-    message documentation_2 {
-      string  = 1;
+    message Documentation1 {
+      string documentation_1 = 1;
+    }
+  }
+
+  message CommitCharacters {
+    CommitCharacters commit_characters = 1;
+
+    message CommitCharacters {
+      string commit_characters = 1;
     }
   }
 
@@ -267,14 +275,6 @@ message CompletionItem {
       enum Tags {
         Tags_1 = 1;
       }
-    }
-  }
-
-  message CommitCharacters {
-     commit_characters = 1;
-
-    message  {
-      string  = 1;
     }
   }
 
@@ -366,10 +366,10 @@ message CompletionList {
     InsertTextMode insert_text_mode = 4;
 
     message CommitCharacters {
-       commit_characters = 1;
+      CommitCharacters commit_characters = 1;
 
-      message  {
-        string  = 1;
+      message CommitCharacters {
+        string commit_characters = 1;
       }
     }
 
@@ -381,9 +381,9 @@ message CompletionList {
       }
 
       message Range {
-        Position start = 1;
+        Position end = 1;
 
-        Position end = 2;
+        Position start = 2;
       }
 
       message editRange_2 {
@@ -587,10 +587,10 @@ message FullTextDocument {
   int32 line_count = 9;
 
   message LineOffsets {
-     line_offsets = 1;
+    LineOffsets line_offsets = 1;
 
-    message  {
-      int32  = 1;
+    message LineOffsets {
+      int32 line_offsets = 1;
     }
   }
 }
@@ -607,8 +607,6 @@ message Hover {
       contents_2 contents_2 = 2;
 
       contents_3 contents_3 = 3;
-
-      contents_4 contents_4 = 4;
     }
 
     message MarkupContent {
@@ -630,7 +628,7 @@ message Hover {
         oneof  {
           ._1 _1 = 1;
 
-          ._2 _2 = 2;
+          .1 1 = 2;
         }
 
         message _1 {
@@ -639,14 +637,14 @@ message Hover {
           string value = 2;
         }
 
-        message _2 {
-          string  = 1;
+        message 1 {
+          string _1 = 1;
         }
       }
     }
 
-    message contents_4 {
-      string  = 1;
+    message Contents3 {
+      string contents_3 = 1;
     }
   }
 }
@@ -666,33 +664,9 @@ message InlayHint {
 
   bool padding_right = 7;
 
-  message TextEdits {
-    TextEdit text_edit = 1;
-  }
-
-  message Tooltip {
-    oneof tooltip {
-      MarkupContent markup_content = 1;
-
-      tooltip_2 tooltip_2 = 2;
-    }
-
-    message MarkupContent {
-      MarkupKind kind = 1;
-
-      string value = 2;
-    }
-
-    message tooltip_2 {
-      string  = 1;
-    }
-  }
-
   message Label {
     oneof label {
       label_1 label_1 = 1;
-
-      label_2 label_2 = 2;
     }
 
     message label_1 {
@@ -711,24 +685,46 @@ message InlayHint {
           oneof tooltip {
             MarkupContent markup_content = 1;
 
-            tooltip_2 tooltip_2 = 2;
+            Tooltip1 tooltip_1 = 2;
           }
 
           message MarkupContent {
-            string value = 1;
+            MarkupKind kind = 1;
 
-            MarkupKind kind = 2;
+            string value = 2;
           }
 
-          message tooltip_2 {
-            string  = 1;
+          message Tooltip1 {
+            string tooltip_1 = 1;
           }
         }
       }
     }
 
-    message label_2 {
-      string  = 1;
+    message Label1 {
+      string label_1 = 1;
+    }
+  }
+
+  message TextEdits {
+    TextEdit text_edit = 1;
+  }
+
+  message Tooltip {
+    oneof tooltip {
+      MarkupContent markup_content = 1;
+
+      Tooltip1 tooltip_1 = 2;
+    }
+
+    message MarkupContent {
+      string value = 1;
+
+      MarkupKind kind = 2;
+    }
+
+    message Tooltip1 {
+      string tooltip_1 = 1;
     }
   }
 }
@@ -754,7 +750,7 @@ message InlayHintLabelPart {
     oneof tooltip {
       MarkupContent markup_content = 1;
 
-      tooltip_2 tooltip_2 = 2;
+      Tooltip1 tooltip_1 = 2;
     }
 
     message MarkupContent {
@@ -763,8 +759,8 @@ message InlayHintLabelPart {
       string value = 2;
     }
 
-    message tooltip_2 {
-      string  = 1;
+    message Tooltip1 {
+      string tooltip_1 = 1;
     }
   }
 }
@@ -779,9 +775,9 @@ message InlineValue {
   }
 
   message InlineValueText {
-    Range range = 1;
+    string text = 1;
 
-    string text = 2;
+    Range range = 2;
   }
 
   message InlineValueVariableLookup {
@@ -886,8 +882,6 @@ message LocationLink {
 message MarkedString {
   oneof marked_string {
     MarkedString_1 marked_string_1 = 1;
-
-    MarkedString_2 marked_string_2 = 2;
   }
 
   message MarkedString_1 {
@@ -896,8 +890,8 @@ message MarkedString {
     string value = 2;
   }
 
-  message MarkedString_2 {
-    string  = 1;
+  message MarkedString1 {
+    string marked_string_1 = 1;
   }
 }
 
@@ -1047,10 +1041,10 @@ message SemanticTokens {
   repeated Data data = 2;
 
   message Data {
-     data = 1;
+    Data data = 1;
 
-    message  {
-      int32  = 1;
+    message Data {
+      int32 data = 1;
     }
   }
 }
@@ -1073,10 +1067,10 @@ message SemanticTokensEdit {
   repeated Data data = 3;
 
   message Data {
-     data = 1;
+    Data data = 1;
 
-    message  {
-      int32  = 1;
+    message Data {
+      int32 data = 1;
     }
   }
 }
@@ -1087,18 +1081,18 @@ message SemanticTokensLegend {
   repeated TokenModifiers token_modifiers = 2;
 
   message TokenModifiers {
-     token_modifiers = 1;
+    TokenModifiers token_modifiers = 1;
 
-    message  {
-      string  = 1;
+    message TokenModifiers {
+      string token_modifiers = 1;
     }
   }
 
   message TokenTypes {
-     token_types = 1;
+    TokenTypes token_types = 1;
 
-    message  {
-      string  = 1;
+    message TokenTypes {
+      string token_types = 1;
     }
   }
 }
@@ -1374,11 +1368,11 @@ message WorkspaceChange {
         }
 
         message AnnotatedTextEdit {
-          ChangeAnnotationIdentifier annotation_id = 1;
+          string new_text = 1;
 
-          string new_text = 2;
+          Range range = 2;
 
-          Range range = 3;
+          ChangeAnnotationIdentifier annotation_id = 3;
         }
       }
     }
@@ -1391,10 +1385,6 @@ message WorkspaceEdit {
   repeated DocumentChanges document_changes = 2;
 
   ChangeAnnotation change_annotations = 3;
-
-  message  {
-    TextEdit text_edit = 1;
-  }
 
   message DocumentChanges {
     DocumentChanges document_changes = 1;
@@ -1459,15 +1449,15 @@ message WorkspaceEdit {
       }
 
       message RenameFile {
-        DocumentUri new_uri = 1;
+        DocumentUri old_uri = 1;
 
-        DocumentUri old_uri = 2;
+        RenameFileOptions options = 2;
 
-        RenameFileOptions options = 3;
+        ChangeAnnotationIdentifier annotation_id = 3;
 
-        ChangeAnnotationIdentifier annotation_id = 4;
+        Kind kind = 4;
 
-        Kind kind = 5;
+        DocumentUri new_uri = 5;
 
         message Kind {
           enum Kind {
@@ -1501,6 +1491,10 @@ message WorkspaceEdit {
 
     bool needs_confirmation = 3;
   }
+
+  message  {
+    TextEdit text_edit = 1;
+  }
 }
 
 message WorkspaceFolder {
@@ -1520,6 +1514,16 @@ message WorkspaceSymbol {
 
   string container_name = 5;
 
+  message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
+    }
+  }
+
   message Location {
     oneof location {
       Location location = 1;
@@ -1535,16 +1539,6 @@ message WorkspaceSymbol {
 
     message location_2 {
       DocumentUri uri = 1;
-    }
-  }
-
-  message Tags {
-    Tags tags = 1;
-
-    message Tags {
-      enum Tags {
-        Tags_1 = 1;
-      }
     }
   }
 }

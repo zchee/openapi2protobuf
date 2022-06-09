@@ -11,34 +11,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/descriptorpb"
-)
-
-var (
-	// UnsafeEnabled specifies whether package unsafe can be used.
-	_ = protoimpl.UnsafeEnabled
-
-	// Types used by generated code in init functions.
-	_ protoimpl.DescBuilder
-	_ protoimpl.TypeBuilder
-
-	// Types used by generated code to implement EnumType, MessageType, and ExtensionType.
-	_ protoimpl.EnumInfo
-	_ protoimpl.MessageInfo
-	_ protoimpl.ExtensionInfo
-
-	// Types embedded in generated messages.
-	_ protoimpl.MessageState
-	_ protoimpl.SizeCache
-	_ protoimpl.WeakFields
-	_ protoimpl.UnknownFields
-	_ protoimpl.ExtensionFields
-	_ protoimpl.ExtensionFieldV1
-
-	_ protoimpl.Pointer
-
-	_ = protoimpl.X
 )
 
 type FileDescriptorProto struct {
