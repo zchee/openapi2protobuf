@@ -113,11 +113,11 @@ message ChangeAnnotations {
   int32 size = 4;
 
   message ChangeAnnotation {
-    string description = 1;
+    string label = 1;
 
-    string label = 2;
+    bool needs_confirmation = 2;
 
-    bool needs_confirmation = 3;
+    string description = 3;
   }
 }
 
@@ -260,6 +260,10 @@ message CompletionItem {
 
   Command command = 18;
 
+  message AdditionalTextEdits {
+    TextEdit text_edit = 1;
+  }
+
   message Documentation {
     oneof documentation {
       MarkupContent markup_content = 1;
@@ -267,24 +271,16 @@ message CompletionItem {
       Documentation2 documentation_2 = 2;
     }
 
-    message MarkupContent {
-      string value = 1;
-
-      MarkupKind kind = 2;
-    }
-
     message Documentation2 {
       string documentation_2 = 1;
     }
   }
 
-  message Tags {
-    Tags tags = 1;
+  message TextEdit {
+    oneof text_edit {
+      TextEdit text_edit = 1;
 
-    message Tags {
-      enum Tags {
-        Tags_1 = 1;
-      }
+      InsertReplaceEdit insert_replace_edit = 2;
     }
   }
 
@@ -296,8 +292,14 @@ message CompletionItem {
     }
   }
 
-  message AdditionalTextEdits {
-    TextEdit text_edit = 1;
+  message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+      }
+    }
   }
 }
 
@@ -388,12 +390,6 @@ message CompletionList {
         Range range = 1;
 
         EditRange2 edit_range_2 = 2;
-      }
-
-      message Range {
-        Position end = 1;
-
-        Position start = 2;
       }
 
       message EditRange2 {
@@ -506,16 +502,8 @@ message Diagnostic {
 
   repeated RelatedInformation related_information = 8;
 
-  message Tags {
-    Tags tags = 1;
-
-    message Tags {
-      enum Tags {
-        Tags_1 = 1;
-
-        Tags_2 = 2;
-      }
-    }
+  message RelatedInformation {
+    DiagnosticRelatedInformation diagnostic_related_information = 1;
   }
 
   message Code {
@@ -534,8 +522,16 @@ message Diagnostic {
     }
   }
 
-  message RelatedInformation {
-    DiagnosticRelatedInformation diagnostic_related_information = 1;
+  message Tags {
+    Tags tags = 1;
+
+    message Tags {
+      enum Tags {
+        Tags_1 = 1;
+
+        Tags_2 = 2;
+      }
+    }
   }
 }
 
@@ -699,16 +695,10 @@ message Hover {
       Contents4 contents_4 = 4;
     }
 
-    message MarkupContent {
-      MarkupKind kind = 1;
-
-      string value = 2;
-    }
-
     message Contents2 {
-      string language = 1;
+      string value = 1;
 
-      string value = 2;
+      string language = 2;
     }
 
     message Contents3 {
@@ -765,12 +755,6 @@ message InlayHint {
       Tooltip2 tooltip_2 = 2;
     }
 
-    message MarkupContent {
-      string value = 1;
-
-      MarkupKind kind = 2;
-    }
-
     message Tooltip2 {
       string tooltip_2 = 1;
     }
@@ -787,25 +771,19 @@ message InlayHint {
       Label1 label_1 = 1;
 
       message Label1 {
-        Command command = 1;
+        Location location = 1;
 
-        Location location = 2;
+        Tooltip tooltip = 2;
 
-        Tooltip tooltip = 3;
+        string value = 3;
 
-        string value = 4;
+        Command command = 4;
 
         message Tooltip {
           oneof tooltip {
             MarkupContent markup_content = 1;
 
             Tooltip2 tooltip_2 = 2;
-          }
-
-          message MarkupContent {
-            string value = 1;
-
-            MarkupKind kind = 2;
           }
 
           message Tooltip2 {
@@ -845,12 +823,6 @@ message InlayHintLabelPart {
       Tooltip2 tooltip_2 = 2;
     }
 
-    message MarkupContent {
-      MarkupKind kind = 1;
-
-      string value = 2;
-    }
-
     message Tooltip2 {
       string tooltip_2 = 1;
     }
@@ -864,14 +836,6 @@ message InlineValue {
     InlineValueVariableLookup inline_value_variable_lookup = 2;
 
     InlineValueEvaluatableExpression inline_value_evaluatable_expression = 3;
-  }
-
-  message InlineValueVariableLookup {
-    bool case_sensitive_lookup = 1;
-
-    Range range = 2;
-
-    string variable_name = 3;
   }
 }
 
@@ -1162,19 +1126,19 @@ message SemanticTokensLegend {
 
   repeated TokenModifiers token_modifiers = 2;
 
-  message TokenModifiers {
-    TokenModifiers token_modifiers = 1;
-
-    message TokenModifiers {
-      string token_modifiers = 1;
-    }
-  }
-
   message TokenTypes {
     TokenTypes token_types = 1;
 
     message TokenTypes {
       string token_types = 1;
+    }
+  }
+
+  message TokenModifiers {
+    TokenModifiers token_modifiers = 1;
+
+    message TokenModifiers {
+      string token_modifiers = 1;
     }
   }
 }
@@ -1309,20 +1273,6 @@ message TextDocumentEdit {
 
         AnnotatedTextEdit annotated_text_edit = 2;
       }
-
-      message TextEdit {
-        string new_text = 1;
-
-        Range range = 2;
-      }
-
-      message AnnotatedTextEdit {
-        ChangeAnnotationIdentifier annotation_id = 1;
-
-        string new_text = 2;
-
-        Range range = 3;
-      }
     }
   }
 }
@@ -1360,20 +1310,6 @@ message TextEditChangeImpl {
         TextEdit text_edit = 1;
 
         AnnotatedTextEdit annotated_text_edit = 2;
-      }
-
-      message TextEdit {
-        string new_text = 1;
-
-        Range range = 2;
-      }
-
-      message AnnotatedTextEdit {
-        string new_text = 1;
-
-        Range range = 2;
-
-        ChangeAnnotationIdentifier annotation_id = 3;
       }
     }
   }
@@ -1442,33 +1378,27 @@ message WorkspaceChange {
 
           AnnotatedTextEdit annotated_text_edit = 2;
         }
-
-        message TextEdit {
-          string new_text = 1;
-
-          Range range = 2;
-        }
-
-        message AnnotatedTextEdit {
-          ChangeAnnotationIdentifier annotation_id = 1;
-
-          string new_text = 2;
-
-          Range range = 3;
-        }
       }
     }
   }
 }
 
 message WorkspaceEdit {
-  Changes changes = 1;
+  AdditionalProperties changes = 1;
 
   repeated DocumentChanges document_changes = 2;
 
   ChangeAnnotation change_annotations = 3;
 
-  message Changes {
+  message ChangeAnnotation {
+    string description = 1;
+
+    string label = 2;
+
+    bool needs_confirmation = 3;
+  }
+
+  message AdditionalProperties {
     TextEdit text_edit = 1;
   }
 
@@ -1484,88 +1414,6 @@ message WorkspaceEdit {
         RenameFile rename_file = 3;
 
         DeleteFile delete_file = 4;
-      }
-
-      message TextDocumentEdit {
-        repeated Edits edits = 1;
-
-        OptionalVersionedTextDocumentIdentifier text_document = 2;
-
-        message Edits {
-          Edits edits = 1;
-
-          message Edits {
-            oneof edits {
-              TextEdit text_edit = 1;
-
-              AnnotatedTextEdit annotated_text_edit = 2;
-            }
-
-            message TextEdit {
-              string new_text = 1;
-
-              Range range = 2;
-            }
-
-            message AnnotatedTextEdit {
-              ChangeAnnotationIdentifier annotation_id = 1;
-
-              string new_text = 2;
-
-              Range range = 3;
-            }
-          }
-        }
-      }
-
-      message CreateFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
-
-        Kind kind = 2;
-
-        CreateFileOptions options = 3;
-
-        DocumentUri uri = 4;
-
-        message Kind {
-          enum Kind {
-            Kind_Create = 1;
-          }
-        }
-      }
-
-      message RenameFile {
-        Kind kind = 1;
-
-        DocumentUri new_uri = 2;
-
-        DocumentUri old_uri = 3;
-
-        RenameFileOptions options = 4;
-
-        ChangeAnnotationIdentifier annotation_id = 5;
-
-        message Kind {
-          enum Kind {
-            Kind_Rename = 1;
-          }
-        }
-      }
-
-      message DeleteFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
-
-        Kind kind = 2;
-
-        DeleteFileOptions options = 3;
-
-        DocumentUri uri = 4;
-
-        message Kind {
-          enum Kind {
-            Kind_Delete = 1;
-          }
-        }
       }
     }
   }
@@ -1588,6 +1436,18 @@ message WorkspaceSymbol {
 
   string container_name = 5;
 
+  message Location {
+    oneof location {
+      Location location = 1;
+
+      Location2 location_2 = 2;
+    }
+
+    message Location2 {
+      DocumentUri uri = 1;
+    }
+  }
+
   message Tags {
     Tags tags = 1;
 
@@ -1603,21 +1463,21 @@ message WorkspaceSymbol {
 ```proto
 syntax = "proto3";
 
-package go.lsp.dev.protocol;
+package go.lsp.dev.types;
 
 import "google/protobuf/any.proto";
 
+option csharp_namespace = "Go.Lsp.Dev.Types";
+
 option java_package = "dev.lsp.go";
 
-option java_outer_classname = "Protocol";
+option java_outer_classname = "Types";
 
 option java_multiple_files = true;
 
-option go_package = "go.lsp.dev.protocol";
+option go_package = "go.lsp.dev.types";
 
 option cc_enable_arenas = true;
-
-option csharp_namespace = "Go.Lsp.Dev.Protocol";
 
 message AnnotatedTextEdit {
   ChangeAnnotationIdentifier annotation_id = 1;
@@ -1658,94 +1518,6 @@ message CallHierarchyRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        Notebook notebook = 1;
-
-        string language = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -1884,94 +1656,6 @@ message CodeActionRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -2014,94 +1698,6 @@ message CodeLensRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string scheme = 1;
-
-            string notebook_type = 2;
-
-            string pattern = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -2123,25 +1719,41 @@ message CompletionClientCapabilities {
   CompletionList completion_list = 6;
 
   message CompletionItem {
-    ResolveSupport resolve_support = 1;
+    bool deprecated_support = 1;
 
-    TagSupport tag_support = 2;
+    bool preselect_support = 2;
 
-    bool commit_characters_support = 3;
+    bool snippet_support = 3;
 
-    repeated DocumentationFormat documentation_format = 4;
+    bool commit_characters_support = 4;
 
     bool insert_replace_support = 5;
 
     InsertTextModeSupport insert_text_mode_support = 6;
 
-    bool preselect_support = 7;
+    bool label_details_support = 7;
 
-    bool deprecated_support = 8;
+    ResolveSupport resolve_support = 8;
 
-    bool label_details_support = 9;
+    TagSupport tag_support = 9;
 
-    bool snippet_support = 10;
+    repeated DocumentationFormat documentation_format = 10;
+
+    message InsertTextModeSupport {
+      repeated ValueSet value_set = 1;
+
+      message ValueSet {
+        ValueSet value_set = 1;
+
+        message ValueSet {
+          enum ValueSet {
+            ValueSet_1 = 1;
+
+            ValueSet_2 = 2;
+          }
+        }
+      }
+    }
 
     message ResolveSupport {
       repeated Properties properties = 1;
@@ -2177,22 +1789,6 @@ message CompletionClientCapabilities {
           DocumentationFormat_Markdown = 1;
 
           DocumentationFormat_Plaintext = 2;
-        }
-      }
-    }
-
-    message InsertTextModeSupport {
-      repeated ValueSet value_set = 1;
-
-      message ValueSet {
-        ValueSet value_set = 1;
-
-        message ValueSet {
-          enum ValueSet {
-            ValueSet_1 = 1;
-
-            ValueSet_2 = 2;
-          }
         }
       }
     }
@@ -2332,6 +1928,14 @@ message CompletionRegistrationOptions {
 
   bool work_done_progress = 6;
 
+  message TriggerCharacters {
+    TriggerCharacters trigger_characters = 1;
+
+    message TriggerCharacters {
+      string trigger_characters = 1;
+    }
+  }
+
   message AllCommitCharacters {
     AllCommitCharacters all_commit_characters = 1;
 
@@ -2342,102 +1946,6 @@ message CompletionRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string scheme = 1;
-
-        string language = 2;
-
-        string pattern = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        Notebook notebook = 1;
-
-        string language = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
-  }
-
-  message TriggerCharacters {
-    TriggerCharacters trigger_characters = 1;
-
-    message TriggerCharacters {
-      string trigger_characters = 1;
-    }
   }
 }
 
@@ -2492,94 +2000,6 @@ message DeclarationRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -2610,94 +2030,6 @@ message DefinitionRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -2740,10 +2072,6 @@ message Diagnostic {
 
   repeated RelatedInformation related_information = 8;
 
-  message RelatedInformation {
-    DiagnosticRelatedInformation diagnostic_related_information = 1;
-  }
-
   message Tags {
     Tags tags = 1;
 
@@ -2770,6 +2098,10 @@ message Diagnostic {
     message Code2 {
       int32 code_2 = 1;
     }
+  }
+
+  message RelatedInformation {
+    DiagnosticRelatedInformation diagnostic_related_information = 1;
   }
 }
 
@@ -2885,11 +2217,11 @@ message DidChangeTextDocumentParams {
       }
 
       message ContentChanges1 {
-        string text = 1;
+        Range range = 1;
 
-        Range range = 2;
+        Uinteger range_length = 2;
 
-        Uinteger range_length = 3;
+        string text = 3;
       }
 
       message ContentChanges2 {
@@ -2952,94 +2284,6 @@ message DocumentColorRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -3071,11 +2315,11 @@ message DocumentFilter {
   }
 
   message DocumentFilter3 {
-    string language = 1;
+    string scheme = 1;
 
-    string pattern = 2;
+    string language = 2;
 
-    string scheme = 3;
+    string pattern = 3;
   }
 }
 
@@ -3102,94 +2346,6 @@ message DocumentFormattingRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook3 {
-            string scheme = 1;
-
-            string notebook_type = 2;
-
-            string pattern = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -3218,94 +2374,6 @@ message DocumentHighlightRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string scheme = 1;
-
-            string notebook_type = 2;
-
-            string pattern = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -3338,94 +2406,6 @@ message DocumentLinkRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string scheme = 1;
-
-        string language = 2;
-
-        string pattern = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -3464,103 +2444,15 @@ message DocumentOnTypeFormattingRegistrationOptions {
 
   repeated MoreTriggerCharacter more_trigger_character = 3;
 
+  message DocumentSelector {
+    DocumentSelector document_selector = 1;
+  }
+
   message MoreTriggerCharacter {
     MoreTriggerCharacter more_trigger_character = 1;
 
     message MoreTriggerCharacter {
       string more_trigger_character = 1;
-    }
-  }
-
-  message DocumentSelector {
-    DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string scheme = 1;
-
-        string language = 2;
-
-        string pattern = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
     }
   }
 }
@@ -3590,95 +2482,11 @@ message DocumentRangeFormattingRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string scheme = 1;
-
-        string language = 2;
-
-        string pattern = 3;
-      }
-
-      message DocumentSelector3 {
-        string scheme = 1;
-
-        string language = 2;
-
-        string pattern = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
+}
+
+message DocumentSelector {
+  DocumentSelector document_selector = 1;
 }
 
 message DocumentSymbolClientCapabilities {
@@ -3794,94 +2602,6 @@ message DocumentSymbolRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string scheme = 1;
-
-        string language = 2;
-
-        string pattern = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -4062,94 +2782,6 @@ message FoldingRangeRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string scheme = 1;
-
-            string notebook_type = 2;
-
-            string pattern = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -4246,94 +2878,6 @@ message HoverRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -4356,94 +2900,6 @@ message ImplementationRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -4566,94 +3022,6 @@ message LinkedEditingRangeRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -4730,101 +3098,13 @@ message MonikerRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
 message NotebookCellTextDocumentFilter {
-  Notebook notebook = 1;
+  string language = 1;
 
-  string language = 2;
+  Notebook notebook = 2;
 
   message Notebook {
     oneof notebook {
@@ -4838,19 +3118,19 @@ message NotebookCellTextDocumentFilter {
     }
 
     message Notebook1 {
-      string pattern = 1;
+      string scheme = 1;
 
-      string scheme = 2;
+      string notebook_type = 2;
 
-      string notebook_type = 3;
+      string pattern = 3;
     }
 
     message Notebook2 {
-      string pattern = 1;
+      string scheme = 1;
 
-      string scheme = 2;
+      string notebook_type = 2;
 
-      string notebook_type = 3;
+      string pattern = 3;
     }
 
     message Notebook3 {
@@ -4881,11 +3161,11 @@ message NotebookDocumentFilter {
   }
 
   message NotebookDocumentFilter1 {
-    string notebook_type = 1;
+    string scheme = 1;
 
-    string pattern = 2;
+    string notebook_type = 2;
 
-    string scheme = 3;
+    string pattern = 3;
   }
 
   message NotebookDocumentFilter2 {
@@ -4959,19 +3239,19 @@ message NotebookDocumentSyncOptions {
           }
 
           message Notebook2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook3 {
             string notebook_type = 1;
 
             string pattern = 2;
 
             string scheme = 3;
+          }
+
+          message Notebook3 {
+            string pattern = 1;
+
+            string scheme = 2;
+
+            string notebook_type = 3;
           }
 
           message Notebook4 {
@@ -5005,11 +3285,11 @@ message NotebookDocumentSyncOptions {
           }
 
           message Notebook1 {
-            string notebook_type = 1;
+            string pattern = 1;
 
-            string pattern = 2;
+            string scheme = 2;
 
-            string scheme = 3;
+            string notebook_type = 3;
           }
 
           message Notebook2 {
@@ -5053,12 +3333,6 @@ message ParameterInformation {
       MarkupContent markup_content = 1;
 
       Documentation2 documentation_2 = 2;
-    }
-
-    message MarkupContent {
-      string value = 1;
-
-      MarkupKind kind = 2;
     }
 
     message Documentation2 {
@@ -5232,94 +3506,6 @@ message ReferenceRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -5353,12 +3539,6 @@ message RelativePattern {
       WorkspaceFolder workspace_folder = 1;
 
       BaseUri2 base_uri_2 = 2;
-    }
-
-    message WorkspaceFolder {
-      string name = 1;
-
-      URI uri = 2;
     }
 
     message BaseUri2 {
@@ -5426,94 +3606,6 @@ message RenameRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string scheme = 1;
-
-            string notebook_type = 2;
-
-            string pattern = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -5548,94 +3640,6 @@ message SelectionRangeRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string scheme = 1;
-
-        string language = 2;
-
-        string pattern = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        Notebook notebook = 1;
-
-        string language = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -5658,6 +3662,16 @@ message SemanticTokensClientCapabilities {
 
   bool augments_syntax_tokens = 9;
 
+  message Formats {
+    Formats formats = 1;
+
+    message Formats {
+      enum Formats {
+        Formats_Relative = 1;
+      }
+    }
+  }
+
   message TokenModifiers {
     TokenModifiers token_modifiers = 1;
 
@@ -5666,28 +3680,10 @@ message SemanticTokensClientCapabilities {
     }
   }
 
-  message TokenTypes {
-    TokenTypes token_types = 1;
-
-    message TokenTypes {
-      string token_types = 1;
-    }
-  }
-
   message Requests {
-    Range range = 1;
+    Full full = 1;
 
-    Full full = 2;
-
-    message Range {
-      oneof range {
-        Range2 range_2 = 1;
-      }
-
-      message Range2 {
-        bool range_2 = 1;
-      }
-    }
+    Range range = 2;
 
     message Full {
       oneof full {
@@ -5704,15 +3700,23 @@ message SemanticTokensClientCapabilities {
         bool full_2 = 1;
       }
     }
+
+    message Range {
+      oneof range {
+        Range2 range_2 = 1;
+      }
+
+      message Range2 {
+        bool range_2 = 1;
+      }
+    }
   }
 
-  message Formats {
-    Formats formats = 1;
+  message TokenTypes {
+    TokenTypes token_types = 1;
 
-    message Formats {
-      enum Formats {
-        Formats_Relative = 1;
-      }
+    message TokenTypes {
+      string token_types = 1;
     }
   }
 }
@@ -5763,6 +3767,16 @@ message SemanticTokensOptions {
       bool full_2 = 1;
     }
   }
+
+  message Range {
+    oneof range {
+      Range2 range_2 = 1;
+    }
+
+    message Range2 {
+      bool range_2 = 1;
+    }
+  }
 }
 
 message SemanticTokensRegistrationOptions {
@@ -5780,94 +3794,6 @@ message SemanticTokensRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 
   message Full {
@@ -5883,6 +3809,16 @@ message SemanticTokensRegistrationOptions {
 
     message Full2 {
       bool full_2 = 1;
+    }
+  }
+
+  message Range {
+    oneof range {
+      Range2 range_2 = 1;
+    }
+
+    message Range2 {
+      bool range_2 = 1;
     }
   }
 }
@@ -5958,137 +3894,75 @@ message ServerCapabilities {
 
   Workspace workspace = 33;
 
-  message DocumentHighlightProvider {
-    oneof document_highlight_provider {
-      DocumentHighlightOptions document_highlight_options = 1;
+  message DocumentSymbolProvider {
+    oneof document_symbol_provider {
+      DocumentSymbolOptions document_symbol_options = 1;
 
-      DocumentHighlightProvider2 document_highlight_provider_2 = 2;
+      DocumentSymbolProvider2 document_symbol_provider_2 = 2;
     }
 
-    message DocumentHighlightOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DocumentHighlightProvider2 {
-      bool document_highlight_provider_2 = 1;
+    message DocumentSymbolProvider2 {
+      bool document_symbol_provider_2 = 1;
     }
   }
 
-  message LinkedEditingRangeProvider {
-    oneof linked_editing_range_provider {
-      LinkedEditingRangeOptions linked_editing_range_options = 1;
-
-      LinkedEditingRangeRegistrationOptions linked_editing_range_registration_options = 2;
-
-      LinkedEditingRangeProvider3 linked_editing_range_provider_3 = 3;
+  message InlayHintProvider {
+    oneof inlay_hint_provider {
+      InlayHintProvider3 inlay_hint_provider_3 = 1;
     }
 
-    message LinkedEditingRangeOptions {
-      bool work_done_progress = 1;
+    message InlayHintProvider3 {
+      bool inlay_hint_provider_3 = 1;
+    }
+  }
+
+  message SemanticTokensProvider {
+    oneof semantic_tokens_provider {
+      SemanticTokensOptions semantic_tokens_options = 1;
+
+      SemanticTokensRegistrationOptions semantic_tokens_registration_options = 2;
+    }
+  }
+
+  message ColorProvider {
+    oneof color_provider {
+      DocumentColorOptions document_color_options = 1;
+
+      DocumentColorRegistrationOptions document_color_registration_options = 2;
+
+      ColorProvider3 color_provider_3 = 3;
     }
 
-    message LinkedEditingRangeRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
+    message ColorProvider3 {
+      bool color_provider_3 = 1;
+    }
+  }
 
-      string id = 2;
+  message ImplementationProvider {
+    oneof implementation_provider {
+      ImplementationOptions implementation_options = 1;
 
-      bool work_done_progress = 3;
+      ImplementationRegistrationOptions implementation_registration_options = 2;
 
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
+      ImplementationProvider3 implementation_provider_3 = 3;
     }
 
-    message LinkedEditingRangeProvider3 {
-      bool linked_editing_range_provider_3 = 1;
+    message ImplementationProvider3 {
+      bool implementation_provider_3 = 1;
+    }
+  }
+
+  message MonikerProvider {
+    oneof moniker_provider {
+      MonikerOptions moniker_options = 1;
+
+      MonikerRegistrationOptions moniker_registration_options = 2;
+
+      MonikerProvider3 moniker_provider_3 = 3;
+    }
+
+    message MonikerProvider3 {
+      bool moniker_provider_3 = 1;
     }
   }
 
@@ -6097,34 +3971,6 @@ message ServerCapabilities {
       TextDocumentSyncOptions text_document_sync_options = 1;
 
       TextDocumentSync2 text_document_sync_2 = 2;
-    }
-
-    message TextDocumentSyncOptions {
-      TextDocumentSyncKind change = 1;
-
-      bool open_close = 2;
-
-      Save save = 3;
-
-      bool will_save = 4;
-
-      bool will_save_wait_until = 5;
-
-      message Save {
-        oneof save {
-          SaveOptions save_options = 1;
-
-          Save2 save_2 = 2;
-        }
-
-        message SaveOptions {
-          bool include_text = 1;
-        }
-
-        message Save2 {
-          bool save_2 = 1;
-        }
-      }
     }
 
     message TextDocumentSync2 {
@@ -6138,149 +3984,71 @@ message ServerCapabilities {
     }
   }
 
-  message CodeActionProvider {
-    oneof code_action_provider {
-      CodeActionOptions code_action_options = 1;
+  message WorkspaceSymbolProvider {
+    oneof workspace_symbol_provider {
+      WorkspaceSymbolOptions workspace_symbol_options = 1;
 
-      CodeActionProvider2 code_action_provider_2 = 2;
+      WorkspaceSymbolProvider2 workspace_symbol_provider_2 = 2;
     }
 
-    message CodeActionOptions {
-      bool work_done_progress = 1;
-
-      repeated CodeActionKinds code_action_kinds = 2;
-
-      bool resolve_provider = 3;
-
-      message CodeActionKinds {
-        CodeActionKinds code_action_kinds = 1;
-
-        message CodeActionKinds {
-          string code_action_kinds = 1;
-        }
-      }
-    }
-
-    message CodeActionProvider2 {
-      bool code_action_provider_2 = 1;
+    message WorkspaceSymbolProvider2 {
+      bool workspace_symbol_provider_2 = 1;
     }
   }
 
-  message ImplementationProvider {
-    oneof implementation_provider {
-      ImplementationOptions implementation_options = 1;
+  message FoldingRangeProvider {
+    oneof folding_range_provider {
+      FoldingRangeOptions folding_range_options = 1;
 
-      ImplementationRegistrationOptions implementation_registration_options = 2;
+      FoldingRangeRegistrationOptions folding_range_registration_options = 2;
 
-      ImplementationProvider3 implementation_provider_3 = 3;
+      FoldingRangeProvider3 folding_range_provider_3 = 3;
     }
 
-    message ImplementationOptions {
-      bool work_done_progress = 1;
+    message FoldingRangeProvider3 {
+      bool folding_range_provider_3 = 1;
+    }
+  }
+
+  message NotebookDocumentSync {
+    oneof notebook_document_sync {
+      NotebookDocumentSyncOptions notebook_document_sync_options = 1;
+    }
+  }
+
+  message DocumentHighlightProvider {
+    oneof document_highlight_provider {
+      DocumentHighlightOptions document_highlight_options = 1;
+
+      DocumentHighlightProvider2 document_highlight_provider_2 = 2;
     }
 
-    message ImplementationRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
+    message DocumentHighlightProvider2 {
+      bool document_highlight_provider_2 = 1;
+    }
+  }
 
-      string id = 2;
+  message HoverProvider {
+    oneof hover_provider {
+      HoverOptions hover_options = 1;
 
-      bool work_done_progress = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
+      HoverProvider2 hover_provider_2 = 2;
     }
 
-    message ImplementationProvider3 {
-      bool implementation_provider_3 = 1;
+    message HoverProvider2 {
+      bool hover_provider_2 = 1;
+    }
+  }
+
+  message InlineValueProvider {
+    oneof inline_value_provider {
+      WorkDoneProgressOptions work_done_progress_options = 1;
+
+      InlineValueProvider3 inline_value_provider_3 = 2;
+    }
+
+    message InlineValueProvider3 {
+      bool inline_value_provider_3 = 1;
     }
   }
 
@@ -6293,682 +4061,20 @@ message ServerCapabilities {
       TypeDefinitionProvider3 type_definition_provider_3 = 3;
     }
 
-    message TypeDefinitionOptions {
-      bool work_done_progress = 1;
-    }
-
-    message TypeDefinitionRegistrationOptions {
-      string id = 1;
-
-      bool work_done_progress = 2;
-
-      repeated DocumentSelector document_selector = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string scheme = 1;
-
-                string notebook_type = 2;
-
-                string pattern = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
     message TypeDefinitionProvider3 {
       bool type_definition_provider_3 = 1;
     }
   }
 
-  message CallHierarchyProvider {
-    oneof call_hierarchy_provider {
-      CallHierarchyOptions call_hierarchy_options = 1;
+  message TypeHierarchyProvider {
+    oneof type_hierarchy_provider {
+      WorkDoneProgressOptions work_done_progress_options = 1;
 
-      CallHierarchyRegistrationOptions call_hierarchy_registration_options = 2;
-
-      CallHierarchyProvider3 call_hierarchy_provider_3 = 3;
+      TypeHierarchyProvider3 type_hierarchy_provider_3 = 2;
     }
 
-    message CallHierarchyOptions {
-      bool work_done_progress = 1;
-    }
-
-    message CallHierarchyRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
-
-      string id = 2;
-
-      bool work_done_progress = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string scheme = 1;
-
-            string language = 2;
-
-            string pattern = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message CallHierarchyProvider3 {
-      bool call_hierarchy_provider_3 = 1;
-    }
-  }
-
-  message HoverProvider {
-    oneof hover_provider {
-      HoverOptions hover_options = 1;
-
-      HoverProvider2 hover_provider_2 = 2;
-    }
-
-    message HoverOptions {
-      bool work_done_progress = 1;
-    }
-
-    message HoverProvider2 {
-      bool hover_provider_2 = 1;
-    }
-  }
-
-  message SelectionRangeProvider {
-    oneof selection_range_provider {
-      SelectionRangeOptions selection_range_options = 1;
-
-      SelectionRangeRegistrationOptions selection_range_registration_options = 2;
-
-      SelectionRangeProvider3 selection_range_provider_3 = 3;
-    }
-
-    message SelectionRangeOptions {
-      bool work_done_progress = 1;
-    }
-
-    message SelectionRangeRegistrationOptions {
-      string id = 1;
-
-      bool work_done_progress = 2;
-
-      repeated DocumentSelector document_selector = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message DocumentSelector3 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message SelectionRangeProvider3 {
-      bool selection_range_provider_3 = 1;
-    }
-  }
-
-  message DocumentFormattingProvider {
-    oneof document_formatting_provider {
-      DocumentFormattingOptions document_formatting_options = 1;
-
-      DocumentFormattingProvider2 document_formatting_provider_2 = 2;
-    }
-
-    message DocumentFormattingOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DocumentFormattingProvider2 {
-      bool document_formatting_provider_2 = 1;
-    }
-  }
-
-  message MonikerProvider {
-    oneof moniker_provider {
-      MonikerOptions moniker_options = 1;
-
-      MonikerRegistrationOptions moniker_registration_options = 2;
-
-      MonikerProvider3 moniker_provider_3 = 3;
-    }
-
-    message MonikerOptions {
-      bool work_done_progress = 1;
-    }
-
-    message MonikerRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
-
-      bool work_done_progress = 2;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            Notebook notebook = 1;
-
-            string language = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string scheme = 1;
-
-                string notebook_type = 2;
-
-                string pattern = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message MonikerProvider3 {
-      bool moniker_provider_3 = 1;
-    }
-  }
-
-  message ColorProvider {
-    oneof color_provider {
-      DocumentColorOptions document_color_options = 1;
-
-      DocumentColorRegistrationOptions document_color_registration_options = 2;
-
-      ColorProvider3 color_provider_3 = 3;
-    }
-
-    message DocumentColorOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DocumentColorRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
-
-      string id = 2;
-
-      bool work_done_progress = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message ColorProvider3 {
-      bool color_provider_3 = 1;
-    }
-  }
-
-  message DefinitionProvider {
-    oneof definition_provider {
-      DefinitionOptions definition_options = 1;
-
-      DefinitionProvider2 definition_provider_2 = 2;
-    }
-
-    message DefinitionOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DefinitionProvider2 {
-      bool definition_provider_2 = 1;
-    }
-  }
-
-  message RenameProvider {
-    oneof rename_provider {
-      RenameOptions rename_options = 1;
-
-      RenameProvider2 rename_provider_2 = 2;
-    }
-
-    message RenameOptions {
-      bool prepare_provider = 1;
-
-      bool work_done_progress = 2;
-    }
-
-    message RenameProvider2 {
-      bool rename_provider_2 = 1;
-    }
-  }
-
-  message ReferencesProvider {
-    oneof references_provider {
-      ReferenceOptions reference_options = 1;
-
-      ReferencesProvider2 references_provider_2 = 2;
-    }
-
-    message ReferenceOptions {
-      bool work_done_progress = 1;
-    }
-
-    message ReferencesProvider2 {
-      bool references_provider_2 = 1;
-    }
-  }
-
-  message WorkspaceSymbolProvider {
-    oneof workspace_symbol_provider {
-      WorkspaceSymbolOptions workspace_symbol_options = 1;
-
-      WorkspaceSymbolProvider2 workspace_symbol_provider_2 = 2;
-    }
-
-    message WorkspaceSymbolOptions {
-      bool resolve_provider = 1;
-
-      bool work_done_progress = 2;
-    }
-
-    message WorkspaceSymbolProvider2 {
-      bool workspace_symbol_provider_2 = 1;
+    message TypeHierarchyProvider3 {
+      bool type_hierarchy_provider_3 = 1;
     }
   }
 
@@ -6979,110 +4085,6 @@ message ServerCapabilities {
       DeclarationRegistrationOptions declaration_registration_options = 2;
 
       DeclarationProvider3 declaration_provider_3 = 3;
-    }
-
-    message DeclarationOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DeclarationRegistrationOptions {
-      string id = 1;
-
-      bool work_done_progress = 2;
-
-      repeated DocumentSelector document_selector = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
     }
 
     message DeclarationProvider3 {
@@ -7097,505 +4099,117 @@ message ServerCapabilities {
       DocumentRangeFormattingProvider2 document_range_formatting_provider_2 = 2;
     }
 
-    message DocumentRangeFormattingOptions {
-      bool work_done_progress = 1;
-    }
-
     message DocumentRangeFormattingProvider2 {
       bool document_range_formatting_provider_2 = 1;
     }
   }
 
-  message InlineValueProvider {
-    oneof inline_value_provider {
-      WorkDoneProgressOptions work_done_progress_options = 1;
+  message ReferencesProvider {
+    oneof references_provider {
+      ReferenceOptions reference_options = 1;
 
-      InlineValueProvider3 inline_value_provider_3 = 2;
+      ReferencesProvider2 references_provider_2 = 2;
     }
 
-    message WorkDoneProgressOptions {
-      bool work_done_progress = 1;
-    }
-
-    message InlineValueProvider3 {
-      bool inline_value_provider_3 = 1;
+    message ReferencesProvider2 {
+      bool references_provider_2 = 1;
     }
   }
 
-  message SemanticTokensProvider {
-    oneof semantic_tokens_provider {
-      SemanticTokensOptions semantic_tokens_options = 1;
+  message SelectionRangeProvider {
+    oneof selection_range_provider {
+      SelectionRangeOptions selection_range_options = 1;
 
-      SemanticTokensRegistrationOptions semantic_tokens_registration_options = 2;
+      SelectionRangeRegistrationOptions selection_range_registration_options = 2;
+
+      SelectionRangeProvider3 selection_range_provider_3 = 3;
     }
 
-    message SemanticTokensOptions {
-      Full full = 1;
-
-      SemanticTokensLegend legend = 2;
-
-      Range range = 3;
-
-      bool work_done_progress = 4;
-
-      message Full {
-        oneof full {
-          Full1 full_1 = 1;
-
-          Full2 full_2 = 2;
-        }
-
-        message Full1 {
-          bool delta = 1;
-        }
-
-        message Full2 {
-          bool full_2 = 1;
-        }
-      }
-
-      message Range {
-        oneof range {
-          Range2 range_2 = 1;
-        }
-
-        message Range2 {
-          bool range_2 = 1;
-        }
-      }
-    }
-
-    message SemanticTokensRegistrationOptions {
-      string id = 1;
-
-      SemanticTokensLegend legend = 2;
-
-      Range range = 3;
-
-      bool work_done_progress = 4;
-
-      repeated DocumentSelector document_selector = 5;
-
-      Full full = 6;
-
-      message Range {
-        oneof range {
-          Range2 range_2 = 1;
-        }
-
-        message Range2 {
-          bool range_2 = 1;
-        }
-      }
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-
-      message Full {
-        oneof full {
-          Full1 full_1 = 1;
-
-          Full2 full_2 = 2;
-        }
-
-        message Full1 {
-          bool delta = 1;
-        }
-
-        message Full2 {
-          bool full_2 = 1;
-        }
-      }
+    message SelectionRangeProvider3 {
+      bool selection_range_provider_3 = 1;
     }
   }
 
-  message TypeHierarchyProvider {
-    oneof type_hierarchy_provider {
-      WorkDoneProgressOptions work_done_progress_options = 1;
+  message CodeActionProvider {
+    oneof code_action_provider {
+      CodeActionOptions code_action_options = 1;
 
-      TypeHierarchyProvider3 type_hierarchy_provider_3 = 2;
+      CodeActionProvider2 code_action_provider_2 = 2;
     }
 
-    message WorkDoneProgressOptions {
-      bool work_done_progress = 1;
-    }
-
-    message TypeHierarchyProvider3 {
-      bool type_hierarchy_provider_3 = 1;
+    message CodeActionProvider2 {
+      bool code_action_provider_2 = 1;
     }
   }
 
-  message DocumentSymbolProvider {
-    oneof document_symbol_provider {
-      DocumentSymbolOptions document_symbol_options = 1;
+  message DefinitionProvider {
+    oneof definition_provider {
+      DefinitionOptions definition_options = 1;
 
-      DocumentSymbolProvider2 document_symbol_provider_2 = 2;
+      DefinitionProvider2 definition_provider_2 = 2;
     }
 
-    message DocumentSymbolOptions {
-      string label = 1;
-
-      bool work_done_progress = 2;
-    }
-
-    message DocumentSymbolProvider2 {
-      bool document_symbol_provider_2 = 1;
+    message DefinitionProvider2 {
+      bool definition_provider_2 = 1;
     }
   }
 
-  message FoldingRangeProvider {
-    oneof folding_range_provider {
-      FoldingRangeOptions folding_range_options = 1;
+  message DocumentFormattingProvider {
+    oneof document_formatting_provider {
+      DocumentFormattingOptions document_formatting_options = 1;
 
-      FoldingRangeRegistrationOptions folding_range_registration_options = 2;
-
-      FoldingRangeProvider3 folding_range_provider_3 = 3;
+      DocumentFormattingProvider2 document_formatting_provider_2 = 2;
     }
 
-    message FoldingRangeOptions {
-      bool work_done_progress = 1;
-    }
-
-    message FoldingRangeRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
-
-      string id = 2;
-
-      bool work_done_progress = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message FoldingRangeProvider3 {
-      bool folding_range_provider_3 = 1;
+    message DocumentFormattingProvider2 {
+      bool document_formatting_provider_2 = 1;
     }
   }
 
-  message InlayHintProvider {
-    oneof inlay_hint_provider {
-      InlayHintProvider3 inlay_hint_provider_3 = 1;
+  message LinkedEditingRangeProvider {
+    oneof linked_editing_range_provider {
+      LinkedEditingRangeOptions linked_editing_range_options = 1;
+
+      LinkedEditingRangeRegistrationOptions linked_editing_range_registration_options = 2;
+
+      LinkedEditingRangeProvider3 linked_editing_range_provider_3 = 3;
     }
 
-    message InlayHintProvider3 {
-      bool inlay_hint_provider_3 = 1;
+    message LinkedEditingRangeProvider3 {
+      bool linked_editing_range_provider_3 = 1;
     }
   }
 
-  message NotebookDocumentSync {
-    oneof notebook_document_sync {
-      NotebookDocumentSyncOptions notebook_document_sync_options = 1;
+  message RenameProvider {
+    oneof rename_provider {
+      RenameOptions rename_options = 1;
+
+      RenameProvider2 rename_provider_2 = 2;
     }
 
-    message NotebookDocumentSyncOptions {
-      repeated NotebookSelector notebook_selector = 1;
-
-      bool save = 2;
-
-      message NotebookSelector {
-        NotebookSelector notebook_selector = 1;
-
-        message NotebookSelector {
-          oneof notebook_selector {
-            NotebookSelector1 notebook_selector_1 = 1;
-
-            NotebookSelector2 notebook_selector_2 = 2;
-          }
-
-          message NotebookSelector1 {
-            repeated Cells cells = 1;
-
-            Notebook notebook = 2;
-
-            message Cells {
-              Cells cells = 1;
-
-              message Cells {
-                string language = 1;
-              }
-            }
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook3 {
-                string scheme = 1;
-
-                string notebook_type = 2;
-
-                string pattern = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message NotebookSelector2 {
-            repeated Cells cells = 1;
-
-            Notebook notebook = 2;
-
-            message Cells {
-              Cells cells = 1;
-
-              message Cells {
-                string language = 1;
-              }
-            }
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-        }
-      }
+    message RenameProvider2 {
+      bool rename_provider_2 = 1;
     }
   }
 
   message Workspace {
-    FileOperationOptions file_operations = 1;
+    WorkspaceFoldersServerCapabilities workspace_folders = 1;
 
-    WorkspaceFoldersServerCapabilities workspace_folders = 2;
+    FileOperationOptions file_operations = 2;
+  }
+
+  message CallHierarchyProvider {
+    oneof call_hierarchy_provider {
+      CallHierarchyOptions call_hierarchy_options = 1;
+
+      CallHierarchyRegistrationOptions call_hierarchy_registration_options = 2;
+
+      CallHierarchyProvider3 call_hierarchy_provider_3 = 3;
+    }
+
+    message CallHierarchyProvider3 {
+      bool call_hierarchy_provider_3 = 1;
+    }
   }
 }
 
@@ -7666,1072 +4280,6 @@ message ServerCapabilitiesT {
 
   Workspace workspace = 33;
 
-  message CodeActionProvider {
-    oneof code_action_provider {
-      CodeActionOptions code_action_options = 1;
-
-      CodeActionProvider2 code_action_provider_2 = 2;
-    }
-
-    message CodeActionOptions {
-      repeated CodeActionKinds code_action_kinds = 1;
-
-      bool resolve_provider = 2;
-
-      bool work_done_progress = 3;
-
-      message CodeActionKinds {
-        CodeActionKinds code_action_kinds = 1;
-
-        message CodeActionKinds {
-          string code_action_kinds = 1;
-        }
-      }
-    }
-
-    message CodeActionProvider2 {
-      bool code_action_provider_2 = 1;
-    }
-  }
-
-  message InlineValueProvider {
-    oneof inline_value_provider {
-      WorkDoneProgressOptions work_done_progress_options = 1;
-
-      InlineValueProvider3 inline_value_provider_3 = 2;
-    }
-
-    message WorkDoneProgressOptions {
-      bool work_done_progress = 1;
-    }
-
-    message InlineValueProvider3 {
-      bool inline_value_provider_3 = 1;
-    }
-  }
-
-  message SelectionRangeProvider {
-    oneof selection_range_provider {
-      SelectionRangeOptions selection_range_options = 1;
-
-      SelectionRangeRegistrationOptions selection_range_registration_options = 2;
-
-      SelectionRangeProvider3 selection_range_provider_3 = 3;
-    }
-
-    message SelectionRangeOptions {
-      bool work_done_progress = 1;
-    }
-
-    message SelectionRangeRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
-
-      string id = 2;
-
-      bool work_done_progress = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string scheme = 1;
-
-                string notebook_type = 2;
-
-                string pattern = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message SelectionRangeProvider3 {
-      bool selection_range_provider_3 = 1;
-    }
-  }
-
-  message WorkspaceSymbolProvider {
-    oneof workspace_symbol_provider {
-      WorkspaceSymbolOptions workspace_symbol_options = 1;
-
-      WorkspaceSymbolProvider2 workspace_symbol_provider_2 = 2;
-    }
-
-    message WorkspaceSymbolOptions {
-      bool resolve_provider = 1;
-
-      bool work_done_progress = 2;
-    }
-
-    message WorkspaceSymbolProvider2 {
-      bool workspace_symbol_provider_2 = 1;
-    }
-  }
-
-  message ColorProvider {
-    oneof color_provider {
-      DocumentColorOptions document_color_options = 1;
-
-      DocumentColorRegistrationOptions document_color_registration_options = 2;
-
-      ColorProvider3 color_provider_3 = 3;
-    }
-
-    message DocumentColorOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DocumentColorRegistrationOptions {
-      string id = 1;
-
-      bool work_done_progress = 2;
-
-      repeated DocumentSelector document_selector = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message ColorProvider3 {
-      bool color_provider_3 = 1;
-    }
-  }
-
-  message NotebookDocumentSync {
-    oneof notebook_document_sync {
-      NotebookDocumentSyncOptions notebook_document_sync_options = 1;
-    }
-
-    message NotebookDocumentSyncOptions {
-      repeated NotebookSelector notebook_selector = 1;
-
-      bool save = 2;
-
-      message NotebookSelector {
-        NotebookSelector notebook_selector = 1;
-
-        message NotebookSelector {
-          oneof notebook_selector {
-            NotebookSelector1 notebook_selector_1 = 1;
-
-            NotebookSelector2 notebook_selector_2 = 2;
-          }
-
-          message NotebookSelector1 {
-            repeated Cells cells = 1;
-
-            Notebook notebook = 2;
-
-            message Cells {
-              Cells cells = 1;
-
-              message Cells {
-                string language = 1;
-              }
-            }
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message NotebookSelector2 {
-            repeated Cells cells = 1;
-
-            Notebook notebook = 2;
-
-            message Cells {
-              Cells cells = 1;
-
-              message Cells {
-                string language = 1;
-              }
-            }
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  message TypeDefinitionProvider {
-    oneof type_definition_provider {
-      TypeDefinitionOptions type_definition_options = 1;
-
-      TypeDefinitionRegistrationOptions type_definition_registration_options = 2;
-
-      TypeDefinitionProvider3 type_definition_provider_3 = 3;
-    }
-
-    message TypeDefinitionOptions {
-      bool work_done_progress = 1;
-    }
-
-    message TypeDefinitionRegistrationOptions {
-      bool work_done_progress = 1;
-
-      repeated DocumentSelector document_selector = 2;
-
-      string id = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string scheme = 1;
-
-            string language = 2;
-
-            string pattern = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message TypeDefinitionProvider3 {
-      bool type_definition_provider_3 = 1;
-    }
-  }
-
-  message DocumentRangeFormattingProvider {
-    oneof document_range_formatting_provider {
-      DocumentRangeFormattingOptions document_range_formatting_options = 1;
-
-      DocumentRangeFormattingProvider2 document_range_formatting_provider_2 = 2;
-    }
-
-    message DocumentRangeFormattingOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DocumentRangeFormattingProvider2 {
-      bool document_range_formatting_provider_2 = 1;
-    }
-  }
-
-  message FoldingRangeProvider {
-    oneof folding_range_provider {
-      FoldingRangeOptions folding_range_options = 1;
-
-      FoldingRangeRegistrationOptions folding_range_registration_options = 2;
-
-      FoldingRangeProvider3 folding_range_provider_3 = 3;
-    }
-
-    message FoldingRangeOptions {
-      bool work_done_progress = 1;
-    }
-
-    message FoldingRangeRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
-
-      string id = 2;
-
-      bool work_done_progress = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message DocumentSelector2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook2 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message FoldingRangeProvider3 {
-      bool folding_range_provider_3 = 1;
-    }
-  }
-
-  message ImplementationProvider {
-    oneof implementation_provider {
-      ImplementationOptions implementation_options = 1;
-
-      ImplementationRegistrationOptions implementation_registration_options = 2;
-
-      ImplementationProvider3 implementation_provider_3 = 3;
-    }
-
-    message ImplementationOptions {
-      bool work_done_progress = 1;
-    }
-
-    message ImplementationRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
-
-      string id = 2;
-
-      bool work_done_progress = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string scheme = 1;
-
-            string language = 2;
-
-            string pattern = 3;
-          }
-
-          message DocumentSelector3 {
-            string scheme = 1;
-
-            string language = 2;
-
-            string pattern = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            Notebook notebook = 1;
-
-            string language = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string scheme = 1;
-
-                string notebook_type = 2;
-
-                string pattern = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message ImplementationProvider3 {
-      bool implementation_provider_3 = 1;
-    }
-  }
-
-  message MonikerProvider {
-    oneof moniker_provider {
-      MonikerOptions moniker_options = 1;
-
-      MonikerRegistrationOptions moniker_registration_options = 2;
-
-      MonikerProvider3 moniker_provider_3 = 3;
-    }
-
-    message MonikerOptions {
-      bool work_done_progress = 1;
-    }
-
-    message MonikerRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
-
-      bool work_done_progress = 2;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string scheme = 1;
-
-            string language = 2;
-
-            string pattern = 3;
-          }
-
-          message DocumentSelector3 {
-            string scheme = 1;
-
-            string language = 2;
-
-            string pattern = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string scheme = 1;
-
-                string notebook_type = 2;
-
-                string pattern = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message MonikerProvider3 {
-      bool moniker_provider_3 = 1;
-    }
-  }
-
-  message ReferencesProvider {
-    oneof references_provider {
-      ReferenceOptions reference_options = 1;
-
-      ReferencesProvider2 references_provider_2 = 2;
-    }
-
-    message ReferenceOptions {
-      bool work_done_progress = 1;
-    }
-
-    message ReferencesProvider2 {
-      bool references_provider_2 = 1;
-    }
-  }
-
-  message CallHierarchyProvider {
-    oneof call_hierarchy_provider {
-      CallHierarchyOptions call_hierarchy_options = 1;
-
-      CallHierarchyRegistrationOptions call_hierarchy_registration_options = 2;
-
-      CallHierarchyProvider3 call_hierarchy_provider_3 = 3;
-    }
-
-    message CallHierarchyOptions {
-      bool work_done_progress = 1;
-    }
-
-    message CallHierarchyRegistrationOptions {
-      bool work_done_progress = 1;
-
-      repeated DocumentSelector document_selector = 2;
-
-      string id = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            Notebook notebook = 1;
-
-            string language = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message CallHierarchyProvider3 {
-      bool call_hierarchy_provider_3 = 1;
-    }
-  }
-
-  message DocumentHighlightProvider {
-    oneof document_highlight_provider {
-      DocumentHighlightOptions document_highlight_options = 1;
-
-      DocumentHighlightProvider2 document_highlight_provider_2 = 2;
-    }
-
-    message DocumentHighlightOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DocumentHighlightProvider2 {
-      bool document_highlight_provider_2 = 1;
-    }
-  }
-
   message DocumentSymbolProvider {
     oneof document_symbol_provider {
       DocumentSymbolOptions document_symbol_options = 1;
@@ -8739,148 +4287,28 @@ message ServerCapabilitiesT {
       DocumentSymbolProvider2 document_symbol_provider_2 = 2;
     }
 
-    message DocumentSymbolOptions {
-      string label = 1;
-
-      bool work_done_progress = 2;
-    }
-
     message DocumentSymbolProvider2 {
       bool document_symbol_provider_2 = 1;
     }
   }
 
-  message Workspace {
-    FileOperationOptions file_operations = 1;
+  message LinkedEditingRangeProvider {
+    oneof linked_editing_range_provider {
+      LinkedEditingRangeOptions linked_editing_range_options = 1;
 
-    WorkspaceFoldersServerCapabilities workspace_folders = 2;
-  }
+      LinkedEditingRangeRegistrationOptions linked_editing_range_registration_options = 2;
 
-  message InlayHintProvider {
-    oneof inlay_hint_provider {
-      InlayHintProvider3 inlay_hint_provider_3 = 1;
+      LinkedEditingRangeProvider3 linked_editing_range_provider_3 = 3;
     }
 
-    message InlayHintProvider3 {
-      bool inlay_hint_provider_3 = 1;
+    message LinkedEditingRangeProvider3 {
+      bool linked_editing_range_provider_3 = 1;
     }
   }
 
-  message DeclarationProvider {
-    oneof declaration_provider {
-      DeclarationOptions declaration_options = 1;
-
-      DeclarationRegistrationOptions declaration_registration_options = 2;
-
-      DeclarationProvider3 declaration_provider_3 = 3;
-    }
-
-    message DeclarationOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DeclarationRegistrationOptions {
-      repeated DocumentSelector document_selector = 1;
-
-      string id = 2;
-
-      bool work_done_progress = 3;
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector3 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            Notebook notebook = 1;
-
-            string language = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook2 {
-                string scheme = 1;
-
-                string notebook_type = 2;
-
-                string pattern = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-    }
-
-    message DeclarationProvider3 {
-      bool declaration_provider_3 = 1;
+  message NotebookDocumentSync {
+    oneof notebook_document_sync {
+      NotebookDocumentSyncOptions notebook_document_sync_options = 1;
     }
   }
 
@@ -8891,62 +4319,8 @@ message ServerCapabilitiesT {
       DefinitionProvider2 definition_provider_2 = 2;
     }
 
-    message DefinitionOptions {
-      bool work_done_progress = 1;
-    }
-
     message DefinitionProvider2 {
       bool definition_provider_2 = 1;
-    }
-  }
-
-  message DocumentFormattingProvider {
-    oneof document_formatting_provider {
-      DocumentFormattingOptions document_formatting_options = 1;
-
-      DocumentFormattingProvider2 document_formatting_provider_2 = 2;
-    }
-
-    message DocumentFormattingOptions {
-      bool work_done_progress = 1;
-    }
-
-    message DocumentFormattingProvider2 {
-      bool document_formatting_provider_2 = 1;
-    }
-  }
-
-  message HoverProvider {
-    oneof hover_provider {
-      HoverOptions hover_options = 1;
-
-      HoverProvider2 hover_provider_2 = 2;
-    }
-
-    message HoverOptions {
-      bool work_done_progress = 1;
-    }
-
-    message HoverProvider2 {
-      bool hover_provider_2 = 1;
-    }
-  }
-
-  message RenameProvider {
-    oneof rename_provider {
-      RenameOptions rename_options = 1;
-
-      RenameProvider2 rename_provider_2 = 2;
-    }
-
-    message RenameOptions {
-      bool prepare_provider = 1;
-
-      bool work_done_progress = 2;
-    }
-
-    message RenameProvider2 {
-      bool rename_provider_2 = 1;
     }
   }
 
@@ -8955,34 +4329,6 @@ message ServerCapabilitiesT {
       TextDocumentSyncOptions text_document_sync_options = 1;
 
       TextDocumentSync2 text_document_sync_2 = 2;
-    }
-
-    message TextDocumentSyncOptions {
-      bool open_close = 1;
-
-      Save save = 2;
-
-      bool will_save = 3;
-
-      bool will_save_wait_until = 4;
-
-      TextDocumentSyncKind change = 5;
-
-      message Save {
-        oneof save {
-          SaveOptions save_options = 1;
-
-          Save2 save_2 = 2;
-        }
-
-        message SaveOptions {
-          bool include_text = 1;
-        }
-
-        message Save2 {
-          bool save_2 = 1;
-        }
-      }
     }
 
     message TextDocumentSync2 {
@@ -8996,6 +4342,80 @@ message ServerCapabilitiesT {
     }
   }
 
+  message WorkspaceSymbolProvider {
+    oneof workspace_symbol_provider {
+      WorkspaceSymbolOptions workspace_symbol_options = 1;
+
+      WorkspaceSymbolProvider2 workspace_symbol_provider_2 = 2;
+    }
+
+    message WorkspaceSymbolProvider2 {
+      bool workspace_symbol_provider_2 = 1;
+    }
+  }
+
+  message DocumentFormattingProvider {
+    oneof document_formatting_provider {
+      DocumentFormattingOptions document_formatting_options = 1;
+
+      DocumentFormattingProvider2 document_formatting_provider_2 = 2;
+    }
+
+    message DocumentFormattingProvider2 {
+      bool document_formatting_provider_2 = 1;
+    }
+  }
+
+  message DocumentHighlightProvider {
+    oneof document_highlight_provider {
+      DocumentHighlightOptions document_highlight_options = 1;
+
+      DocumentHighlightProvider2 document_highlight_provider_2 = 2;
+    }
+
+    message DocumentHighlightProvider2 {
+      bool document_highlight_provider_2 = 1;
+    }
+  }
+
+  message FoldingRangeProvider {
+    oneof folding_range_provider {
+      FoldingRangeOptions folding_range_options = 1;
+
+      FoldingRangeRegistrationOptions folding_range_registration_options = 2;
+
+      FoldingRangeProvider3 folding_range_provider_3 = 3;
+    }
+
+    message FoldingRangeProvider3 {
+      bool folding_range_provider_3 = 1;
+    }
+  }
+
+  message HoverProvider {
+    oneof hover_provider {
+      HoverOptions hover_options = 1;
+
+      HoverProvider2 hover_provider_2 = 2;
+    }
+
+    message HoverProvider2 {
+      bool hover_provider_2 = 1;
+    }
+  }
+
+  message ReferencesProvider {
+    oneof references_provider {
+      ReferenceOptions reference_options = 1;
+
+      ReferencesProvider2 references_provider_2 = 2;
+    }
+
+    message ReferencesProvider2 {
+      bool references_provider_2 = 1;
+    }
+  }
+
   message TypeHierarchyProvider {
     oneof type_hierarchy_provider {
       WorkDoneProgressOptions work_done_progress_options = 1;
@@ -9003,130 +4423,170 @@ message ServerCapabilitiesT {
       TypeHierarchyProvider3 type_hierarchy_provider_3 = 2;
     }
 
-    message WorkDoneProgressOptions {
-      bool work_done_progress = 1;
-    }
-
     message TypeHierarchyProvider3 {
       bool type_hierarchy_provider_3 = 1;
     }
   }
 
-  message LinkedEditingRangeProvider {
-    oneof linked_editing_range_provider {
-      LinkedEditingRangeOptions linked_editing_range_options = 1;
+  message ColorProvider {
+    oneof color_provider {
+      DocumentColorOptions document_color_options = 1;
 
-      LinkedEditingRangeRegistrationOptions linked_editing_range_registration_options = 2;
+      DocumentColorRegistrationOptions document_color_registration_options = 2;
 
-      LinkedEditingRangeProvider3 linked_editing_range_provider_3 = 3;
+      ColorProvider3 color_provider_3 = 3;
     }
 
-    message LinkedEditingRangeOptions {
-      bool work_done_progress = 1;
+    message ColorProvider3 {
+      bool color_provider_3 = 1;
+    }
+  }
+
+  message DeclarationProvider {
+    oneof declaration_provider {
+      DeclarationOptions declaration_options = 1;
+
+      DeclarationRegistrationOptions declaration_registration_options = 2;
+
+      DeclarationProvider3 declaration_provider_3 = 3;
     }
 
-    message LinkedEditingRangeRegistrationOptions {
-      string id = 1;
+    message DeclarationProvider3 {
+      bool declaration_provider_3 = 1;
+    }
+  }
 
-      bool work_done_progress = 2;
+  message TypeDefinitionProvider {
+    oneof type_definition_provider {
+      TypeDefinitionOptions type_definition_options = 1;
 
-      repeated DocumentSelector document_selector = 3;
+      TypeDefinitionRegistrationOptions type_definition_registration_options = 2;
 
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string language = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message DocumentSelector2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message DocumentSelector3 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
+      TypeDefinitionProvider3 type_definition_provider_3 = 3;
     }
 
-    message LinkedEditingRangeProvider3 {
-      bool linked_editing_range_provider_3 = 1;
+    message TypeDefinitionProvider3 {
+      bool type_definition_provider_3 = 1;
+    }
+  }
+
+  message CallHierarchyProvider {
+    oneof call_hierarchy_provider {
+      CallHierarchyOptions call_hierarchy_options = 1;
+
+      CallHierarchyRegistrationOptions call_hierarchy_registration_options = 2;
+
+      CallHierarchyProvider3 call_hierarchy_provider_3 = 3;
+    }
+
+    message CallHierarchyProvider3 {
+      bool call_hierarchy_provider_3 = 1;
+    }
+  }
+
+  message CodeActionProvider {
+    oneof code_action_provider {
+      CodeActionOptions code_action_options = 1;
+
+      CodeActionProvider2 code_action_provider_2 = 2;
+    }
+
+    message CodeActionProvider2 {
+      bool code_action_provider_2 = 1;
+    }
+  }
+
+  message RenameProvider {
+    oneof rename_provider {
+      RenameOptions rename_options = 1;
+
+      RenameProvider2 rename_provider_2 = 2;
+    }
+
+    message RenameProvider2 {
+      bool rename_provider_2 = 1;
+    }
+  }
+
+  message Workspace {
+    FileOperationOptions file_operations = 1;
+
+    WorkspaceFoldersServerCapabilities workspace_folders = 2;
+  }
+
+  message InlineValueProvider {
+    oneof inline_value_provider {
+      WorkDoneProgressOptions work_done_progress_options = 1;
+
+      InlineValueProvider3 inline_value_provider_3 = 2;
+    }
+
+    message InlineValueProvider3 {
+      bool inline_value_provider_3 = 1;
+    }
+  }
+
+  message InlayHintProvider {
+    oneof inlay_hint_provider {
+      InlayHintProvider3 inlay_hint_provider_3 = 1;
+    }
+
+    message InlayHintProvider3 {
+      bool inlay_hint_provider_3 = 1;
+    }
+  }
+
+  message MonikerProvider {
+    oneof moniker_provider {
+      MonikerOptions moniker_options = 1;
+
+      MonikerRegistrationOptions moniker_registration_options = 2;
+
+      MonikerProvider3 moniker_provider_3 = 3;
+    }
+
+    message MonikerProvider3 {
+      bool moniker_provider_3 = 1;
+    }
+  }
+
+  message SelectionRangeProvider {
+    oneof selection_range_provider {
+      SelectionRangeOptions selection_range_options = 1;
+
+      SelectionRangeRegistrationOptions selection_range_registration_options = 2;
+
+      SelectionRangeProvider3 selection_range_provider_3 = 3;
+    }
+
+    message SelectionRangeProvider3 {
+      bool selection_range_provider_3 = 1;
+    }
+  }
+
+  message DocumentRangeFormattingProvider {
+    oneof document_range_formatting_provider {
+      DocumentRangeFormattingOptions document_range_formatting_options = 1;
+
+      DocumentRangeFormattingProvider2 document_range_formatting_provider_2 = 2;
+    }
+
+    message DocumentRangeFormattingProvider2 {
+      bool document_range_formatting_provider_2 = 1;
+    }
+  }
+
+  message ImplementationProvider {
+    oneof implementation_provider {
+      ImplementationOptions implementation_options = 1;
+
+      ImplementationRegistrationOptions implementation_registration_options = 2;
+
+      ImplementationProvider3 implementation_provider_3 = 3;
+    }
+
+    message ImplementationProvider3 {
+      bool implementation_provider_3 = 1;
     }
   }
 
@@ -9135,174 +4595,6 @@ message ServerCapabilitiesT {
       SemanticTokensOptions semantic_tokens_options = 1;
 
       SemanticTokensRegistrationOptions semantic_tokens_registration_options = 2;
-    }
-
-    message SemanticTokensOptions {
-      bool work_done_progress = 1;
-
-      Full full = 2;
-
-      SemanticTokensLegend legend = 3;
-
-      Range range = 4;
-
-      message Full {
-        oneof full {
-          Full1 full_1 = 1;
-
-          Full2 full_2 = 2;
-        }
-
-        message Full1 {
-          bool delta = 1;
-        }
-
-        message Full2 {
-          bool full_2 = 1;
-        }
-      }
-
-      message Range {
-        oneof range {
-          Range2 range_2 = 1;
-        }
-
-        message Range2 {
-          bool range_2 = 1;
-        }
-      }
-    }
-
-    message SemanticTokensRegistrationOptions {
-      string id = 1;
-
-      SemanticTokensLegend legend = 2;
-
-      Range range = 3;
-
-      bool work_done_progress = 4;
-
-      repeated DocumentSelector document_selector = 5;
-
-      Full full = 6;
-
-      message Range {
-        oneof range {
-          Range2 range_2 = 1;
-        }
-
-        message Range2 {
-          bool range_2 = 1;
-        }
-      }
-
-      message DocumentSelector {
-        DocumentSelector document_selector = 1;
-
-        message DocumentSelector {
-          oneof document_selector {
-            DocumentSelector1 document_selector_1 = 1;
-
-            DocumentSelector2 document_selector_2 = 2;
-
-            DocumentSelector3 document_selector_3 = 3;
-
-            NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-            DocumentSelector5 document_selector_5 = 5;
-          }
-
-          message DocumentSelector1 {
-            string scheme = 1;
-
-            string language = 2;
-
-            string pattern = 3;
-          }
-
-          message DocumentSelector2 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string language = 3;
-          }
-
-          message DocumentSelector3 {
-            string scheme = 1;
-
-            string language = 2;
-
-            string pattern = 3;
-          }
-
-          message NotebookCellTextDocumentFilter {
-            string language = 1;
-
-            Notebook notebook = 2;
-
-            message Notebook {
-              oneof notebook {
-                Notebook1 notebook_1 = 1;
-
-                Notebook2 notebook_2 = 2;
-
-                Notebook3 notebook_3 = 3;
-
-                Notebook4 notebook_4 = 4;
-              }
-
-              message Notebook1 {
-                string pattern = 1;
-
-                string scheme = 2;
-
-                string notebook_type = 3;
-              }
-
-              message Notebook2 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook3 {
-                string notebook_type = 1;
-
-                string pattern = 2;
-
-                string scheme = 3;
-              }
-
-              message Notebook4 {
-                string notebook_4 = 1;
-              }
-            }
-          }
-
-          message DocumentSelector5 {
-            string document_selector_5 = 1;
-          }
-        }
-      }
-
-      message Full {
-        oneof full {
-          Full1 full_1 = 1;
-
-          Full2 full_2 = 2;
-        }
-
-        message Full1 {
-          bool delta = 1;
-        }
-
-        message Full2 {
-          bool full_2 = 1;
-        }
-      }
     }
   }
 }
@@ -9428,94 +4720,6 @@ message SignatureHelpRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string scheme = 1;
-
-        string language = 2;
-
-        string pattern = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        Notebook notebook = 1;
-
-        string language = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 
   message RetriggerCharacters {
@@ -9561,12 +4765,6 @@ message SignatureInformation {
       Documentation2 documentation_2 = 2;
     }
 
-    message MarkupContent {
-      string value = 1;
-
-      MarkupKind kind = 2;
-    }
-
     message Documentation2 {
       string documentation_2 = 1;
     }
@@ -9588,94 +4786,6 @@ message TextDocumentChangeRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message DocumentSelector2 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string scheme = 1;
-
-            string notebook_type = 2;
-
-            string pattern = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -9775,20 +4885,6 @@ message TextDocumentEdit {
 
         AnnotatedTextEdit annotated_text_edit = 2;
       }
-
-      message TextEdit {
-        string new_text = 1;
-
-        Range range = 2;
-      }
-
-      message AnnotatedTextEdit {
-        ChangeAnnotationIdentifier annotation_id = 1;
-
-        string new_text = 2;
-
-        Range range = 3;
-      }
     }
   }
 }
@@ -9811,11 +4907,11 @@ message TextDocumentFilter {
   }
 
   message TextDocumentFilter2 {
-    string language = 1;
+    string scheme = 1;
 
-    string pattern = 2;
+    string language = 2;
 
-    string scheme = 3;
+    string pattern = 3;
   }
 
   message TextDocumentFilter3 {
@@ -9852,94 +4948,6 @@ message TextDocumentRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string pattern = 1;
-
-            string scheme = 2;
-
-            string notebook_type = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -9960,94 +4968,6 @@ message TextDocumentSaveRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string pattern = 1;
-
-        string scheme = 2;
-
-        string language = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        Notebook notebook = 1;
-
-        string language = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook3 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -10089,10 +5009,6 @@ message TextDocumentSyncOptions {
       Save2 save_2 = 2;
     }
 
-    message SaveOptions {
-      bool include_text = 1;
-    }
-
     message Save2 {
       bool save_2 = 1;
     }
@@ -10124,94 +5040,6 @@ message TypeDefinitionRegistrationOptions {
 
   message DocumentSelector {
     DocumentSelector document_selector = 1;
-
-    message DocumentSelector {
-      oneof document_selector {
-        DocumentSelector1 document_selector_1 = 1;
-
-        DocumentSelector2 document_selector_2 = 2;
-
-        DocumentSelector3 document_selector_3 = 3;
-
-        NotebookCellTextDocumentFilter notebook_cell_text_document_filter = 4;
-
-        DocumentSelector5 document_selector_5 = 5;
-      }
-
-      message DocumentSelector1 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector2 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message DocumentSelector3 {
-        string language = 1;
-
-        string pattern = 2;
-
-        string scheme = 3;
-      }
-
-      message NotebookCellTextDocumentFilter {
-        string language = 1;
-
-        Notebook notebook = 2;
-
-        message Notebook {
-          oneof notebook {
-            Notebook1 notebook_1 = 1;
-
-            Notebook2 notebook_2 = 2;
-
-            Notebook3 notebook_3 = 3;
-
-            Notebook4 notebook_4 = 4;
-          }
-
-          message Notebook1 {
-            string notebook_type = 1;
-
-            string pattern = 2;
-
-            string scheme = 3;
-          }
-
-          message Notebook2 {
-            string scheme = 1;
-
-            string notebook_type = 2;
-
-            string pattern = 3;
-          }
-
-          message Notebook3 {
-            string scheme = 1;
-
-            string notebook_type = 2;
-
-            string pattern = 3;
-          }
-
-          message Notebook4 {
-            string notebook_4 = 1;
-          }
-        }
-      }
-
-      message DocumentSelector5 {
-        string document_selector_5 = 1;
-      }
-    }
   }
 }
 
@@ -10310,6 +5138,14 @@ message WorkspaceEdit {
 
   ChangeAnnotation change_annotations = 3;
 
+  message ChangeAnnotation {
+    bool needs_confirmation = 1;
+
+    string description = 2;
+
+    string label = 3;
+  }
+
   message AdditionalProperties {
     TextEdit text_edit = 1;
   }
@@ -10326,88 +5162,6 @@ message WorkspaceEdit {
         RenameFile rename_file = 3;
 
         DeleteFile delete_file = 4;
-      }
-
-      message TextDocumentEdit {
-        repeated Edits edits = 1;
-
-        OptionalVersionedTextDocumentIdentifier text_document = 2;
-
-        message Edits {
-          Edits edits = 1;
-
-          message Edits {
-            oneof edits {
-              TextEdit text_edit = 1;
-
-              AnnotatedTextEdit annotated_text_edit = 2;
-            }
-
-            message TextEdit {
-              Range range = 1;
-
-              string new_text = 2;
-            }
-
-            message AnnotatedTextEdit {
-              ChangeAnnotationIdentifier annotation_id = 1;
-
-              string new_text = 2;
-
-              Range range = 3;
-            }
-          }
-        }
-      }
-
-      message CreateFile {
-        DocumentUri uri = 1;
-
-        ChangeAnnotationIdentifier annotation_id = 2;
-
-        Kind kind = 3;
-
-        CreateFileOptions options = 4;
-
-        message Kind {
-          enum Kind {
-            Kind_Create = 1;
-          }
-        }
-      }
-
-      message RenameFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
-
-        Kind kind = 2;
-
-        DocumentUri new_uri = 3;
-
-        DocumentUri old_uri = 4;
-
-        RenameFileOptions options = 5;
-
-        message Kind {
-          enum Kind {
-            Kind_Rename = 1;
-          }
-        }
-      }
-
-      message DeleteFile {
-        ChangeAnnotationIdentifier annotation_id = 1;
-
-        Kind kind = 2;
-
-        DeleteFileOptions options = 3;
-
-        DocumentUri uri = 4;
-
-        message Kind {
-          enum Kind {
-            Kind_Delete = 1;
-          }
-        }
       }
     }
   }
@@ -10484,20 +5238,6 @@ message WorkspaceSymbolClientCapabilities {
 
   ResolveSupport resolve_support = 4;
 
-  message TagSupport {
-    repeated ValueSet value_set = 1;
-
-    message ValueSet {
-      ValueSet value_set = 1;
-
-      message ValueSet {
-        enum ValueSet {
-          ValueSet_1 = 1;
-        }
-      }
-    }
-  }
-
   message ResolveSupport {
     repeated Properties properties = 1;
 
@@ -10573,6 +5313,20 @@ message WorkspaceSymbolClientCapabilities {
       }
     }
   }
+
+  message TagSupport {
+    repeated ValueSet value_set = 1;
+
+    message ValueSet {
+      ValueSet value_set = 1;
+
+      message ValueSet {
+        enum ValueSet {
+          ValueSet_1 = 1;
+        }
+      }
+    }
+  }
 }
 
 message WorkspaceSymbolOptions {
@@ -10594,6 +5348,4 @@ message WorkspaceSymbolRegistrationOptions {
 
   bool work_done_progress = 2;
 }
-
-
 ```

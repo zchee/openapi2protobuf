@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Code-Hex/dd v1.1.0
 	github.com/alecthomas/chroma v0.10.0
-	github.com/bytedance/sonic v1.3.0
+	github.com/bytedance/sonic v1.3.2-0.20220610032135-f8fb04a18446
 	github.com/getkin/kin-openapi v0.96.1-0.20220601174204-648d6b9a170b
 	github.com/golang/protobuf v1.5.2
 	github.com/iancoleman/strcase v0.2.0

@@ -30,6 +30,9 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		c.schemasLookupFunc = schemasLookupFunc
 	}()
 
+	for name := range components.Schemas {
+		c.fdesc.SetRootComponent(conv.NormalizeMessageName(name))
+	}
 	for name, schemaRef := range components.Schemas {
 		msg, err := c.compileSchemaRef(name, schemaRef)
 		if err != nil {
@@ -50,8 +53,6 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 
 		c.fdesc.AddMessage(msg)
 	}
-
-	c.fdesc.CleanupMessage()
 
 	return nil
 }
@@ -182,7 +183,9 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 
 	switch protoreflect.EnumNumber(*fieldType) {
 	case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
-		msg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
+		if !c.fdesc.HasRootComponent(itemsMsg.GetName()) {
+			msg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
+		}
 		field.SetTypeName(itemsMsg.GetName())
 
 	default:
@@ -247,6 +250,9 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 
 		switch protoreflect.EnumNumber(*fieldType) {
 		case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
+			if !c.fdesc.HasRootComponent(propMsg.GetName()) {
+				msg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
+			}
 			msg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
 			field.SetTypeName(propMsg.GetName())
 
@@ -319,8 +325,10 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		if nestedMsg.GetName() == "" {
 			nestedMsg.SetName(name + "_" + strconv.Itoa(i+1))
 		}
-		msg.AddNestedMessage(nestedMsg)
 
+		if !c.fdesc.HasRootComponent(nestedMsg.GetName()) {
+			msg.AddNestedMessage(nestedMsg)
+		}
 		field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(nestedMsg.GetName()), protobuf.FieldTypeMessage())
 		field.SetNumber()
 		field.SetOneofIndex(msg.GetOneofIndex())
@@ -357,7 +365,9 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		if anyOfMsg.GetName() == "" {
 			anyOfMsg.SetName(name + "_" + strconv.Itoa(i+1))
 		}
-		msg.AddNestedMessage(anyOfMsg)
+		if !c.fdesc.HasRootComponent(anyOfMsg.GetName()) {
+			msg.AddNestedMessage(anyOfMsg)
+		}
 
 		field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage())
 		field.SetNumber()

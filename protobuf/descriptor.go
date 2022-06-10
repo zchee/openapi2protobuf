@@ -16,6 +16,7 @@ import (
 
 type FileDescriptorProto struct {
 	desc *descriptorpb.FileDescriptorProto
+	name map[string]bool
 	msg  map[string]bool
 	enum map[string]bool
 	deps map[string]bool
@@ -37,6 +38,7 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 			},
 			Syntax: proto.String(protoreflect.Proto3.String()),
 		},
+		name: make(map[string]bool),
 		msg:  make(map[string]bool),
 		enum: make(map[string]bool),
 		deps: make(map[string]bool),
@@ -99,9 +101,16 @@ func objcClassPrefix(fqn string) string {
 	return b.String()
 }
 
+func (fd *FileDescriptorProto) SetRootComponent(name string) {
+	fd.name[name] = true
+}
+
+func (fd *FileDescriptorProto) HasRootComponent(name string) bool {
+	return fd.name[name]
+}
+
 func (fd *FileDescriptorProto) GetName() string {
 	return fd.desc.GetName()
-	// return string(fd.desc.ProtoReflect().Descriptor().Name())
 }
 
 func (fd *FileDescriptorProto) SetName(name string) {
@@ -171,21 +180,6 @@ func (fd *FileDescriptorProto) AddExtension(ext *FieldDescriptorProto) *FileDesc
 	fd.desc.Extension = append(fd.desc.Extension, ext.Build())
 
 	return fd
-}
-
-func (fd *FileDescriptorProto) CleanupMessage() {
-	names := make(map[string]bool)
-	for _, msg := range fd.desc.MessageType {
-		names[msg.GetName()] = true
-	}
-
-	for i := range fd.desc.MessageType {
-		for j, nested := range fd.desc.MessageType[i].NestedType {
-			if len(fd.desc.MessageType[i].NestedType) > 1 && names[nested.GetName()] {
-				fd.desc.MessageType[i].NestedType = append(fd.desc.MessageType[i].NestedType[:j], fd.desc.MessageType[i].NestedType[j+1:]...)
-			}
-		}
-	}
 }
 
 func (fd *FileDescriptorProto) Build() *descriptorpb.FileDescriptorProto {
