@@ -4,7 +4,7 @@
 package compiler
 
 import (
-	"encoding/json"
+	stdjson "encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bytedance/sonic"
+	json "github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -42,10 +42,10 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 			continue
 		}
 
-		rawPropertyOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(json.RawMessage)
+		rawPropertyOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(stdjson.RawMessage)
 		if ok && rawPropertyOrder != nil {
 			var xPropertyOrder []string
-			if err := sonic.Unmarshal(rawPropertyOrder, &xPropertyOrder); err != nil {
+			if err := json.Unmarshal(rawPropertyOrder, &xPropertyOrder); err != nil {
 				return err
 			}
 			msg.SortField(xPropertyOrder)
@@ -57,6 +57,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 	return nil
 }
 
+// skipMessage reports whether the msg should skip.
 func skipMessage(msg *protobuf.MessageDescriptorProto) bool {
 	return msg == nil || msg.IsEmptyField()
 }
@@ -118,12 +119,16 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 	return nil, nil
 }
 
+// isEnum reports whether the schema is enum.
 func isEnum(schema *openapi3.Schema) bool { return schema.Enum != nil }
 
+// isOneOf reports whether the schema is oneOf.
 func isOneOf(schema *openapi3.Schema) bool { return schema.OneOf != nil }
 
+// isAnyOf reports whether the schema is anyOf.
 func isAnyOf(schema *openapi3.Schema) bool { return schema.AnyOf != nil }
 
+// isAllOf reports whether the schema is allOf.
 func isAllOf(schema *openapi3.Schema) bool { return schema.AllOf != nil }
 
 func (c *compiler) compileBuiltin(name string, schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) (*protobuf.MessageDescriptorProto, error) {
