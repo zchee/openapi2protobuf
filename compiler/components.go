@@ -38,7 +38,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		if err != nil {
 			return err
 		}
-		if skipMessage(msg, nil) {
+		if skipMessage(msg) {
 			continue
 		}
 
@@ -57,7 +57,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 	return nil
 }
 
-func skipMessage(msg, parent *protobuf.MessageDescriptorProto) bool {
+func skipMessage(msg *protobuf.MessageDescriptorProto) bool {
 	return msg == nil || msg.IsEmptyField()
 }
 
@@ -172,7 +172,7 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
-	if skipMessage(itemsMsg, msg) {
+	if skipMessage(itemsMsg) {
 		return msg, nil
 	}
 
@@ -217,7 +217,7 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 				if err != nil {
 					return nil, fmt.Errorf("compile object items: %w", err)
 				}
-				if skipMessage(refMsg, msg) {
+				if skipMessage(refMsg) {
 					continue
 				}
 
@@ -237,7 +237,7 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
-		if skipMessage(propMsg, msg) {
+		if skipMessage(propMsg) {
 			continue
 		}
 
@@ -290,7 +290,7 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Mes
 			fmt.Fprintf(os.Stderr, "%s: enumValName: %T -> %s\n", backtrace.FuncName(), e, e)
 		}
 
-		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+enumValName, int32(i+1))
+		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+enumValName, int32(i))
 		eb.AddValue(enumVal)
 	}
 
@@ -318,7 +318,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		if err != nil {
 			return nil, fmt.Errorf("compile oneOf ref: %w", err)
 		}
-		if skipMessage(nestedMsg, msg) {
+		if skipMessage(nestedMsg) {
 			continue
 		}
 
@@ -358,7 +358,7 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
-		if skipMessage(anyOfMsg, msg) {
+		if skipMessage(anyOfMsg) {
 			continue
 		}
 
