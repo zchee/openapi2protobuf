@@ -4482,13 +4482,6 @@ components:
       - $ref: '#/components/schemas/_InitializeParams'
       - $ref: '#/components/schemas/WorkspaceFoldersInitializeParams'
     InitializeResult:
-      $ref: '#/components/schemas/InitializeResult<T>'
-    InitializeResult.T:
-      defaultProperties: []
-      x-propertyOrder: []
-      title: InitializeResult.T
-      type: object
-    InitializeResult<T>:
       additionalProperties: {}
       defaultProperties: []
       description: The result returned from an initialize request.
@@ -4521,7 +4514,7 @@ components:
       - serverInfo
       required:
       - capabilities
-      title: InitializeResult<T>
+      title: InitializeResult
       type: object
     InitializedParams:
       defaultProperties: []
@@ -7330,7 +7323,7 @@ components:
       title: ServerCapabilities.T
       type: object
     ServerCapabilities.T_1:
-      $ref: '#/components/schemas/InitializeResult.T'
+      $ref: '#/components/schemas/InitializeResult'
     ServerCapabilities<T>:
       defaultProperties: []
       description: |-

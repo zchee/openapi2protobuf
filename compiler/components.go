@@ -167,7 +167,7 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 			msg.AddField(field)
 
 		default:
-			fmt.Fprintf(os.Stderr, "refObj: %T: %#v\n", refObj, refObj)
+			fmt.Fprintf(os.Stderr, "compileArray: refObj: %T: %#v\n", refObj, refObj)
 		}
 
 		return msg, nil
@@ -231,8 +231,10 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 				field.SetNumber()
 				msg.AddField(field)
 
+			case *openapi3.Ref:
+
 			default:
-				fmt.Fprintf(os.Stderr, "refObj: %T: %#v\n", refObj, refObj)
+				fmt.Fprintf(os.Stderr, "compileObject: refObj: %T: %#v\n", refObj, refObj)
 			}
 
 			continue
