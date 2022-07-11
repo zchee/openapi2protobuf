@@ -17,6 +17,9 @@ type MessageDescriptorProto struct {
 	fieldMumber int32
 	enum        map[string]bool
 	nested      map[string]bool
+
+	locations []*descriptorpb.SourceCodeInfo_Location
+	path      []int32
 }
 
 func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
@@ -27,6 +30,7 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 		field:  make(map[string]bool),
 		enum:   make(map[string]bool),
 		nested: make(map[string]bool),
+		path:   []int32{},
 	}
 }
 
@@ -51,6 +55,30 @@ func (md *MessageDescriptorProto) GetName() string {
 func (md *MessageDescriptorProto) SetName(name string) *MessageDescriptorProto {
 	md.desc.Name = proto.String(name)
 	return md
+}
+
+func (md *MessageDescriptorProto) AddComment(leading, trailing string, leadingDetached []string) *MessageDescriptorProto {
+	loc := &descriptorpb.SourceCodeInfo_Location{
+		Path: append(md.path, File_messageTypeTag),
+		Span: []int32{0, 0, 0},
+	}
+	if leading != "" {
+		loc.LeadingComments = proto.String(leading)
+	}
+	if trailing != "" {
+		loc.TrailingComments = proto.String(trailing)
+	}
+	if leadingDetached != nil {
+		loc.LeadingDetachedComments = leadingDetached
+	}
+
+	md.locations = append(md.locations, loc)
+
+	return md
+}
+
+func (md *MessageDescriptorProto) GetLocation() []*descriptorpb.SourceCodeInfo_Location {
+	return md.locations
 }
 
 func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *MessageDescriptorProto {

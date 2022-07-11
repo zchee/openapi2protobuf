@@ -91,6 +91,7 @@ type lookupFunc func(token string) (interface{}, error)
 type compiler struct {
 	fdesc *protobuf.FileDescriptorProto
 	opt   *option
+	path  []int32
 
 	schemasLookupFunc lookupFunc
 	pathLookupFunc    lookupFunc
@@ -109,6 +110,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	c := &compiler{
 		fdesc: protobuf.NewFileDescriptorProto(pkgname),
 		opt:   opt,
+		path:  make([]int32, 0, 10),
 	}
 
 	// append additional messages

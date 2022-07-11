@@ -20,6 +20,9 @@ type FileDescriptorProto struct {
 	msg  map[string]bool
 	enum map[string]bool
 	deps map[string]bool
+
+	locations []*descriptorpb.SourceCodeInfo_Location
+	path      []int32
 }
 
 func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
@@ -36,7 +39,8 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 				// ObjcClassPrefix:    proto.String(objcClassPrefix(fqn)),
 				CcEnableArenas: proto.Bool(true),
 			},
-			Syntax: proto.String(protoreflect.Proto3.String()),
+			Syntax:         proto.String(protoreflect.Proto3.String()),
+			SourceCodeInfo: new(descriptorpb.SourceCodeInfo),
 		},
 		name: make(map[string]bool),
 		msg:  make(map[string]bool),
@@ -101,11 +105,11 @@ func objcClassPrefix(fqn string) string {
 	return b.String()
 }
 
-func (fd *FileDescriptorProto) SetRootComponent(name string) {
+func (fd *FileDescriptorProto) AddComponent(name string) {
 	fd.name[name] = true
 }
 
-func (fd *FileDescriptorProto) HasRootComponent(name string) bool {
+func (fd *FileDescriptorProto) HasComponent(name string) bool {
 	return fd.name[name]
 }
 
@@ -148,6 +152,7 @@ func (fd *FileDescriptorProto) AddMessage(msg *MessageDescriptorProto) *FileDesc
 	}
 
 	fd.msg[msg.GetName()] = true
+	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, msg.GetLocation()...)
 	fd.desc.MessageType = append(fd.desc.MessageType, msg.Build())
 
 	return fd
@@ -178,6 +183,12 @@ func (fd *FileDescriptorProto) AddService(servicse *ServiceDescriptorProto) *Fil
 
 func (fd *FileDescriptorProto) AddExtension(ext *FieldDescriptorProto) *FileDescriptorProto {
 	fd.desc.Extension = append(fd.desc.Extension, ext.Build())
+
+	return fd
+}
+
+func (fd *FileDescriptorProto) SetSourceCodeInfoLocation(loc *descriptorpb.SourceCodeInfo_Location) *FileDescriptorProto {
+	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, loc)
 
 	return fd
 }

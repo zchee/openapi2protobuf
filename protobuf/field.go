@@ -11,6 +11,9 @@ import (
 type FieldDescriptorProto struct {
 	desc   *descriptorpb.FieldDescriptorProto
 	number int32
+
+	locations []*descriptorpb.SourceCodeInfo_Location
+	path      []int32
 }
 
 func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescriptorProto_Type) *FieldDescriptorProto {
@@ -19,6 +22,7 @@ func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescripto
 			Name: proto.String(name),
 			Type: fieldType,
 		},
+		path: []int32{},
 	}
 
 	return fid
@@ -26,6 +30,10 @@ func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescripto
 
 func (fid *FieldDescriptorProto) GetName() string {
 	return fid.desc.GetName()
+}
+
+func (fid *FieldDescriptorProto) GetNumber() int32 {
+	return *fid.desc.Number
 }
 
 func (fid *FieldDescriptorProto) SetNumber() *FieldDescriptorProto {
@@ -41,6 +49,31 @@ func (fid *FieldDescriptorProto) GetTypeName() *string {
 func (fid *FieldDescriptorProto) SetTypeName(name string) *FieldDescriptorProto {
 	fid.desc.TypeName = proto.String(name)
 	return fid
+}
+
+func (fid *FieldDescriptorProto) AddComment(leading, trailing string, leadingDetached []string) *FieldDescriptorProto {
+	fid.path = append(fid.path, File_messageTypeTag)
+	loc := &descriptorpb.SourceCodeInfo_Location{
+		Path: fid.path,
+		Span: []int32{0, 0, 0},
+	}
+	if leading != "" {
+		loc.LeadingComments = proto.String(leading)
+	}
+	if trailing != "" {
+		loc.TrailingComments = proto.String(trailing)
+	}
+	if leadingDetached != nil {
+		loc.LeadingDetachedComments = leadingDetached
+	}
+
+	fid.locations = append(fid.locations, loc)
+
+	return fid
+}
+
+func (fid *FieldDescriptorProto) GetLocation() []*descriptorpb.SourceCodeInfo_Location {
+	return fid.locations
 }
 
 func (fid *FieldDescriptorProto) SetOneofIndex(idx int32) *FieldDescriptorProto {

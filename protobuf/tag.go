@@ -7,8 +7,6 @@ import (
 	"math"
 	"unicode"
 	"unicode/utf8"
-
-	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 const (
@@ -25,200 +23,176 @@ const (
 
 	// SpecialReservedStart is the first tag in a range that is reserved and not
 	// allowed for use in message definitions.
-	SpecialReservedStart = 19000
+	SpecialReservedStart int32 = 19000
 	// SpecialReservedEnd is the last tag in a range that is reserved and not
 	// allowed for use in message definitions.
-	SpecialReservedEnd = 19999
-)
-
-var (
-	file = descriptorpb.File_google_protobuf_descriptor_proto.Messages().ByName("FileDescriptorProto")
+	SpecialReservedEnd int32 = 19999
 
 	// File_packageTag is the tag number of the package element in a file
 	// descriptor proto.
-	File_packageTag = int32(file.Fields().ByName("package").Number())
+	File_packageTag int32 = 2
 	// File_dependencyTag is the tag number of the dependencies element in a
 	// file descriptor proto.
-	File_dependencyTag = int32(file.Fields().ByName("dependency").Number())
+	File_dependencyTag int32 = 3
 	// File_messagesTag is the tag number of the messages element in a file
 	// descriptor proto.
-	File_messageTypeTag = int32(file.Fields().ByName("message_type").Number())
+	File_messageTypeTag int32 = 4
 	// File_enumsTag is the tag number of the enums element in a file descriptor
 	// proto.
-	File_enumTypeTag = int32(file.Fields().ByName("enum_type").Number())
+	File_enumTypeTag int32 = 5
 	// File_servicesTag is the tag number of the services element in a file
 	// descriptor proto.
-	File_servicesTag = int32(file.Fields().ByName("service").Number())
+	File_servicesTag int32 = 6
 	// File_extensionsTag is the tag number of the extensions element in a file
 	// descriptor proto.
-	File_extensionsTag = int32(file.Fields().ByName("extension").Number())
+	File_extensionsTag int32 = 7
 	// File_optionsTag is the tag number of the options element in a file
 	// descriptor proto.
-	File_optionsTag = int32(file.Fields().ByName("options").Number())
+	File_optionsTag int32 = 8
 	// File_syntaxTag is the tag number of the syntax element in a file
 	// descriptor proto.
-	File_syntaxTag = int32(file.Fields().ByName("syntax").Number())
-
-	message = descriptorpb.File_google_protobuf_descriptor_proto.Messages().ByName("DescriptorProto")
+	File_syntaxTag int32 = 12
 
 	// Message_nameTag is the tag number of the name element in a message
 	// descriptor proto.
-	Message_nameTag = int32(message.Fields().ByName("name").Number())
+	Message_nameTag int32 = 1
 	// Message_fieldsTag is the tag number of the fields element in a message
 	// descriptor proto.
-	Message_fieldsTag = int32(message.Fields().ByName("field").Number())
+	Message_fieldsTag int32 = 2
 	// Message_nestedMessagesTag is the tag number of the nested messages
 	// element in a message descriptor proto.
-	Message_nestedMessagesTag = int32(message.Fields().ByName("nested_type").Number())
+	Message_nestedMessagesTag int32 = 3
 	// Message_enumsTag is the tag number of the enums element in a message
 	// descriptor proto.
-	Message_enumsTag = int32(message.Fields().ByName("enum_type").Number())
+	Message_enumsTag int32 = 4
 	// Message_extensionRangeTag is the tag number of the extension ranges
 	// element in a message descriptor proto.
-	Message_extensionRangeTag = int32(message.Fields().ByName("extension_range").Number())
+	Message_extensionRangeTag int32 = 5
 	// Message_extensionsTag is the tag number of the extensions element in a
 	// message descriptor proto.
-	Message_extensionsTag = int32(message.Fields().ByName("extension").Number())
+	Message_extensionsTag int32 = 6
 	// Message_optionsTag is the tag number of the options element in a message
 	// descriptor proto.
-	Message_optionsTag = int32(message.Fields().ByName("options").Number())
+	Message_optionsTag int32 = 7
 	// Message_oneOfsTag is the tag number of the one-ofs element in a message
 	// descriptor proto.
-	Message_oneOfsTag = int32(message.Fields().ByName("oneof_decl").Number())
+	Message_oneOfsTag int32 = 8
 	// Message_reservedRangeTag is the tag number of the reserved ranges element
 	// in a message descriptor proto.
-	Message_reservedRangeTag = int32(message.Fields().ByName("reserved_range").Number())
+	Message_reservedRangeTag int32 = 9
 	// Message_reservedNameTag is the tag number of the reserved names element
 	// in a message descriptor proto.
-	Message_reservedNameTag = int32(message.Fields().ByName("reserved_name").Number())
-
-	extensionRange = message.Messages().ByName("ExtensionRange")
+	Message_reservedNameTag int32 = 10
 
 	// ExtensionRange_startTag is the tag number of the start index in an
 	// extension range proto.
-	ExtensionRange_startTag = int32(extensionRange.Fields().ByName("start").Number())
+	ExtensionRange_startTag int32 = 1
 	// ExtensionRange_endTag is the tag number of the end index in an
 	// extension range proto.
-	ExtensionRange_endTag = int32(extensionRange.Fields().ByName("end").Number())
+	ExtensionRange_endTag int32 = 2
 	// ExtensionRange_optionsTag is the tag number of the options element in an
 	// extension range proto.
-	ExtensionRange_optionsTag = int32(extensionRange.Fields().ByName("options").Number())
-
-	reservedRange = message.Messages().ByName("ReservedRange")
+	ExtensionRange_optionsTag int32 = 3
 
 	// ReservedRange_startTag is the tag number of the start index in a reserved
 	// range proto.
-	ReservedRange_startTag = int32(reservedRange.Fields().ByName("start").Number())
+	ReservedRange_startTag int32 = 1
 	// ReservedRange_endTag is the tag number of the end index in a reserved
 	// range proto.
-	ReservedRange_endTag = int32(reservedRange.Fields().ByName("end").Number())
-
-	field = descriptorpb.File_google_protobuf_descriptor_proto.Messages().ByName("FieldDescriptorProto")
+	ReservedRange_endTag int32 = 2
 
 	// Field_nameTag is the tag number of the name element in a field descriptor
 	// proto.
-	Field_nameTag = int32(field.Fields().ByName("name").Number())
+	Field_nameTag int32 = 1
 	// Field_extendeeTag is the tag number of the extendee element in a field
 	// descriptor proto.
-	Field_extendeeTag = int32(field.Fields().ByName("extendee").Number())
+	Field_extendeeTag int32 = 2
 	// Field_numberTag is the tag number of the number element in a field
 	// descriptor proto.
-	Field_numberTag = int32(field.Fields().ByName("number").Number())
+	Field_numberTag int32 = 3
 	// Field_labelTag is the tag number of the label element in a field
 	// descriptor proto.
-	Field_labelTag = int32(field.Fields().ByName("label").Number())
+	Field_labelTag int32 = 4
 	// Field_typeTag is the tag number of the type element in a field descriptor
 	// proto.
-	Field_typeTag = int32(field.Fields().ByName("type").Number())
+	Field_typeTag int32 = 5
 	// Field_typeNameTag is the tag number of the type name element in a field
 	// descriptor proto.
-	Field_typeNameTag = int32(field.Fields().ByName("type_name").Number())
+	Field_typeNameTag int32 = 6
 	// Field_defaultTag is the tag number of the default value element in a
 	// field descriptor proto.
-	Field_defaultTag = int32(field.Fields().ByName("default_value").Number())
+	Field_defaultTag int32 = 7
 	// Field_optionsTag is the tag number of the options element in a field
 	// descriptor proto.
-	Field_optionsTag = int32(field.Fields().ByName("options").Number())
+	Field_optionsTag int32 = 8
 	// Field_jsonNameTag is the tag number of the JSON name element in a field
 	// descriptor proto.
-	Field_jsonNameTag = int32(field.Fields().ByName("json_name").Number())
+	Field_jsonNameTag int32 = 10
 	// Field_proto3OptionalTag is the tag number of the proto3_optional element
 	// in a descriptor proto.
-	Field_proto3OptionalTag = int32(field.Fields().ByName("proto3_optional").Number())
-
-	oneOf = descriptorpb.File_google_protobuf_descriptor_proto.Messages().ByName("OneOfDescriptorProto")
+	Field_proto3OptionalTag int32 = 17
 
 	// OneOf_nameTag is the tag number of the name element in a one-of
 	// descriptor proto.
-	OneOf_nameTag = int32(field.Fields().ByName("name").Number())
+	OneOf_nameTag int32 = 1
 	// OneOf_optionsTag is the tag number of the options element in a one-of
 	// descriptor proto.
-	OneOf_optionsTag = int32(field.Fields().ByName("options").Number())
-
-	enum = descriptorpb.File_google_protobuf_descriptor_proto.Messages().ByName("EnumDescriptorProto")
+	OneOf_optionsTag int32 = 2
 
 	// Enum_nameTag is the tag number of the name element in an enum descriptor
 	// proto.
-	Enum_nameTag = int32(enum.Fields().ByName("name").Number())
+	Enum_nameTag int32 = 1
 	// Enum_valuesTag is the tag number of the values element in an enum
 	// descriptor proto.
-	Enum_valuesTag = int32(enum.Fields().ByName("value").Number())
+	Enum_valuesTag int32 = 2
 	// Enum_optionsTag is the tag number of the options element in an enum
 	// descriptor proto.
-	Enum_optionsTag = int32(enum.Fields().ByName("options").Number())
+	Enum_optionsTag int32 = 3
 	// Enum_reservedRangeTag is the tag number of the reserved ranges element in
 	// an enum descriptor proto.
-	Enum_reservedRangeTag = int32(enum.Fields().ByName("reserved_range").Number())
+	Enum_reservedRangeTag int32 = 4
 	// Enum_reservedNameTag is the tag number of the reserved names element in
 	// an enum descriptor proto.
-	Enum_reservedNameTag = int32(enum.Fields().ByName("reserved_name").Number())
-
-	enumValue = descriptorpb.File_google_protobuf_descriptor_proto.Messages().ByName("EnumValueDescriptorProto")
+	Enum_reservedNameTag int32 = 5
 
 	// EnumVal_nameTag is the tag number of the name element in an enum value
 	// descriptor proto.
-	EnumVal_nameTag = int32(enumValue.Fields().ByName("name").Number())
+	EnumVal_nameTag int32 = 1
 	// EnumVal_numberTag is the tag number of the number element in an enum
 	// value descriptor proto.
-	EnumVal_numberTag = int32(enumValue.Fields().ByName("number").Number())
+	EnumVal_numberTag int32 = 2
 	// EnumVal_optionsTag is the tag number of the options element in an enum
 	// value descriptor proto.
-	EnumVal_optionsTag = int32(enumValue.Fields().ByName("options").Number())
-
-	service = descriptorpb.File_google_protobuf_descriptor_proto.Messages().ByName("ServiceDescriptorProto")
+	EnumVal_optionsTag int32 = 3
 
 	// Service_nameTag is the tag number of the name element in a service
 	// descriptor proto.
-	Service_nameTag = int32(service.Fields().ByName("name").Number())
+	Service_nameTag int32 = 1
 	// Service_methodsTag is the tag number of the methods element in a service
 	// descriptor proto.
-	Service_methodsTag = int32(service.Fields().ByName("method").Number())
+	Service_methodsTag int32 = 2
 	// Service_optionsTag is the tag number of the options element in a service
 	// descriptor proto.
-	Service_optionsTag = int32(service.Fields().ByName("options").Number())
-
-	method = descriptorpb.File_google_protobuf_descriptor_proto.Messages().ByName("MethodDescriptorProto")
+	Service_optionsTag int32 = 3
 
 	// Method_nameTag is the tag number of the name element in a method
 	// descriptor proto.
-	Method_nameTag = int32(method.Fields().ByName("name").Number())
+	Method_nameTag int32 = 1
 	// Method_inputTag is the tag number of the input type element in a method
 	// descriptor proto.
-	Method_inputTag = int32(method.Fields().ByName("input_type").Number())
+	Method_inputTag int32 = 2
 	// Method_outputTag is the tag number of the output type element in a method
 	// descriptor proto.
-	Method_outputTag = int32(method.Fields().ByName("output_type").Number())
+	Method_outputTag int32 = 3
 	// Method_optionsTag is the tag number of the options element in a method
 	// descriptor proto.
-	Method_optionsTag = int32(method.Fields().ByName("options").Number())
+	Method_optionsTag int32 = 4
 	// Method_inputStreamTag is the tag number of the input stream flag in a
 	// method descriptor proto.
-	Method_inputStreamTag = int32(method.Fields().ByName("client_streaming").Number())
+	Method_inputStreamTag int32 = 5
 	// Method_outputStreamTag is the tag number of the output stream flag in a
 	// method descriptor proto.
-	Method_outputStreamTag = int32(method.Fields().ByName("server_streaming").Number())
-
-	uninterpretedOptions = descriptorpb.File_google_protobuf_descriptor_proto.Messages().ByName("UninterpretedOption")
+	Method_outputStreamTag int32 = 6
 
 	// UninterpretedOptionsTag is the tag number of the uninterpreted options
 	// element. All *Options messages use the same tag for the field that stores
@@ -227,31 +201,28 @@ var (
 
 	// Uninterpreted_nameTag is the tag number of the name element in an
 	// uninterpreted options proto.
-	Uninterpreted_nameTag = int32(uninterpretedOptions.Fields().ByName("name").Number())
+	Uninterpreted_nameTag = 2
 	// Uninterpreted_identTag is the tag number of the identifier value in an
 	// uninterpreted options proto.
-	Uninterpreted_identTag = int32(uninterpretedOptions.Fields().ByName("identifier_value").Number())
+	Uninterpreted_identTag = 3
 	// Uninterpreted_posIntTag is the tag number of the positive int value in an
 	// uninterpreted options proto.
-	Uninterpreted_posIntTag = int32(uninterpretedOptions.Fields().ByName("positive_int_value").Number())
+	Uninterpreted_posIntTag = 4
 	// Uninterpreted_negIntTag is the tag number of the negative int value in an
 	// uninterpreted options proto.
-	Uninterpreted_negIntTag = int32(uninterpretedOptions.Fields().ByName("negative_int_value").Number())
+	Uninterpreted_negIntTag = 5
 	// Uninterpreted_doubleTag is the tag number of the double value in an
 	// uninterpreted options proto.
-	Uninterpreted_doubleTag = int32(uninterpretedOptions.Fields().ByName("double_value").Number())
+	Uninterpreted_doubleTag = 6
 	// Uninterpreted_stringTag is the tag number of the string value in an
 	// uninterpreted options proto.
-	Uninterpreted_stringTag = int32(uninterpretedOptions.Fields().ByName("string_value").Number())
+	Uninterpreted_stringTag = 7
 	// Uninterpreted_aggregateTag is the tag number of the aggregate value in an
 	// uninterpreted options proto.
-	Uninterpreted_aggregateTag = int32(uninterpretedOptions.Fields().ByName("aggregate_value").Number())
+	Uninterpreted_aggregateTag = 8
 	// UninterpretedName_nameTag is the tag number of the name element in an
 	// uninterpreted option name proto.
-	UninterpretedName_nameTag = int32(uninterpretedOptions.Messages().ByName("NamePart").Fields().ByName("name_part").Number())
-	// UninterpretedName_nameTag is the tag number of the name element in an
-	// uninterpreted option name proto.
-	UninterpretedName_isExtensionTag = int32(uninterpretedOptions.Messages().ByName("NamePart").Fields().ByName("is_extension").Number())
+	UninterpretedName_nameTag = 1
 )
 
 // JsonName returns the default JSON name for a field with the given name.

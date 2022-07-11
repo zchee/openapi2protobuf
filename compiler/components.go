@@ -31,7 +31,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 	}()
 
 	for name := range components.Schemas {
-		c.fdesc.SetRootComponent(conv.NormalizeMessageName(name))
+		c.fdesc.AddComponent(conv.NormalizeMessageName(name))
 	}
 	for name, schemaRef := range components.Schemas {
 		msg, err := c.compileSchemaRef(name, schemaRef)
@@ -188,7 +188,7 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 
 	switch protoreflect.EnumNumber(*fieldType) {
 	case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
-		if !c.fdesc.HasRootComponent(itemsMsg.GetName()) {
+		if !c.fdesc.HasComponent(itemsMsg.GetName()) {
 			msg.AddNestedMessage(itemsMsg) // add nested message only MESSAGE type
 		}
 		field.SetTypeName(itemsMsg.GetName())
@@ -257,7 +257,7 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 
 		switch protoreflect.EnumNumber(*fieldType) {
 		case protoreflect.EnumNumber(descriptorpb.FieldDescriptorProto_TYPE_MESSAGE):
-			if !c.fdesc.HasRootComponent(propMsg.GetName()) {
+			if !c.fdesc.HasComponent(propMsg.GetName()) {
 				msg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
 			}
 			msg.AddNestedMessage(propMsg) // add nested message only MESSAGE type
@@ -333,7 +333,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 			nestedMsg.SetName(name + "_" + strconv.Itoa(i+1))
 		}
 
-		if !c.fdesc.HasRootComponent(nestedMsg.GetName()) {
+		if !c.fdesc.HasComponent(nestedMsg.GetName()) {
 			msg.AddNestedMessage(nestedMsg)
 		}
 		field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(nestedMsg.GetName()), protobuf.FieldTypeMessage())
@@ -372,7 +372,7 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		if anyOfMsg.GetName() == "" {
 			anyOfMsg.SetName(name + "_" + strconv.Itoa(i+1))
 		}
-		if !c.fdesc.HasRootComponent(anyOfMsg.GetName()) {
+		if !c.fdesc.HasComponent(anyOfMsg.GetName()) {
 			msg.AddNestedMessage(anyOfMsg)
 		}
 
