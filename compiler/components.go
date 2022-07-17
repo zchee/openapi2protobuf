@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -30,10 +31,20 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		c.schemasLookupFunc = schemasLookupFunc
 	}()
 
+	names := make([]string, len(components.Schemas))
+	i := 0
 	for name := range components.Schemas {
+		names[i] = name
+		i++
+	}
+	sort.Slice(names, func(i, j int) bool {
+		return names[i] < names[j]
+	})
+	for _, name := range names {
 		c.fdesc.AddComponent(conv.NormalizeMessageName(name))
 	}
-	for name, schemaRef := range components.Schemas {
+	for _, name := range names {
+		schemaRef := components.Schemas[name]
 		msg, err := c.compileSchemaRef(name, schemaRef)
 		if err != nil {
 			return err
@@ -42,10 +53,10 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 			continue
 		}
 
-		rawPropertyOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(stdjson.RawMessage)
-		if ok && rawPropertyOrder != nil {
+		propOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(stdjson.RawMessage)
+		if ok && propOrder != nil {
 			var xPropertyOrder []string
-			if err := json.Unmarshal(rawPropertyOrder, &xPropertyOrder); err != nil {
+			if err := json.Unmarshal(propOrder, &xPropertyOrder); err != nil {
 				return err
 			}
 			msg.SortField(xPropertyOrder)
@@ -142,6 +153,9 @@ func (c *compiler) compileBuiltin(name string, schema *openapi3.Schema, fieldTyp
 	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 	field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), fieldType)
 	msg.AddField(field)
+	if description := schema.Description; description != "" {
+		msg.AddLeadingComment(msg.GetName(), description)
+	}
 
 	return msg, nil
 }
@@ -198,6 +212,9 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 	}
 
 	msg.AddField(field)
+	if description := array.Description; description != "" {
+		msg.AddLeadingComment(msg.GetName(), description)
+	}
 
 	return msg, nil
 }
@@ -230,6 +247,9 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 				field.SetTypeName(refMsg.GetName())
 				field.SetNumber()
 				msg.AddField(field)
+				if description := object.Description; description != "" {
+					msg.AddLeadingComment(msg.GetName(), description)
+				}
 
 			case *openapi3.Ref:
 
@@ -268,6 +288,9 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 		}
 
 		msg.AddField(field)
+		if description := object.Description; description != "" {
+			msg.AddLeadingComment(msg.GetName(), description)
+		}
 	}
 
 	return msg, nil
@@ -302,6 +325,9 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Mes
 	}
 
 	msg.AddEnumType(eb)
+	if description := enum.Description; description != "" {
+		msg.AddLeadingComment(msg.GetName(), description)
+	}
 
 	return msg
 }
@@ -315,6 +341,9 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 	ob := protobuf.NewOneofDescriptorProto(conv.NormalizeFieldName(name))
 	msg.AddOneof(ob)
+	if description := oneOf.Description; description != "" {
+		msg.AddLeadingComment(msg.GetName(), description)
+	}
 
 	for i, ref := range oneOf.OneOf {
 		nestedMsgName := ref.Value.Title
@@ -355,6 +384,9 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 	ob := protobuf.NewOneofDescriptorProto(conv.NormalizeFieldName(name))
 	msg.AddOneof(ob)
+	if description := anyOf.Description; description != "" {
+		msg.AddLeadingComment(msg.GetName(), description)
+	}
 
 	for i, ref := range anyOf.AnyOf {
 		anyOfMsgName := ref.Value.Title

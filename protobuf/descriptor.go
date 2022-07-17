@@ -12,17 +12,16 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
+
+	"go.lsp.dev/openapi2protobuf/protobuf/prototag"
 )
 
 type FileDescriptorProto struct {
-	desc *descriptorpb.FileDescriptorProto
-	name map[string]bool
-	msg  map[string]bool
-	enum map[string]bool
-	deps map[string]bool
-
-	locations []*descriptorpb.SourceCodeInfo_Location
-	path      []int32
+	desc       *descriptorpb.FileDescriptorProto
+	components map[string]bool
+	msgs       map[string]bool
+	enums      map[string]bool
+	deps       map[string]bool
 }
 
 func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
@@ -31,21 +30,21 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 			Name:    proto.String(strcase.ToSnake(splitByLastDot(fqn))),
 			Package: proto.String(fqn),
 			Options: &descriptorpb.FileOptions{
-				GoPackage:          proto.String(goPackage(fqn)),
-				JavaPackage:        proto.String(javaPackage(fqn)),
-				JavaOuterClassname: proto.String(strcase.ToCamel(splitByLastDot(fqn))),
-				JavaMultipleFiles:  proto.Bool(true),
-				CsharpNamespace:    proto.String(csharpNamespace(fqn)),
+				GoPackage: proto.String(goPackage(fqn)),
+				// JavaPackage:        proto.String(javaPackage(fqn)),
+				// JavaOuterClassname: proto.String(strcase.ToCamel(splitByLastDot(fqn))),
+				// JavaMultipleFiles:  proto.Bool(true),
+				// CsharpNamespace:    proto.String(csharpNamespace(fqn)),
 				// ObjcClassPrefix:    proto.String(objcClassPrefix(fqn)),
-				CcEnableArenas: proto.Bool(true),
+				// CcEnableArenas: proto.Bool(true),
 			},
 			Syntax:         proto.String(protoreflect.Proto3.String()),
 			SourceCodeInfo: new(descriptorpb.SourceCodeInfo),
 		},
-		name: make(map[string]bool),
-		msg:  make(map[string]bool),
-		enum: make(map[string]bool),
-		deps: make(map[string]bool),
+		components: make(map[string]bool),
+		msgs:       make(map[string]bool),
+		enums:      make(map[string]bool),
+		deps:       make(map[string]bool),
 	}
 }
 
@@ -106,11 +105,11 @@ func objcClassPrefix(fqn string) string {
 }
 
 func (fd *FileDescriptorProto) AddComponent(name string) {
-	fd.name[name] = true
+	fd.components[name] = true
 }
 
 func (fd *FileDescriptorProto) HasComponent(name string) bool {
-	return fd.name[name]
+	return fd.components[name]
 }
 
 func (fd *FileDescriptorProto) GetName() string {
@@ -141,7 +140,7 @@ func (fd *FileDescriptorProto) AddDependency(deps string) *FileDescriptorProto {
 }
 
 func (fd *FileDescriptorProto) AddMessage(msg *MessageDescriptorProto) *FileDescriptorProto {
-	if fd.msg[msg.GetName()] {
+	if fd.msgs[msg.GetName()] {
 		return fd
 	}
 
@@ -151,8 +150,16 @@ func (fd *FileDescriptorProto) AddMessage(msg *MessageDescriptorProto) *FileDesc
 		}
 	}
 
-	fd.msg[msg.GetName()] = true
-	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, msg.GetLocation()...)
+	fd.msgs[msg.GetName()] = true
+
+	comments := msg.GetComments()
+	loc := &descriptorpb.SourceCodeInfo_Location{
+		LeadingComments:         proto.String(comments.LeadingComments),
+		TrailingComments:        proto.String(comments.TrailingComments),
+		LeadingDetachedComments: comments.LeadingDetachedComments,
+		Path:                    []int32{prototag.FileMessageType, int32(len(fd.msgs)) - 1},
+	}
+	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, loc)
 	fd.desc.MessageType = append(fd.desc.MessageType, msg.Build())
 
 	return fd
@@ -165,11 +172,11 @@ func (fd *FileDescriptorProto) AddMessageDescriptor(desc *descriptorpb.Descripto
 }
 
 func (fd *FileDescriptorProto) AddEnum(enum *EnumDescriptorProto) *FileDescriptorProto {
-	if fd.enum[enum.GetName()] {
+	if fd.enums[enum.GetName()] {
 		return fd
 	}
 
-	fd.enum[enum.GetName()] = true
+	fd.enums[enum.GetName()] = true
 	fd.desc.EnumType = append(fd.desc.EnumType, enum.Build())
 
 	return fd
@@ -187,7 +194,7 @@ func (fd *FileDescriptorProto) AddExtension(ext *FieldDescriptorProto) *FileDesc
 	return fd
 }
 
-func (fd *FileDescriptorProto) SetSourceCodeInfoLocation(loc *descriptorpb.SourceCodeInfo_Location) *FileDescriptorProto {
+func (fd *FileDescriptorProto) AddSourceCodeInfoLocation(loc *descriptorpb.SourceCodeInfo_Location) *FileDescriptorProto {
 	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, loc)
 
 	return fd
@@ -195,9 +202,9 @@ func (fd *FileDescriptorProto) SetSourceCodeInfoLocation(loc *descriptorpb.Sourc
 
 func (fd *FileDescriptorProto) Build() *descriptorpb.FileDescriptorProto {
 	sort.Slice(fd.desc.Dependency, func(i, j int) bool { return fd.desc.Dependency[i] < fd.desc.Dependency[j] })
-	sort.Slice(fd.desc.MessageType, func(i, j int) bool { return fd.desc.MessageType[i].GetName() < fd.desc.MessageType[j].GetName() })
 	sort.Slice(fd.desc.EnumType, func(i, j int) bool { return fd.desc.EnumType[i].GetName() < fd.desc.EnumType[j].GetName() })
 	sort.Slice(fd.desc.Service, func(i, j int) bool { return fd.desc.Service[i].GetName() < fd.desc.Service[j].GetName() })
 	sort.Slice(fd.desc.Extension, func(i, j int) bool { return fd.desc.Extension[i].GetName() < fd.desc.Extension[j].GetName() })
+
 	return fd.desc
 }

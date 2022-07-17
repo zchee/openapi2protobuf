@@ -8,7 +8,6 @@ import (
 	"unicode"
 
 	"github.com/iancoleman/strcase"
-	"github.com/jhump/protoreflect/desc/builder"
 )
 
 func NormalizeMessageName(s string) string {
@@ -19,21 +18,23 @@ func NormalizeFieldName(s string) string {
 	return strcase.ToSnake(s)
 }
 
-func NormalizeComment(title, description string) builder.Comments {
+// NormalizeComment normalizes title and description to Go style comment.
+//
+// This function returns the string that assumes inserting after the "//" token.
+func NormalizeComment(title, description string) string {
 	var sb strings.Builder
 
 	sb.WriteString(" ") // add space after "//"
 	sb.WriteString(NormalizeMessageName(title))
-	sb.WriteString(" ") // add space before description
+	sb.WriteString(" ") // add space after title
 
-	// toLower to first charactor of description
+	// ToLower the first letter of the description
 	sb.WriteByte(byte(unicode.ToLower(rune(description[0]))))
 	// replaces all newline with space for after "//"
 	sb.WriteString(strings.ReplaceAll(description[1:], "\n", "\n "))
-
-	comments := builder.Comments{
-		LeadingComment: sb.String(),
+	if description[len(description)-1] != '.' {
+		sb.WriteString(".")
 	}
 
-	return comments
+	return sb.String()
 }

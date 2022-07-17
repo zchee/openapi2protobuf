@@ -1,0 +1,520 @@
+syntax = "proto3";
+
+package go.lsp.dev/general;
+
+import "google/protobuf/any.proto";
+
+option go_package = "go.lsp.dev/general";
+
+message LSPAny {
+  google.protobuf.Any any = 1;
+}
+
+message LSPArray {
+  repeated google.protobuf.Any array = 1;
+}
+
+message LSPObject {
+  option map_entry = true;
+
+  map<string, google.protobuf.Any> object = 1;
+}
+
+message CallHierarchyClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+// ClientCapabilities defines the capabilities provided by the client.
+message ClientCapabilities {
+  WorkspaceClientCapabilities workspace = 1;
+
+  TextDocumentClientCapabilities text_document = 2;
+
+  WindowClientCapabilities window = 3;
+
+  GeneralClientCapabilities general = 4;
+}
+
+// CodeActionClientCapabilities the Client Capabilities of a [CodeActionRequest](#CodeActionRequest).
+message CodeActionClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool is_preferred_support = 2;
+
+  bool disabled_support = 3;
+
+  bool data_support = 4;
+
+  bool honors_change_annotations = 5;
+}
+
+// CodeLensClientCapabilities the client capabilities  of a [CodeLensRequest](#CodeLensRequest).
+message CodeLensClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+message CodeLensWorkspaceClientCapabilities {
+  bool refresh_support = 1;
+}
+
+// CompletionClientCapabilities completion client capabilities.
+message CompletionClientCapabilities {
+  bool dynamic_registration = 1;
+
+  InsertTextMode insert_text_mode = 2;
+
+  bool context_support = 3;
+}
+
+message DeclarationClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool link_support = 2;
+}
+
+// DefinitionClientCapabilities client Capabilities for a [DefinitionRequest](#DefinitionRequest).
+message DefinitionClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool link_support = 2;
+}
+
+message DidChangeConfigurationClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+message DidChangeWatchedFilesClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool relative_pattern_support = 2;
+}
+
+message DocumentColorClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+// DocumentFormattingClientCapabilities client capabilities of a [DocumentFormattingRequest](#DocumentFormattingRequest).
+message DocumentFormattingClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+// DocumentHighlightClientCapabilities client Capabilities for a [DocumentHighlightRequest](#DocumentHighlightRequest).
+message DocumentHighlightClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+// DocumentLinkClientCapabilities the client capabilities of a [DocumentLinkRequest](#DocumentLinkRequest).
+message DocumentLinkClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool tooltip_support = 2;
+}
+
+// DocumentOnTypeFormattingClientCapabilities client capabilities of a [DocumentOnTypeFormattingRequest](#DocumentOnTypeFormattingRequest).
+message DocumentOnTypeFormattingClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+// DocumentRangeFormattingClientCapabilities client capabilities of a [DocumentRangeFormattingRequest](#DocumentRangeFormattingRequest).
+message DocumentRangeFormattingClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+// DocumentSymbolClientCapabilities client Capabilities for a [DocumentSymbolRequest](#DocumentSymbolRequest).
+message DocumentSymbolClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool hierarchical_document_symbol_support = 2;
+
+  bool label_support = 3;
+}
+
+// ExecuteCommandClientCapabilities the client capabilities of a [ExecuteCommandRequest](#ExecuteCommandRequest).
+message ExecuteCommandClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+message FailureHandlingKind {
+  enum FailureHandlingKind {
+    FailureHandlingKind_Abort = 0;
+
+    FailureHandlingKind_TextOnlyTransactional = 1;
+
+    FailureHandlingKind_Transactional = 2;
+
+    FailureHandlingKind_Undo = 3;
+  }
+}
+
+// FileOperationClientCapabilities capabilities relating to events from file operations by the user in the client.
+//
+// These events do not come from the file system, they come from user operations
+// like renaming a file in the UI.
+message FileOperationClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool did_create = 2;
+
+  bool will_create = 3;
+
+  bool did_rename = 4;
+
+  bool will_rename = 5;
+
+  bool did_delete = 6;
+
+  bool will_delete = 7;
+}
+
+message FoldingRangeClientCapabilities {
+  bool dynamic_registration = 1;
+
+  Uinteger range_limit = 2;
+
+  bool line_folding_only = 3;
+}
+
+// GeneralClientCapabilities general client capabilities.
+message GeneralClientCapabilities {
+  RegularExpressionsClientCapabilities regular_expressions = 1;
+
+  MarkdownClientCapabilities markdown = 2;
+
+  repeated PositionEncodings position_encodings = 3;
+
+  message PositionEncodings {
+    PositionEncodings position_encodings = 1;
+
+    message PositionEncodings {
+      string position_encodings = 1;
+    }
+  }
+}
+
+message HoverClientCapabilities {
+  bool dynamic_registration = 1;
+
+  repeated ContentFormat content_format = 2;
+
+  message ContentFormat {
+    ContentFormat content_format = 1;
+
+    message ContentFormat {
+      enum ContentFormat {
+        ContentFormat_Markdown = 0;
+
+        ContentFormat_Plaintext = 1;
+      }
+    }
+  }
+}
+
+message ImplementationClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool link_support = 2;
+}
+
+// InitializeParams the initialize parameters.
+message InitializeParams {
+  int32 process_id = 1;
+
+  string locale = 2;
+
+  string root_path = 3;
+
+  string root_uri = 4;
+
+  ClientCapabilities capabilities = 5;
+
+  Trace trace = 6;
+
+  message Trace {
+    enum Trace {
+      Trace_Compact = 0;
+
+      Trace_Messages = 1;
+
+      Trace_Off = 2;
+
+      Trace_Verbose = 3;
+    }
+  }
+}
+
+// InsertTextMode how whitespace and indentation is handled during completion
+// item insertion.
+message InsertTextMode {
+  enum InsertTextMode {
+    InsertTextMode_1 = 0;
+
+    InsertTextMode_2 = 1;
+  }
+}
+
+// LinkedEditingRangeClientCapabilities client capabilities for the linked editing range request.
+message LinkedEditingRangeClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+// MarkdownClientCapabilities client capabilities specific to the used markdown parser.
+message MarkdownClientCapabilities {
+  string parser = 1;
+
+  string version = 2;
+
+  repeated AllowedTags allowed_tags = 3;
+
+  message AllowedTags {
+    AllowedTags allowed_tags = 1;
+
+    message AllowedTags {
+      string allowed_tags = 1;
+    }
+  }
+}
+
+// MonikerClientCapabilities client capabilities specific to the moniker request.
+message MonikerClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+message PrepareSupportDefaultBehavior {
+  enum PrepareSupportDefaultBehavior {
+    PrepareSupportDefaultBehavior_1 = 0;
+  }
+}
+
+// PublishDiagnosticsClientCapabilities the publish diagnostic client capabilities.
+message PublishDiagnosticsClientCapabilities {
+  bool related_information = 1;
+
+  bool version_support = 2;
+
+  bool code_description_support = 3;
+
+  bool data_support = 4;
+}
+
+// ReferenceClientCapabilities client Capabilities for a [ReferencesRequest](#ReferencesRequest).
+message ReferenceClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+// RegularExpressionsClientCapabilities client capabilities specific to regular expressions.
+message RegularExpressionsClientCapabilities {
+  string engine = 1;
+
+  string version = 2;
+}
+
+message RenameClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool prepare_support = 2;
+
+  PrepareSupportDefaultBehavior prepare_support_default_behavior = 3;
+
+  bool honors_change_annotations = 4;
+}
+
+message SelectionRangeClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+message SemanticTokensClientCapabilities {
+  bool dynamic_registration = 1;
+
+  repeated TokenTypes token_types = 2;
+
+  repeated TokenModifiers token_modifiers = 3;
+
+  repeated Formats formats = 4;
+
+  bool overlapping_token_support = 5;
+
+  bool multiline_token_support = 6;
+
+  bool server_cancel_support = 7;
+
+  bool augments_syntax_tokens = 8;
+
+  message TokenModifiers {
+    TokenModifiers token_modifiers = 1;
+
+    message TokenModifiers {
+      string token_modifiers = 1;
+    }
+  }
+
+  message TokenTypes {
+    TokenTypes token_types = 1;
+
+    message TokenTypes {
+      string token_types = 1;
+    }
+  }
+
+  message Formats {
+    Formats formats = 1;
+
+    message Formats {
+      enum Formats {
+        Formats_Relative = 0;
+      }
+    }
+  }
+}
+
+message SemanticTokensWorkspaceClientCapabilities {
+  bool refresh_support = 1;
+}
+
+// ShowDocumentClientCapabilities client capabilities for the show document request.
+message ShowDocumentClientCapabilities {
+  bool support = 1;
+}
+
+// SignatureHelpClientCapabilities client Capabilities for a [SignatureHelpRequest](#SignatureHelpRequest).
+message SignatureHelpClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool context_support = 2;
+}
+
+// TextDocumentClientCapabilities text document specific client capabilities.
+message TextDocumentClientCapabilities {
+  TextDocumentSyncClientCapabilities synchronization = 1;
+
+  CompletionClientCapabilities completion = 2;
+
+  HoverClientCapabilities hover = 3;
+
+  SignatureHelpClientCapabilities signature_help = 4;
+
+  DeclarationClientCapabilities declaration = 5;
+
+  DefinitionClientCapabilities definition = 6;
+
+  TypeDefinitionClientCapabilities type_definition = 7;
+
+  ImplementationClientCapabilities implementation = 8;
+
+  ReferenceClientCapabilities references = 9;
+
+  DocumentHighlightClientCapabilities document_highlight = 10;
+
+  DocumentSymbolClientCapabilities document_symbol = 11;
+
+  CodeActionClientCapabilities code_action = 12;
+
+  CodeLensClientCapabilities code_lens = 13;
+
+  DocumentLinkClientCapabilities document_link = 14;
+
+  DocumentColorClientCapabilities color_provider = 15;
+
+  DocumentFormattingClientCapabilities formatting = 16;
+
+  DocumentRangeFormattingClientCapabilities range_formatting = 17;
+
+  DocumentOnTypeFormattingClientCapabilities on_type_formatting = 18;
+
+  RenameClientCapabilities rename = 19;
+
+  FoldingRangeClientCapabilities folding_range = 20;
+
+  SelectionRangeClientCapabilities selection_range = 21;
+
+  PublishDiagnosticsClientCapabilities publish_diagnostics = 22;
+
+  CallHierarchyClientCapabilities call_hierarchy = 23;
+
+  SemanticTokensClientCapabilities semantic_tokens = 24;
+
+  LinkedEditingRangeClientCapabilities linked_editing_range = 25;
+
+  MonikerClientCapabilities moniker = 26;
+}
+
+message TextDocumentSyncClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool will_save = 2;
+
+  bool will_save_wait_until = 3;
+
+  bool did_save = 4;
+}
+
+// TypeDefinitionClientCapabilities since 3.6.0.
+message TypeDefinitionClientCapabilities {
+  bool dynamic_registration = 1;
+
+  bool link_support = 2;
+}
+
+message WindowClientCapabilities {
+  bool work_done_progress = 1;
+
+  ShowDocumentClientCapabilities show_document = 2;
+}
+
+// WorkspaceClientCapabilities workspace specific client capabilities.
+message WorkspaceClientCapabilities {
+  bool apply_edit = 1;
+
+  WorkspaceEditClientCapabilities workspace_edit = 2;
+
+  DidChangeConfigurationClientCapabilities did_change_configuration = 3;
+
+  DidChangeWatchedFilesClientCapabilities did_change_watched_files = 4;
+
+  WorkspaceSymbolClientCapabilities symbol = 5;
+
+  ExecuteCommandClientCapabilities execute_command = 6;
+
+  bool workspace_folders = 7;
+
+  bool configuration = 8;
+
+  SemanticTokensWorkspaceClientCapabilities semantic_tokens = 9;
+
+  CodeLensWorkspaceClientCapabilities code_lens = 10;
+
+  FileOperationClientCapabilities file_operations = 11;
+}
+
+message WorkspaceEditClientCapabilities {
+  bool document_changes = 1;
+
+  repeated ResourceOperations resource_operations = 2;
+
+  FailureHandlingKind failure_handling = 3;
+
+  bool normalizes_line_endings = 4;
+
+  message ResourceOperations {
+    ResourceOperations resource_operations = 1;
+
+    message ResourceOperations {
+      enum ResourceOperations {
+        ResourceOperations_Create = 0;
+
+        ResourceOperations_Delete = 1;
+
+        ResourceOperations_Rename = 2;
+      }
+    }
+  }
+}
+
+// WorkspaceSymbolClientCapabilities client capabilities for a [WorkspaceSymbolRequest](#WorkspaceSymbolRequest).
+message WorkspaceSymbolClientCapabilities {
+  bool dynamic_registration = 1;
+}
+
+// Uinteger defines an unsigned integer in the range of 0 to 2^31 - 1.
+message Uinteger {
+  int32 uinteger = 1;
+}

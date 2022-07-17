@@ -11,15 +11,13 @@ import (
 )
 
 type MessageDescriptorProto struct {
-	desc *descriptorpb.DescriptorProto
+	desc    *descriptorpb.DescriptorProto
+	comment *Comment
 
 	field       map[string]bool
-	fieldMumber int32
+	fieldNumber int32
 	enum        map[string]bool
 	nested      map[string]bool
-
-	locations []*descriptorpb.SourceCodeInfo_Location
-	path      []int32
 }
 
 func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
@@ -27,25 +25,11 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 		desc: &descriptorpb.DescriptorProto{
 			Name: proto.String(name),
 		},
-		field:  make(map[string]bool),
-		enum:   make(map[string]bool),
-		nested: make(map[string]bool),
-		path:   []int32{},
+		comment: new(Comment),
+		field:   make(map[string]bool),
+		enum:    make(map[string]bool),
+		nested:  make(map[string]bool),
 	}
-}
-
-func (md *MessageDescriptorProto) Clone() *MessageDescriptorProto {
-	desc := &descriptorpb.DescriptorProto{}
-	*desc = *md.desc
-
-	mdesc := &MessageDescriptorProto{
-		desc:        desc,
-		field:       md.field,
-		fieldMumber: md.fieldMumber,
-		nested:      md.nested,
-	}
-
-	return mdesc
 }
 
 func (md *MessageDescriptorProto) GetName() string {
@@ -57,28 +41,32 @@ func (md *MessageDescriptorProto) SetName(name string) *MessageDescriptorProto {
 	return md
 }
 
-func (md *MessageDescriptorProto) AddComment(leading, trailing string, leadingDetached []string) *MessageDescriptorProto {
-	loc := &descriptorpb.SourceCodeInfo_Location{
-		Path: append(md.path, File_messageTypeTag),
-		Span: []int32{0, 0, 0},
-	}
+func (md *MessageDescriptorProto) AddLeadingComment(fn, leading string) *MessageDescriptorProto {
 	if leading != "" {
-		loc.LeadingComments = proto.String(leading)
+		md.comment.LeadingComments = conv.NormalizeComment(fn, leading)
 	}
-	if trailing != "" {
-		loc.TrailingComments = proto.String(trailing)
-	}
-	if leadingDetached != nil {
-		loc.LeadingDetachedComments = leadingDetached
-	}
-
-	md.locations = append(md.locations, loc)
 
 	return md
 }
 
-func (md *MessageDescriptorProto) GetLocation() []*descriptorpb.SourceCodeInfo_Location {
-	return md.locations
+func (md *MessageDescriptorProto) AddTrailingComment(trailing string) *MessageDescriptorProto {
+	if trailing != "" {
+		md.comment.TrailingComments = trailing
+	}
+
+	return md
+}
+
+func (md *MessageDescriptorProto) AddLeadingDetachedComment(leadingDetached []string) *MessageDescriptorProto {
+	if leadingDetached != nil {
+		md.comment.LeadingDetachedComments = leadingDetached
+	}
+
+	return md
+}
+
+func (md *MessageDescriptorProto) GetComments() *Comment {
+	return md.comment
 }
 
 func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *MessageDescriptorProto {
@@ -86,8 +74,8 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 		return md
 	}
 
-	md.fieldMumber++
-	field.desc.Number = proto.Int32(md.fieldMumber)
+	md.fieldNumber++
+	field.desc.Number = proto.Int32(md.fieldNumber)
 	md.field[field.GetName()] = true
 	md.desc.Field = append(md.desc.Field, field.Build())
 
@@ -103,7 +91,7 @@ func (md *MessageDescriptorProto) SortField(order []string) *MessageDescriptorPr
 	n := len(md.desc.Field)
 	fdescFields := make([]*descriptorpb.FieldDescriptorProto, n)
 	copy(fdescFields, md.desc.Field)
-	md.desc.Field = make([]*descriptorpb.FieldDescriptorProto, n) // reset
+	md.desc.Field = md.desc.Field[0:] // reset
 
 	i := 0
 	for _, field := range propOrder {

@@ -51,27 +51,6 @@ func (fid *FieldDescriptorProto) SetTypeName(name string) *FieldDescriptorProto 
 	return fid
 }
 
-func (fid *FieldDescriptorProto) AddComment(leading, trailing string, leadingDetached []string) *FieldDescriptorProto {
-	fid.path = append(fid.path, File_messageTypeTag)
-	loc := &descriptorpb.SourceCodeInfo_Location{
-		Path: fid.path,
-		Span: []int32{0, 0, 0},
-	}
-	if leading != "" {
-		loc.LeadingComments = proto.String(leading)
-	}
-	if trailing != "" {
-		loc.TrailingComments = proto.String(trailing)
-	}
-	if leadingDetached != nil {
-		loc.LeadingDetachedComments = leadingDetached
-	}
-
-	fid.locations = append(fid.locations, loc)
-
-	return fid
-}
-
 func (fid *FieldDescriptorProto) GetLocation() []*descriptorpb.SourceCodeInfo_Location {
 	return fid.locations
 }
