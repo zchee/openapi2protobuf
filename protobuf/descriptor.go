@@ -28,7 +28,7 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 	return &FileDescriptorProto{
 		desc: &descriptorpb.FileDescriptorProto{
 			Name:    proto.String(strcase.ToSnake(splitByLastDot(fqn))),
-			Package: proto.String(fqn),
+			Package: proto.String(packageName(fqn)),
 			Options: &descriptorpb.FileOptions{
 				GoPackage: proto.String(goPackage(fqn)),
 				// JavaPackage:        proto.String(javaPackage(fqn)),
@@ -64,6 +64,10 @@ func splitByLastDot(fqn string) string {
 	}
 
 	return fqn[idx+1:]
+}
+
+func packageName(fqn string) string {
+	return strings.ReplaceAll(fqn, "/", ".")
 }
 
 func goPackage(fqn string) string {
@@ -152,7 +156,7 @@ func (fd *FileDescriptorProto) AddMessage(msg *MessageDescriptorProto) *FileDesc
 
 	fd.msgs[msg.GetName()] = true
 
-	comments := msg.GetComments()
+	comments := msg.GetComment()
 	loc := &descriptorpb.SourceCodeInfo_Location{
 		LeadingComments:         proto.String(comments.LeadingComments),
 		TrailingComments:        proto.String(comments.TrailingComments),
@@ -160,6 +164,11 @@ func (fd *FileDescriptorProto) AddMessage(msg *MessageDescriptorProto) *FileDesc
 		Path:                    []int32{prototag.FileMessageType, int32(len(fd.msgs)) - 1},
 	}
 	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, loc)
+	fieldLocations := msg.GetFieldLocations()
+	for i := range fieldLocations {
+		fieldLocations[i].Path = append([]int32{prototag.FileMessageType, int32(len(fd.msgs)) - 1}, fieldLocations[i].Path...)
+	}
+	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, fieldLocations...)
 	fd.desc.MessageType = append(fd.desc.MessageType, msg.Build())
 
 	return fd
@@ -176,6 +185,14 @@ func (fd *FileDescriptorProto) AddEnum(enum *EnumDescriptorProto) *FileDescripto
 		return fd
 	}
 
+	comments := enum.GetComment()
+	loc := &descriptorpb.SourceCodeInfo_Location{
+		LeadingComments:         proto.String(comments.LeadingComments),
+		TrailingComments:        proto.String(comments.TrailingComments),
+		LeadingDetachedComments: comments.LeadingDetachedComments,
+		Path:                    []int32{prototag.FileEnumType, int32(len(fd.enums)) - 1},
+	}
+	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, loc)
 	fd.enums[enum.GetName()] = true
 	fd.desc.EnumType = append(fd.desc.EnumType, enum.Build())
 

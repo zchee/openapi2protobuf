@@ -8,16 +8,19 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	"go.lsp.dev/openapi2protobuf/internal/conv"
+	"go.lsp.dev/openapi2protobuf/protobuf/prototag"
 )
 
 type MessageDescriptorProto struct {
 	desc    *descriptorpb.DescriptorProto
 	comment Comment
 
-	field       map[string]bool
-	fieldNumber int32
-	enum        map[string]bool
-	nested      map[string]bool
+	field          map[string]bool
+	fieldNumber    int32
+	fieldLocations map[int32]*descriptorpb.SourceCodeInfo_Location
+	enum           map[string]bool
+	enumLocations  []*descriptorpb.SourceCodeInfo_Location
+	nested         map[string]bool
 }
 
 func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
@@ -25,9 +28,10 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 		desc: &descriptorpb.DescriptorProto{
 			Name: proto.String(name),
 		},
-		field:  make(map[string]bool),
-		enum:   make(map[string]bool),
-		nested: make(map[string]bool),
+		field:          make(map[string]bool),
+		fieldLocations: make(map[int32]*descriptorpb.SourceCodeInfo_Location),
+		enum:           make(map[string]bool),
+		nested:         make(map[string]bool),
 	}
 }
 
@@ -41,30 +45,24 @@ func (md *MessageDescriptorProto) SetName(name string) *MessageDescriptorProto {
 }
 
 func (md *MessageDescriptorProto) AddLeadingComment(fn, leading string) *MessageDescriptorProto {
-	if leading != "" {
-		md.comment.LeadingComments = conv.NormalizeComment(fn, leading)
-	}
+	md.comment.LeadingComments = conv.NormalizeComment(fn, leading)
 
 	return md
 }
 
 func (md *MessageDescriptorProto) AddTrailingComment(trailing string) *MessageDescriptorProto {
-	if trailing != "" {
-		md.comment.TrailingComments = trailing
-	}
+	md.comment.TrailingComments = trailing
 
 	return md
 }
 
 func (md *MessageDescriptorProto) AddLeadingDetachedComment(leadingDetached []string) *MessageDescriptorProto {
-	if leadingDetached != nil {
-		md.comment.LeadingDetachedComments = leadingDetached
-	}
+	md.comment.LeadingDetachedComments = leadingDetached
 
 	return md
 }
 
-func (md *MessageDescriptorProto) GetComments() Comment {
+func (md *MessageDescriptorProto) GetComment() Comment {
 	return md.comment
 }
 
@@ -76,9 +74,29 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 	md.fieldNumber++
 	field.desc.Number = proto.Int32(md.fieldNumber)
 	md.field[field.GetName()] = true
+
+	comments := field.GetComment()
+	loc := &descriptorpb.SourceCodeInfo_Location{
+		LeadingComments:         proto.String(comments.LeadingComments),
+		TrailingComments:        proto.String(comments.TrailingComments),
+		LeadingDetachedComments: comments.LeadingDetachedComments,
+		Path:                    []int32{prototag.MessageFields, md.fieldNumber - 1},
+	}
+	md.fieldLocations[md.fieldNumber-1] = loc
 	md.desc.Field = append(md.desc.Field, field.Build())
 
 	return md
+}
+
+func (md *MessageDescriptorProto) GetFieldLocations() []*descriptorpb.SourceCodeInfo_Location {
+	fieldLocations := make([]*descriptorpb.SourceCodeInfo_Location, len(md.fieldLocations))
+	i := 0
+	for _, loc := range md.fieldLocations {
+		fieldLocations[i] = loc
+		i++
+	}
+
+	return append(fieldLocations, md.enumLocations...)
 }
 
 func (md *MessageDescriptorProto) SortField(order []string) *MessageDescriptorProto {
@@ -96,6 +114,8 @@ func (md *MessageDescriptorProto) SortField(order []string) *MessageDescriptorPr
 	for _, field := range propOrder {
 		for _, msgfield := range fdescFields {
 			if msgfield.GetName() == field {
+				md.fieldLocations[msgfield.GetNumber()-1].Path[1] = int32(i)
+
 				msgfield.Number = proto.Int32(int32(i + 1))
 				md.desc.Field[i] = msgfield
 				i++
@@ -170,6 +190,14 @@ func (md *MessageDescriptorProto) AddNestedMessage(nested *MessageDescriptorProt
 }
 
 func (md *MessageDescriptorProto) AddEnumType(enum *EnumDescriptorProto) *MessageDescriptorProto {
+	comments := enum.GetComment()
+	loc := &descriptorpb.SourceCodeInfo_Location{
+		LeadingComments:         proto.String(comments.LeadingComments),
+		TrailingComments:        proto.String(comments.TrailingComments),
+		LeadingDetachedComments: comments.LeadingDetachedComments,
+		Path:                    []int32{prototag.MessageEnums, md.fieldNumber - 1},
+	}
+	md.enumLocations = append(md.enumLocations, loc)
 	md.desc.EnumType = append(md.desc.EnumType, enum.Build())
 
 	return md

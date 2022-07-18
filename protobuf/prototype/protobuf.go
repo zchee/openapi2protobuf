@@ -1,7 +1,7 @@
 // Copyright 2022 The Go Language Server Authors
 // SPDX-License-Identifier: BSD-3-Clause
 
-package types
+package prototype
 
 import (
 	"google.golang.org/protobuf/reflect/protodesc"

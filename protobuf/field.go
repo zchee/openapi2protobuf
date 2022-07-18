@@ -64,30 +64,29 @@ func (fid *FieldDescriptorProto) SetRepeated() *FieldDescriptorProto {
 }
 
 func (fid *FieldDescriptorProto) AddLeadingComment(fn, leading string) *FieldDescriptorProto {
-	if leading != "" {
-		fid.comment.LeadingComments = conv.NormalizeComment(fn, leading)
-	}
+	fid.comment.LeadingComments = conv.NormalizeComment(fn, leading)
 
 	return fid
 }
 
 func (fid *FieldDescriptorProto) AddTrailingComment(trailing string) *FieldDescriptorProto {
-	if trailing != "" {
-		fid.comment.TrailingComments = trailing
-	}
+	fid.comment.TrailingComments = trailing
 
 	return fid
 }
 
 func (fid *FieldDescriptorProto) AddLeadingDetachedComment(leadingDetached []string) *FieldDescriptorProto {
-	if leadingDetached != nil {
-		fid.comment.LeadingDetachedComments = leadingDetached
-	}
+	fid.comment.LeadingDetachedComments = leadingDetached
 
 	return fid
 }
 
-func (fid *FieldDescriptorProto) GetComments() Comment {
+func (fid *FieldDescriptorProto) HasComment() bool {
+	comment := fid.comment
+	return comment.LeadingComments != "" || comment.TrailingComments != "" || len(comment.LeadingDetachedComments) != 0
+}
+
+func (fid *FieldDescriptorProto) GetComment() Comment {
 	return fid.comment
 }
 

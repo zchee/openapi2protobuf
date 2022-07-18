@@ -49,9 +49,9 @@ components:
         trace:
           description: The initial trace setting. If omitted trace is disabled ('off').
           enum:
+          - off
           - compact
           - messages
-          - off
           - verbose
           title: trace
           type: string

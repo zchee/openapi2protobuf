@@ -15,17 +15,19 @@ import (
 
 	"go.lsp.dev/openapi2protobuf/openapi"
 	"go.lsp.dev/openapi2protobuf/protobuf"
-	"go.lsp.dev/openapi2protobuf/protobuf/types"
+	"go.lsp.dev/openapi2protobuf/protobuf/prototype"
 )
 
 var additionalMessages []*protobuf.MessageDescriptorProto
 
+// RegisterAdditionalMessages registers additional protobuf.MessageDescriptorProto.
 func RegisterAdditionalMessages(descs ...*protobuf.MessageDescriptorProto) {
 	additionalMessages = append(additionalMessages, descs...)
 }
 
 var dependencyProto []string
 
+// RegisterDependencyProto registers dependency proto.
 func RegisterDependencyProto(deps string) {
 	dependencyProto = append(dependencyProto, deps)
 }
@@ -159,7 +161,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	// add dependency proto
 	depsFileDescriptor := make([]*desc.FileDescriptor, 0, len(dependencyProto))
 	for _, deps := range c.fdesc.GetDependency() {
-		if depDesc, ok := types.Descriptor[deps]; ok {
+		if depDesc, ok := prototype.Descriptor[deps]; ok {
 			knownDesc, err := desc.CreateFileDescriptor(depDesc)
 			if err != nil {
 				return nil, fmt.Errorf("could not create %s descriptor: %w", depDesc.GetName(), err)

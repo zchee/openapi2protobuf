@@ -89,7 +89,7 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			return c.CompileEnum(name, val), nil
 
 		case isOneOf(val):
-			return c.CompileOneOf(name, val)
+			return c.CompileOneof(name, val)
 
 		case isAnyOf(val):
 			return c.CompileAnyOf(name, val)
@@ -171,6 +171,9 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 			field.SetNumber()
 			field.SetTypeName(refObj.Title)
 			msg.AddField(field)
+			if description := array.Description; description != "" {
+				msg.AddLeadingComment(msg.GetName(), description)
+			}
 
 		default:
 			fmt.Fprintf(os.Stderr, "compileArray: refObj: %T: %#v\n", refObj, refObj)
@@ -203,6 +206,9 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 		field.SetTypeName(fieldType.String())
 	}
 
+	if description := array.Items.Value.Description; description != "" {
+		field.AddLeadingComment(field.GetName(), description)
+	}
 	msg.AddField(field)
 	if description := array.Description; description != "" {
 		msg.AddLeadingComment(msg.GetName(), description)
@@ -319,6 +325,9 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Mes
 		eb.AddValue(enumVal)
 	}
 
+	if description := enum.Description; description != "" {
+		eb.AddLeadingComment(eb.GetName(), description)
+	}
 	msg.AddEnumType(eb)
 	if description := enum.Description; description != "" {
 		msg.AddLeadingComment(msg.GetName(), description)
@@ -327,8 +336,8 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Mes
 	return msg
 }
 
-// CompileOneOf compiles oneOf objects.
-func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+// CompileOneof compiles oneof objects.
+func (c *compiler) CompileOneof(name string, oneOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	if oneOf.Title != "" {
 		name = oneOf.Title
 	}
@@ -347,7 +356,7 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		}
 		nestedMsg, err := c.compileSchemaRef(nestedMsgName, ref)
 		if err != nil {
-			return nil, fmt.Errorf("compile oneOf ref: %w", err)
+			return nil, fmt.Errorf("compile oneof ref: %w", err)
 		}
 		if skipMessage(nestedMsg) {
 			continue
@@ -364,6 +373,9 @@ func (c *compiler) CompileOneOf(name string, oneOf *openapi3.Schema) (*protobuf.
 		field.SetNumber()
 		field.SetOneofIndex(msg.GetOneofIndex())
 		field.SetTypeName(nestedMsg.GetName())
+		if description := ref.Value.Description; description != "" {
+			field.AddLeadingComment(field.GetName(), description)
+		}
 		msg.AddField(field)
 	}
 
@@ -407,6 +419,9 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		field.SetNumber()
 		field.SetOneofIndex(msg.GetOneofIndex())
 		field.SetTypeName(anyOfMsg.GetName())
+		if description := ref.Value.Description; description != "" {
+			field.AddLeadingComment(field.GetName(), description)
+		}
 		msg.AddField(field)
 	}
 
