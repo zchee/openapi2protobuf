@@ -89,18 +89,10 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			return c.CompileEnum(name, val), nil
 
 		case isOneOf(val):
-			oneof, err := c.CompileOneOf(name, val)
-			if err != nil {
-				return nil, err
-			}
-			return oneof, nil
+			return c.CompileOneOf(name, val)
 
 		case isAnyOf(val):
-			anyof, err := c.CompileAnyOf(name, val)
-			if err != nil {
-				return nil, err
-			}
-			return anyof, nil
+			return c.CompileAnyOf(name, val)
 
 		case isAllOf(val):
 			return nil, nil
@@ -287,6 +279,9 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 			field.SetTypeName(fieldType.String())
 		}
 
+		if description := prop.Value.Description; description != "" {
+			field.AddLeadingComment(field.GetName(), description)
+		}
 		msg.AddField(field)
 		if description := object.Description; description != "" {
 			msg.AddLeadingComment(msg.GetName(), description)

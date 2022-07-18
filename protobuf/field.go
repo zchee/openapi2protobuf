@@ -4,16 +4,15 @@
 package protobuf
 
 import (
+	"go.lsp.dev/openapi2protobuf/internal/conv"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 type FieldDescriptorProto struct {
-	desc   *descriptorpb.FieldDescriptorProto
-	number int32
-
-	locations []*descriptorpb.SourceCodeInfo_Location
-	path      []int32
+	desc    *descriptorpb.FieldDescriptorProto
+	number  int32
+	comment Comment
 }
 
 func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescriptorProto_Type) *FieldDescriptorProto {
@@ -22,7 +21,6 @@ func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescripto
 			Name: proto.String(name),
 			Type: fieldType,
 		},
-		path: []int32{},
 	}
 
 	return fid
@@ -33,12 +31,13 @@ func (fid *FieldDescriptorProto) GetName() string {
 }
 
 func (fid *FieldDescriptorProto) GetNumber() int32 {
-	return *fid.desc.Number
+	return fid.desc.GetNumber()
 }
 
 func (fid *FieldDescriptorProto) SetNumber() *FieldDescriptorProto {
 	fid.number++
 	fid.desc.Number = proto.Int32(fid.number)
+
 	return fid
 }
 
@@ -48,35 +47,65 @@ func (fid *FieldDescriptorProto) GetTypeName() *string {
 
 func (fid *FieldDescriptorProto) SetTypeName(name string) *FieldDescriptorProto {
 	fid.desc.TypeName = proto.String(name)
-	return fid
-}
 
-func (fid *FieldDescriptorProto) GetLocation() []*descriptorpb.SourceCodeInfo_Location {
-	return fid.locations
+	return fid
 }
 
 func (fid *FieldDescriptorProto) SetOneofIndex(idx int32) *FieldDescriptorProto {
 	fid.desc.OneofIndex = proto.Int32(idx)
+
 	return fid
 }
 
 func (fid *FieldDescriptorProto) SetRepeated() *FieldDescriptorProto {
 	fid.desc.Label = descriptorpb.FieldDescriptorProto_LABEL_REPEATED.Enum()
+
 	return fid
+}
+
+func (fid *FieldDescriptorProto) AddLeadingComment(fn, leading string) *FieldDescriptorProto {
+	if leading != "" {
+		fid.comment.LeadingComments = conv.NormalizeComment(fn, leading)
+	}
+
+	return fid
+}
+
+func (fid *FieldDescriptorProto) AddTrailingComment(trailing string) *FieldDescriptorProto {
+	if trailing != "" {
+		fid.comment.TrailingComments = trailing
+	}
+
+	return fid
+}
+
+func (fid *FieldDescriptorProto) AddLeadingDetachedComment(leadingDetached []string) *FieldDescriptorProto {
+	if leadingDetached != nil {
+		fid.comment.LeadingDetachedComments = leadingDetached
+	}
+
+	return fid
+}
+
+func (fid *FieldDescriptorProto) GetComments() Comment {
+	return fid.comment
 }
 
 func (fid *FieldDescriptorProto) SetJsonName(jsonName string) *FieldDescriptorProto {
 	fid.desc.JsonName = proto.String(jsonName)
+
 	return fid
 }
 
 func (fid *FieldDescriptorProto) SetFieldOption(fieldOptions *descriptorpb.FieldOptions) *FieldDescriptorProto {
 	fid.desc.Options = fieldOptions
+
 	return fid
 }
 
 func (fid *FieldDescriptorProto) SetProto3Optional() *FieldDescriptorProto {
 	fid.desc.Proto3Optional = proto.Bool(true)
+
 	return fid
 }
 
