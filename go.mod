@@ -6,10 +6,10 @@ require (
 	github.com/Code-Hex/dd v1.1.0
 	github.com/alecthomas/chroma v0.10.0
 	github.com/bytedance/sonic v1.3.4-0.20220712082727-755c0252a941
-	github.com/getkin/kin-openapi v0.96.1-0.20220601174204-648d6b9a170b
+	github.com/getkin/kin-openapi v0.98.0
 	github.com/golang/protobuf v1.5.2
 	github.com/iancoleman/strcase v0.2.0
-	github.com/jhump/protoreflect v1.12.1-0.20220417024638-438db461d753
+	github.com/jhump/protoreflect v1.12.1-0.20220801204444-73d52db9e401
 	google.golang.org/genproto v0.0.0-20220608133413-ed9918b62aac
 	google.golang.org/protobuf v1.28.1-0.20220524200550-784c48255455
 )
