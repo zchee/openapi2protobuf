@@ -164,12 +164,22 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 		if err != nil {
 			return nil, fmt.Errorf("%s: not found %s ref: %w", openapi3.TypeArray, ref, err)
 		}
+		if refObj == nil {
+			refObj, err = c.parametersLookupFunc(refBase)
+			if err != nil {
+				return nil, fmt.Errorf("%s: not found %s ref: %w", openapi3.TypeArray, ref, err)
+			}
+		}
 
 		switch refObj := refObj.(type) {
 		case *openapi3.Schema:
-			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(refObj.Title), protobuf.FieldTypeMessage())
+			typename := refObj.Title
+			if typename == "" {
+				typename = refBase
+			}
+			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(typename), protobuf.FieldTypeMessage())
 			field.SetNumber()
-			field.SetTypeName(refObj.Title)
+			field.SetTypeName(typename)
 			msg.AddField(field)
 			if description := array.Description; description != "" {
 				msg.AddLeadingComment(msg.GetName(), description)
