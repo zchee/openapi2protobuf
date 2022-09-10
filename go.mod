@@ -5,13 +5,13 @@ go 1.18
 require (
 	github.com/Code-Hex/dd v1.1.0
 	github.com/alecthomas/chroma v0.10.0
-	github.com/bytedance/sonic v1.3.4-0.20220712082727-755c0252a941
-	github.com/getkin/kin-openapi v0.98.0
+	github.com/bytedance/sonic v1.4.0
+	github.com/getkin/kin-openapi v0.100.0
 	github.com/golang/protobuf v1.5.2
 	github.com/iancoleman/strcase v0.2.0
-	github.com/jhump/protoreflect v1.12.1-0.20220801204444-73d52db9e401
+	github.com/jhump/protoreflect v1.12.1-0.20220822163206-bccb0aab2bb5
 	google.golang.org/genproto v0.0.0-20220608133413-ed9918b62aac
-	google.golang.org/protobuf v1.28.1-0.20220524200550-784c48255455
+	google.golang.org/protobuf v1.28.1
 )
 
 // fix for CVE-2022-28948
