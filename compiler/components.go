@@ -259,8 +259,6 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 					msg.AddLeadingComment(msg.GetName(), description)
 				}
 
-			case *openapi3.Ref:
-
 			default:
 				fmt.Fprintf(os.Stderr, "compileObject: refObj: %T: %#v\n", refObj, refObj)
 			}
