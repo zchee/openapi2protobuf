@@ -20,11 +20,11 @@ func (c *compiler) CompileInfo(info *openapi3.Info) error {
 	}
 
 	if description := info.Description; description != "" {
-		// c.fb.PackageComments.TrailingComment = description
+		c.fdesc.AddPackageLeadingComments(" " + description)
 	}
 
 	if version := info.Version; version != "" {
-		// c.fb.PackageComments.LeadingComment += " " + version
+		c.fdesc.AddPackageLeadingComments(" " + version)
 	}
 
 	return nil
