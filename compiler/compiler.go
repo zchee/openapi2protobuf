@@ -95,7 +95,7 @@ type compiler struct {
 	opt   *option
 
 	schemasLookupFunc lookupFunc
-	pathLookupFunc    lookupFunc
+	parametersLookupFunc    lookupFunc
 }
 
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.
