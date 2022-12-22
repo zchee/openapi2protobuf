@@ -1,24 +1,27 @@
 module go.lsp.dev/openapi2protobuf
 
-go 1.18
-
-require (
-	github.com/Code-Hex/dd v1.1.0
-	github.com/alecthomas/chroma v0.10.0
-	github.com/bytedance/sonic v1.4.0
-	github.com/getkin/kin-openapi v0.100.0
-	github.com/golang/protobuf v1.5.2
-	github.com/iancoleman/strcase v0.2.0
-	github.com/jhump/protoreflect v1.12.1-0.20220822163206-bccb0aab2bb5
-	google.golang.org/genproto v0.0.0-20220608133413-ed9918b62aac
-	google.golang.org/protobuf v1.28.1
-)
+go 1.19
 
 // fix for CVE-2022-28948
 replace gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 
 require (
-	github.com/chenzhuoyu/base64x v0.0.0-20220526154910-8bf9453eb81a // indirect
+	github.com/Code-Hex/dd v1.1.0
+	github.com/alecthomas/chroma v0.10.0
+	github.com/bytedance/sonic v1.6.0
+	github.com/getkin/kin-openapi v0.112.0
+	github.com/golang/protobuf v1.5.2
+	github.com/iancoleman/strcase v0.2.0
+	github.com/jhump/protoreflect v1.14.0
+	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
+	google.golang.org/protobuf v1.28.1
+)
+
+require (
+	cloud.google.com/go/longrunning v0.3.0 // indirect
+	cloud.google.com/go/servicemanagement v1.5.0 // indirect
+	cloud.google.com/go/serviceusage v1.4.0 // indirect
+	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect
@@ -29,13 +32,13 @@ require (
 	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/stretchr/testify v1.7.1 // indirect
+	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
-	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
-	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
-	golang.org/x/text v0.3.5 // indirect
-	google.golang.org/grpc v1.47.0 // indirect
+	golang.org/x/net v0.0.0-20221014081412-f15817d10f9b // indirect
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
+	golang.org/x/text v0.4.0 // indirect
+	google.golang.org/grpc v1.51.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
