@@ -500,6 +500,14 @@ message SemanticTokensClientCapabilities {
     }
   }
 
+  message TokenTypes {
+    TokenTypes token_types = 1;
+
+    message TokenTypes {
+      string token_types = 1;
+    }
+  }
+
   message Formats {
     Formats formats = 1;
 
@@ -507,14 +515,6 @@ message SemanticTokensClientCapabilities {
       enum Formats {
         Formats_Relative = 0;
       }
-    }
-  }
-
-  message TokenTypes {
-    TokenTypes token_types = 1;
-
-    message TokenTypes {
-      string token_types = 1;
     }
   }
 }
