@@ -20,6 +20,11 @@ func NewServiceDescriptorProto(name string) *ServiceDescriptorProto {
 	}
 }
 
+func (sd *ServiceDescriptorProto) AddMethod(method *descriptorpb.MethodDescriptorProto) *ServiceDescriptorProto {
+	sd.desc.Method = append(sd.desc.Method, method)
+	return sd
+}
+
 func (sd *ServiceDescriptorProto) SetServiceOptions(options *descriptorpb.ServiceOptions) *ServiceDescriptorProto {
 	sd.desc.Options = options
 	return sd

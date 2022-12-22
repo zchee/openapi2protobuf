@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoprint"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -91,11 +92,12 @@ func WithAdditionalMessages(additionalMessages []*protobuf.MessageDescriptorProt
 type lookupFunc func(token string) (interface{}, error)
 
 type compiler struct {
-	fdesc *protobuf.FileDescriptorProto
-	opt   *option
+	fdesc      *protobuf.FileDescriptorProto
+	opt        *option
+	components openapi3.Components
 
-	schemasLookupFunc lookupFunc
-	parametersLookupFunc    lookupFunc
+	schemasLookupFunc    lookupFunc
+	parametersLookupFunc lookupFunc
 }
 
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.
@@ -109,8 +111,9 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 
 	pkgname := opt.packageName
 	c := &compiler{
-		fdesc: protobuf.NewFileDescriptorProto(pkgname),
-		opt:   opt,
+		fdesc:      protobuf.NewFileDescriptorProto(pkgname),
+		opt:        opt,
+		components: spec.Components,
 	}
 
 	// append additional messages

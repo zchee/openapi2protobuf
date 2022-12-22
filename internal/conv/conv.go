@@ -11,11 +11,11 @@ import (
 )
 
 func NormalizeMessageName(s string) string {
-	return strcase.ToCamel(s)
+	return strcase.ToCamel(strings.ToLower(s))
 }
 
 func NormalizeFieldName(s string) string {
-	return strcase.ToSnake(s)
+	return strcase.ToSnake(strings.ToUpper(s))
 }
 
 // NormalizeComment normalizes title and description to Go style comment.
