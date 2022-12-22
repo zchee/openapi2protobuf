@@ -1,6 +1,7 @@
 // Copyright 2022 The Go Language Server Authors
 // SPDX-License-Identifier: BSD-3-Clause
 
+// Command openapi2protobuf generates Protocol Buffers v3 and gRPC services definitions from the OpenAPI/Swagger schema.
 package main
 
 import (
@@ -33,7 +34,7 @@ func run(args []string) error {
 		return fmt.Errorf("could not load %s OpenAPI file: %w", f, err)
 	}
 
-	if _, err = compiler.Compile(ctx, schema, compiler.WithPackageName("go.lsp.dev.types")); err != nil {
+	if _, err = compiler.Compile(ctx, schema); err != nil {
 		return fmt.Errorf("could not compile file descriptor: %w", err)
 	}
 

@@ -18,6 +18,7 @@ import (
 
 type FileDescriptorProto struct {
 	desc       *descriptorpb.FileDescriptorProto
+	packages   map[string]bool
 	components map[string]bool
 	msgs       map[string]bool
 	enums      map[string]bool
@@ -41,6 +42,7 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 			Syntax:         proto.String(protoreflect.Proto3.String()),
 			SourceCodeInfo: new(descriptorpb.SourceCodeInfo),
 		},
+		packages:   make(map[string]bool),
 		components: make(map[string]bool),
 		msgs:       make(map[string]bool),
 		enums:      make(map[string]bool),
@@ -108,6 +110,19 @@ func objcClassPrefix(fqn string) string {
 	return b.String()
 }
 
+func (fd *FileDescriptorProto) SetPackage(fqn string) {
+	fd.desc.Package = proto.String(fqn)
+}
+
+func (fd *FileDescriptorProto) AddPackageLeadingComments(comments string) {
+	fd.packages[comments] = true
+	loc := &descriptorpb.SourceCodeInfo_Location{
+		LeadingComments: proto.String(comments),
+		Path:            []int32{prototag.FilePackage, int32(len(fd.packages)) - 1},
+	}
+	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, loc)
+}
+
 func (fd *FileDescriptorProto) AddComponent(name string) {
 	fd.components[name] = true
 }
@@ -122,10 +137,6 @@ func (fd *FileDescriptorProto) GetName() string {
 
 func (fd *FileDescriptorProto) SetName(name string) {
 	fd.desc.Name = proto.String(name)
-}
-
-func (fd *FileDescriptorProto) SetPackage(fqn string) {
-	fd.desc.Package = proto.String(fqn)
 }
 
 func (fd *FileDescriptorProto) GetDependency() []string {

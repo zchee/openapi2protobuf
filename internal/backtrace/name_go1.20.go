@@ -1,4 +1,4 @@
-//go:build go1.13 && !go1.20
+//go:build go1.20
 
 package backtrace
 
@@ -15,9 +15,10 @@ type funcInfo struct {
 
 // taken from runtime/symtab.go
 type inlinedCall struct {
-	_  [12]byte
+	_  uint8
+	_  [3]byte
 	fn int32
-	_  [4]byte
+	_  int32
 }
 
 //go:linkname findfunc runtime.findfunc
@@ -32,8 +33,8 @@ func funcdata(f funcInfo, i uint8) unsafe.Pointer
 //go:linkname pcdatavalue runtime.pcdatavalue
 func pcdatavalue(f funcInfo, table int32, targetpc uintptr, cache unsafe.Pointer) int32
 
-//go:linkname funcnameFromNameoff runtime.funcnameFromNameoff
-func funcnameFromNameoff(f funcInfo, nameoff int32) string
+//go:linkname funcnameFromNameOff runtime.funcnameFromNameOff
+func funcnameFromNameOff(f funcInfo, nameOff int32) string
 
 // Name returns the function name for the given pc.
 func Name(pc uintptr) string {
@@ -57,5 +58,5 @@ func Name(pc uintptr) string {
 		return name
 	}
 
-	return funcnameFromNameoff(info, inltree[ix].fn)
+	return funcnameFromNameOff(info, inltree[ix].fn)
 }
