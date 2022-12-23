@@ -4,7 +4,7 @@
 package compiler
 
 import (
-	stdjson "encoding/json"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 
-	json "github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -47,7 +46,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 			continue
 		}
 
-		propOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(stdjson.RawMessage)
+		propOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(json.RawMessage)
 		if ok && propOrder != nil {
 			var xPropertyOrder []string
 			if err := json.Unmarshal(propOrder, &xPropertyOrder); err != nil {
