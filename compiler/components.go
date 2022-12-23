@@ -25,12 +25,6 @@ import (
 
 // CompileComponents compiles all component objects.
 func (c *compiler) CompileComponents(components openapi3.Components) error {
-	schemasLookupFunc := c.schemasLookupFunc
-	c.schemasLookupFunc = components.Schemas.JSONLookup
-	defer func() {
-		c.schemasLookupFunc = schemasLookupFunc
-	}()
-
 	names := make([]string, len(components.Schemas))
 	i := 0
 	for name := range components.Schemas {
@@ -80,6 +74,14 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			fmt.Fprintf(os.Stderr, "%s\nadditionalProps.Value.Items: %#v\n", backtrace.FuncNameN(1), additionalProps.Value.AnyOf)
 		}
 		return c.compileSchemaRef("additionalProperties", additionalProps)
+	}
+
+	for schemaRef.Value != nil {
+		ref, ok := c.components.Schemas[schemaRef.Ref]
+		if !ok {
+			break
+		}
+		schemaRef = ref
 	}
 
 	if val := schemaRef.Value; val != nil {
@@ -158,35 +160,31 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 	}
 	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 
-	if ref := array.Items.Ref; ref != "" {
-		refBase := path.Base(ref)
-		refObj, err := c.schemasLookupFunc(refBase)
-		if err != nil {
-			return nil, fmt.Errorf("%s: not found %s ref: %w", openapi3.TypeArray, ref, err)
-		}
-		if refObj == nil {
-			refObj, err = c.parametersLookupFunc(refBase)
+	if item := array.Items; item != nil && item.Ref != "" {
+		itemRef := item.Ref
+		msgName := path.Base(itemRef)
+
+		if refObj := c.components.Schemas[itemRef]; refObj != nil {
+			if refObj.Ref != "" {
+				refObj = c.components.Schemas[refObj.Ref]
+			}
+			msgName = refObj.Value.Title
+
+			fmt.Printf("refObj.Value.Items: %s\n", refObj.Value.Items.Value.Title)
+			refMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(msgName), refObj.Value.Items)
 			if err != nil {
-				return nil, fmt.Errorf("%s: not found %s ref: %w", openapi3.TypeArray, ref, err)
+				return nil, fmt.Errorf("compile ref message items: %w", err)
 			}
+			c.fdesc.AddMessage(refMsg)
 		}
+		fmt.Printf("name: %s, itemRef: %s, msgName: %s\n", name, item.Ref, msgName)
 
-		switch refObj := refObj.(type) {
-		case *openapi3.Schema:
-			typename := refObj.Title
-			if typename == "" {
-				typename = refBase
-			}
-			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(typename), protobuf.FieldTypeMessage())
-			field.SetNumber()
-			field.SetTypeName(typename)
-			msg.AddField(field)
-			if description := array.Description; description != "" {
-				msg.AddLeadingComment(msg.GetName(), description)
-			}
-
-		default:
-			fmt.Fprintf(os.Stderr, "compileArray: refObj: %T: %#v\n", refObj, refObj)
+		field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(msgName), protobuf.FieldTypeMessage())
+		field.SetNumber()
+		field.SetTypeName(msgName)
+		msg.AddField(field)
+		if description := array.Description; description != "" {
+			msg.AddLeadingComment(msg.GetName(), description)
 		}
 
 		return msg, nil
@@ -236,33 +234,26 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 	for propName, prop := range object.Properties {
 		if ref := prop.Ref; ref != "" {
 			refBase := path.Base(ref)
-			refObj, err := c.schemasLookupFunc(refBase)
+			refObj, ok := c.components.Schemas[refBase]
+			if !ok {
+				continue
+			}
+
+			refMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(refObj.Value.Title), prop)
 			if err != nil {
-				return nil, fmt.Errorf("not found %s ref: %w", ref, err)
+				return nil, fmt.Errorf("compile object items: %w", err)
+			}
+			if skipMessage(refMsg) {
+				continue
 			}
 
-			switch refObj := refObj.(type) {
-			case *openapi3.Schema:
-				refMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(refObj.Title), prop)
-				if err != nil {
-					return nil, fmt.Errorf("compile object items: %w", err)
-				}
-				if skipMessage(refMsg) {
-					continue
-				}
-
-				field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(propName), protobuf.FieldTypeMessage())
-				field.SetTypeName(refMsg.GetName())
-				field.SetNumber()
-				msg.AddField(field)
-				if description := object.Description; description != "" {
-					msg.AddLeadingComment(msg.GetName(), description)
-				}
-
-			default:
-				fmt.Fprintf(os.Stderr, "compileObject: refObj: %T: %#v\n", refObj, refObj)
+			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(propName), protobuf.FieldTypeMessage())
+			field.SetTypeName(refMsg.GetName())
+			field.SetNumber()
+			msg.AddField(field)
+			if description := object.Description; description != "" {
+				msg.AddLeadingComment(msg.GetName(), description)
 			}
-
 			continue
 		}
 
