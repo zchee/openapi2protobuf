@@ -44,11 +44,62 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 			methName := conv.NormalizeMessageName(meth) + name
 			fmt.Printf("Name: %s\n", methName)
 
+			inputMsgName := methName + "Request"
+			outputMsgName := methName + "Response"
+
 			method := &descriptorpb.MethodDescriptorProto{
-				Name: proto.String(methName),
+				Name:       proto.String(methName),
+				InputType:  proto.String(inputMsgName),
+				OutputType: proto.String(outputMsgName),
 			}
 
-			// TODO(zchee): for debugging
+			inputMsg := protobuf.NewMessageDescriptorProto(inputMsgName)
+			// first, check whether the op has parameters and defines proto message fields
+			if params := op.Parameters; len(params) > 0 {
+				for _, param := range params {
+					var pname string
+					switch {
+					case param.Ref != "":
+						pname = param.Ref
+					case param.Value != nil:
+						pname = param.Value.Name
+					}
+
+					pname = strings.TrimPrefix(pname, refPrefix)
+					p, ok := c.components.Parameters[pname]
+					if !ok {
+						continue
+					}
+
+					var fieldType *descriptorpb.FieldDescriptorProto_Type
+					pv := p.Value.Schema.Value
+					switch pv.Title {
+					case openapi3.TypeBoolean:
+						fieldType = protobuf.FieldTypeBool()
+
+					case openapi3.TypeInteger:
+						fieldType = integerFieldType(pv.Format)
+
+					case openapi3.TypeNumber:
+						fieldType = numberFieldType(pv.Format)
+
+					case openapi3.TypeString:
+						fieldType = stringFieldType(pv.Format)
+
+					case openapi3.TypeArray:
+						// TODO(zchee): handle
+
+					case openapi3.TypeObject:
+						// TODO(zchee): handle
+					}
+
+					field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(pname), fieldType)
+					inputMsg.AddField(field)
+				}
+			}
+
+			// op.Parameters
+
 			var val *openapi3.Schema
 			// parse input type
 			if body := op.RequestBody; body != nil && body.Value != nil {
