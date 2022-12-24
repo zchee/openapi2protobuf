@@ -10,12 +10,16 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+// func init() {
+// 	strcase.ConfigureAcronym("Nft", "NFT")
+// }
+
 func NormalizeMessageName(s string) string {
-	return strcase.ToCamel(strings.ToLower(s))
+	return strcase.ToCamel(s)
 }
 
 func NormalizeFieldName(s string) string {
-	return strcase.ToSnake(strings.ToUpper(s))
+	return strcase.ToSnake(s)
 }
 
 // NormalizeComment normalizes title and description to Go style comment.

@@ -6,6 +6,7 @@ package compiler
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -23,7 +24,19 @@ const refPrefix = "#/components/schemas/"
 func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 	svc := protobuf.NewServiceDescriptorProto(c.opt.packageName)
 
-	for path, item := range paths {
+	sorted := make([]string, len(paths))
+	i := 0
+	for path := range paths {
+		sorted[i] = path
+	}
+	sort.Strings(sorted)
+
+	for _, path := range sorted {
+		item := paths[path]
+		if item == nil {
+			continue
+		}
+
 		name := path // do not change the original path variable
 
 		// cut query template, use only before word
@@ -41,7 +54,7 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 
 		for meth, op := range item.Operations() {
 			// prepend the http method name to the RPC method name
-			methName := conv.NormalizeMessageName(meth) + name
+			methName := string(meth[0]) + strings.ToLower(meth[1:]) + name
 			fmt.Printf("Name: %s\n", methName)
 
 			inputMsgName := methName + "Request"

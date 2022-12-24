@@ -12,6 +12,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoprint"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	"go.lsp.dev/openapi2protobuf/openapi"
@@ -174,6 +175,8 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 		}
 	}
 
+	var _ = protojson.Format
+	// fmt.Fprint(os.Stdout, protojson.Format(fd))
 	fdesc, err := desc.CreateFileDescriptor(fd, depsFileDescriptor...)
 	if err != nil {
 		return nil, fmt.Errorf("could not convert to desc: %w", err)

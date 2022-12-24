@@ -44,7 +44,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		if err != nil {
 			return err
 		}
-		if skipMessage(msg) {
+		if skipMessage(msg) || strings.HasPrefix(name, "GetV2") {
 			continue
 		}
 
@@ -70,6 +70,10 @@ func skipMessage(msg *protobuf.MessageDescriptorProto) bool {
 
 // compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
+	// if strings.HasPrefix(name, "Get") {
+	// 	return nil, nil
+	// }
+
 	if schemaRef == nil {
 		return nil, errors.New("schemaRef must be non-nil")
 	}
