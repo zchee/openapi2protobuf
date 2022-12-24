@@ -168,18 +168,20 @@ func (fd *FileDescriptorProto) AddMessage(msg *MessageDescriptorProto) *FileDesc
 	fd.msgs[msg.GetName()] = true
 
 	comments := msg.GetComment()
-	loc := &descriptorpb.SourceCodeInfo_Location{
-		LeadingComments:         proto.String(comments.LeadingComments),
-		TrailingComments:        proto.String(comments.TrailingComments),
-		LeadingDetachedComments: comments.LeadingDetachedComments,
-		Path:                    []int32{prototag.FileMessageType, int32(len(fd.msgs)) - 1},
+	if comments != nil {
+		loc := &descriptorpb.SourceCodeInfo_Location{
+			LeadingComments:         proto.String(comments.LeadingComments),
+			TrailingComments:        proto.String(comments.TrailingComments),
+			LeadingDetachedComments: comments.LeadingDetachedComments,
+			Path:                    []int32{prototag.FileMessageType, int32(len(fd.msgs)) - 1},
+		}
+		fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, loc)
+		fieldLocations := msg.GetFieldLocations()
+		for i := range fieldLocations {
+			fieldLocations[i].Path = append([]int32{prototag.FileMessageType, int32(len(fd.msgs)) - 1}, fieldLocations[i].Path...)
+		}
+		fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, fieldLocations...)
 	}
-	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, loc)
-	fieldLocations := msg.GetFieldLocations()
-	for i := range fieldLocations {
-		fieldLocations[i].Path = append([]int32{prototag.FileMessageType, int32(len(fd.msgs)) - 1}, fieldLocations[i].Path...)
-	}
-	fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, fieldLocations...)
 	fd.desc.MessageType = append(fd.desc.MessageType, msg.Build())
 
 	return fd

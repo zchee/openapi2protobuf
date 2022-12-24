@@ -13,7 +13,7 @@ import (
 
 type MessageDescriptorProto struct {
 	desc    *descriptorpb.DescriptorProto
-	comment Comment
+	comment *Comment
 
 	field          map[string]bool
 	fieldNumber    int32
@@ -28,6 +28,7 @@ func NewMessageDescriptorProto(name string) *MessageDescriptorProto {
 		desc: &descriptorpb.DescriptorProto{
 			Name: proto.String(name),
 		},
+		comment:        &Comment{},
 		field:          make(map[string]bool),
 		fieldLocations: make(map[int32]*descriptorpb.SourceCodeInfo_Location),
 		enum:           make(map[string]bool),
@@ -45,6 +46,7 @@ func (md *MessageDescriptorProto) SetName(name string) *MessageDescriptorProto {
 }
 
 func (md *MessageDescriptorProto) AddLeadingComment(fn, leading string) *MessageDescriptorProto {
+	md.comment = new(Comment)
 	md.comment.LeadingComments = conv.NormalizeComment(fn, leading)
 
 	return md
@@ -62,7 +64,7 @@ func (md *MessageDescriptorProto) AddLeadingDetachedComment(leadingDetached []st
 	return md
 }
 
-func (md *MessageDescriptorProto) GetComment() Comment {
+func (md *MessageDescriptorProto) GetComment() *Comment {
 	return md.comment
 }
 
