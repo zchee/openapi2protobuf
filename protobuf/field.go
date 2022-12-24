@@ -12,7 +12,7 @@ import (
 type FieldDescriptorProto struct {
 	desc    *descriptorpb.FieldDescriptorProto
 	number  int32
-	comment Comment
+	comment *Comment
 }
 
 func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescriptorProto_Type) *FieldDescriptorProto {
@@ -21,6 +21,7 @@ func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescripto
 			Name: proto.String(name),
 			Type: fieldType,
 		},
+		comment: &Comment{},
 	}
 
 	return fid
@@ -86,7 +87,7 @@ func (fid *FieldDescriptorProto) HasComment() bool {
 	return comment.LeadingComments != "" || comment.TrailingComments != "" || len(comment.LeadingDetachedComments) != 0
 }
 
-func (fid *FieldDescriptorProto) GetComment() Comment {
+func (fid *FieldDescriptorProto) GetComment() *Comment {
 	return fid.comment
 }
 

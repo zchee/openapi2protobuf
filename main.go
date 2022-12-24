@@ -10,8 +10,6 @@ import (
 	"log"
 	"os"
 
-	_ "go.lsp.dev/openapi2protobuf/internal/lsp"
-
 	"go.lsp.dev/openapi2protobuf/compiler"
 	"go.lsp.dev/openapi2protobuf/openapi"
 )
@@ -24,6 +22,7 @@ func main() {
 
 func run(args []string) error {
 	f := args[0]
+	pkgname := args[1]
 	// f := "testdata/lsp/3.17/types-3.17.0-next.8.openapi.yaml"
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -34,7 +33,7 @@ func run(args []string) error {
 		return fmt.Errorf("could not load %s OpenAPI file: %w", f, err)
 	}
 
-	if _, err = compiler.Compile(ctx, schema); err != nil {
+	if _, err = compiler.Compile(ctx, schema, compiler.WithPackageName(pkgname)); err != nil {
 		return fmt.Errorf("could not compile file descriptor: %w", err)
 	}
 

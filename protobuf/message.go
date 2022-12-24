@@ -46,7 +46,6 @@ func (md *MessageDescriptorProto) SetName(name string) *MessageDescriptorProto {
 }
 
 func (md *MessageDescriptorProto) AddLeadingComment(fn, leading string) *MessageDescriptorProto {
-	md.comment = new(Comment)
 	md.comment.LeadingComments = conv.NormalizeComment(fn, leading)
 
 	return md
@@ -78,13 +77,15 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 	md.field[field.GetName()] = true
 
 	comments := field.GetComment()
-	loc := &descriptorpb.SourceCodeInfo_Location{
-		LeadingComments:         proto.String(comments.LeadingComments),
-		TrailingComments:        proto.String(comments.TrailingComments),
-		LeadingDetachedComments: comments.LeadingDetachedComments,
-		Path:                    []int32{prototag.MessageFields, md.fieldNumber - 1},
+	if comments != nil {
+		loc := &descriptorpb.SourceCodeInfo_Location{
+			LeadingComments:         proto.String(comments.LeadingComments),
+			TrailingComments:        proto.String(comments.TrailingComments),
+			LeadingDetachedComments: comments.LeadingDetachedComments,
+			Path:                    []int32{prototag.MessageFields, md.fieldNumber - 1},
+		}
+		md.fieldLocations[md.fieldNumber-1] = loc
 	}
-	md.fieldLocations[md.fieldNumber-1] = loc
 	md.desc.Field = append(md.desc.Field, field.Build())
 
 	return md

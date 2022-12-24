@@ -19,6 +19,7 @@ import (
 type FileDescriptorProto struct {
 	desc       *descriptorpb.FileDescriptorProto
 	packages   map[string]bool
+	services   map[string]bool
 	components map[string]bool
 	msgs       map[string]bool
 	enums      map[string]bool
@@ -43,6 +44,7 @@ func NewFileDescriptorProto(fqn string) *FileDescriptorProto {
 			SourceCodeInfo: new(descriptorpb.SourceCodeInfo),
 		},
 		packages:   make(map[string]bool),
+		services:   make(map[string]bool),
 		components: make(map[string]bool),
 		msgs:       make(map[string]bool),
 		enums:      make(map[string]bool),
@@ -212,8 +214,20 @@ func (fd *FileDescriptorProto) AddEnum(enum *EnumDescriptorProto) *FileDescripto
 	return fd
 }
 
-func (fd *FileDescriptorProto) AddService(servicse *ServiceDescriptorProto) *FileDescriptorProto {
-	fd.desc.Service = append(fd.desc.Service, servicse.Build())
+func (fd *FileDescriptorProto) AddService(service *ServiceDescriptorProto) *FileDescriptorProto {
+	comments := service.GetComment()
+	if comments != nil {
+		loc := &descriptorpb.SourceCodeInfo_Location{
+			LeadingComments:         proto.String(comments.LeadingComments),
+			TrailingComments:        proto.String(comments.TrailingComments),
+			LeadingDetachedComments: comments.LeadingDetachedComments,
+			Path:                    []int32{prototag.FileServices, int32(len(fd.services)) - 1},
+		}
+		fd.desc.SourceCodeInfo.Location = append(fd.desc.SourceCodeInfo.Location, loc)
+	}
+
+	fd.services[service.GetName()] = true
+	fd.desc.Service = append(fd.desc.Service, service.Build())
 
 	return fd
 }

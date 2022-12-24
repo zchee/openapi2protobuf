@@ -4,7 +4,6 @@
 package compiler
 
 import (
-	"fmt"
 	"net/http"
 	pathpkg "path"
 	"sort"
@@ -21,12 +20,13 @@ import (
 
 // CompilePaths compiles paths object.
 func (c *compiler) CompilePaths(paths openapi3.Paths) error {
-	svc := protobuf.NewServiceDescriptorProto(c.opt.packageName)
+	svc := protobuf.NewServiceDescriptorProto(conv.NormalizeMessageName(c.opt.packageName) + "Service")
 
 	sorted := make([]string, len(paths))
 	i := 0
 	for path := range paths {
 		sorted[i] = path
+		i++
 	}
 	sort.Strings(sorted)
 
@@ -53,8 +53,7 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 
 		for meth, op := range item.Operations() {
 			// prepend the http method name to the RPC method name
-			methName := string(meth[0]) + strings.ToLower(meth[1:]) + name
-			fmt.Printf("Name: %s\n", methName)
+			methName := conv.NormalizeMessageName(meth) + name
 
 			inputMsgName := methName + "Request"
 			outputMsgName := methName + "Response"
@@ -66,6 +65,7 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 			}
 
 			inputMsg := protobuf.NewMessageDescriptorProto(inputMsgName)
+
 			// first, check whether the op has parameters and defines proto message fields
 			if params := op.Parameters; len(params) > 0 {
 				for _, param := range params {
@@ -117,6 +117,7 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 					continue
 				}
 
+				fieldName := content.Schema.Value.Title
 				var fieldType *descriptorpb.FieldDescriptorProto_Type
 				switch content.Schema.Value.Type {
 				case openapi3.TypeBoolean:
@@ -132,13 +133,23 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 					fieldType = stringFieldType(content.Schema.Value.Format)
 
 				case openapi3.TypeArray:
-					// TODO(zchee): handle
+					fieldType = protobuf.FieldTypeMessage()
 
 				case openapi3.TypeObject:
-					// TODO(zchee): handle
+					// TODO(zchee): check and parse (if needed) '#/components/schemas/*' on components.go
+					//   requestBody:
+					//     content:
+					//       application/json:
+					//         schema:
+					//           $ref: '#/components/schemas/CreatePrivateContractParam'
 				}
-				field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(content.Schema.Value.Title), fieldType)
+
+				field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(fieldName), fieldType)
 				inputMsg.AddField(field)
+
+				if description := reqBody.Value.Description; description != "" {
+					inputMsg.AddLeadingComment(inputMsg.GetName(), description)
+				}
 			}
 			c.fdesc.AddMessage(inputMsg)
 
@@ -146,21 +157,31 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 			outputMsg := protobuf.NewMessageDescriptorProto(outputMsgName)
 			for status, resp := range op.Responses {
 				st, _ := strconv.ParseInt(status, 10, 64)
+
 				// TODO(zchee): handle other than 200(http.StatusOK) status
 				switch st {
 				case http.StatusOK:
 					outputType := pathpkg.Base(resp.Ref)
+
 					if idx := strings.LastIndex(outputType, "/"); idx > 0 {
 						outputType = outputType[idx+1:]
 					}
+
 					if !strings.HasSuffix(outputType, "Response") {
 						outputType += "Response"
 					}
+
+					if description := *resp.Value.Description; description != "" {
+						outputMsg.AddLeadingComment(outputMsg.GetName(), description)
+					}
+
+					// TODO(zchee): parses and adds resp to outputMsg's field
+					// TODO(zchee): parse #/components/responses/* on components.go
 				}
 			}
 			c.fdesc.AddMessage(outputMsg)
 
-			svc.AddMethod(method)
+			svc.AddMethod(method, op.Description)
 		}
 	}
 

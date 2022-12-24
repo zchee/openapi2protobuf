@@ -4,18 +4,34 @@
 package conv
 
 import (
+	"net/http"
 	"strings"
 	"unicode"
 
 	"github.com/iancoleman/strcase"
 )
 
-// func init() {
-// 	strcase.ConfigureAcronym("Nft", "NFT")
-// }
+var UpperCaseAcronym = map[string]string{
+	http.MethodGet:     "Get",
+	http.MethodHead:    "Head",
+	http.MethodPost:    "Post",
+	http.MethodPut:     "Put",
+	http.MethodPatch:   "Patch", // RFC 5789
+	http.MethodDelete:  "Delete",
+	http.MethodConnect: "Connect",
+	http.MethodOptions: "Options",
+	http.MethodTrace:   "Trace",
+}
 
 func NormalizeMessageName(s string) string {
-	return strcase.ToCamel(s)
+	camel := strcase.ToCamel(s)
+	for acronym, replace := range UpperCaseAcronym {
+		if strings.Contains(camel, acronym) {
+			camel = strings.ReplaceAll(camel, acronym, replace)
+		}
+	}
+
+	return camel
 }
 
 func NormalizeFieldName(s string) string {
@@ -30,7 +46,19 @@ func NormalizeComment(title, description string) string {
 
 	sb.WriteString(" ") // add space after "//"
 	sb.WriteString(NormalizeMessageName(title))
-	sb.WriteString(" ") // add space after title
+	sb.WriteString(" is the") // add godoc style words
+	sb.WriteString(" ")       // add space after title
+
+	// hasAcronym := false
+	// for acronym := range UpperCaseAcronym {
+	// 	if strings.Contains(description, acronym) {
+	// 		hasAcronym = true
+	// 	}
+	// }
+	// if !hasAcronym {
+	// // ToLower the first letter of the description
+	// sb.WriteByte(byte(unicode.ToLower(rune(description[0]))))
+	// }
 
 	// ToLower the first letter of the description
 	sb.WriteByte(byte(unicode.ToLower(rune(description[0]))))
