@@ -44,7 +44,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		if err != nil {
 			return err
 		}
-		if skipMessage(msg) || strings.HasPrefix(name, "GetV2") {
+		if skipMessage(msg) {
 			continue
 		}
 
