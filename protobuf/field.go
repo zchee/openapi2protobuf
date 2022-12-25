@@ -11,7 +11,6 @@ import (
 
 type FieldDescriptorProto struct {
 	desc    *descriptorpb.FieldDescriptorProto
-	number  int32
 	comment *Comment
 }
 
@@ -33,13 +32,6 @@ func (fid *FieldDescriptorProto) GetName() string {
 
 func (fid *FieldDescriptorProto) GetNumber() int32 {
 	return fid.desc.GetNumber()
-}
-
-func (fid *FieldDescriptorProto) SetNumber() *FieldDescriptorProto {
-	fid.number++
-	fid.desc.Number = proto.Int32(fid.number)
-
-	return fid
 }
 
 func (fid *FieldDescriptorProto) GetTypeName() *string {

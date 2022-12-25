@@ -4,6 +4,7 @@
 package compiler
 
 import (
+	"fmt"
 	"net/http"
 	pathpkg "path"
 	"sort"
@@ -11,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	"go.lsp.dev/openapi2protobuf/internal/conv"
@@ -158,12 +159,23 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 						outputType += "Response"
 					}
 
+					// TODO(zchee): parses and adds resp to outputMsg's field
+					// TODO(zchee): parse #/components/responses/* on components.go
+
+					var val *openapi3.Response
+					switch {
+					case resp.Value != nil:
+						val = resp.Value
+					case resp.Ref != "":
+						val = c.components.Responses[resp.Ref].Value
+					}
+
+					content := val.Content["application/json"]
+					fmt.Printf("content.Schema.Value.AllOf: length: %d, %#v\n", len(content.Schema.Value.AllOf), content.Schema.Value.AllOf)
+
 					if description := *resp.Value.Description; description != "" {
 						outputMsg.AddLeadingComment(outputMsg.GetName(), description)
 					}
-
-					// TODO(zchee): parses and adds resp to outputMsg's field
-					// TODO(zchee): parse #/components/responses/* on components.go
 				}
 			}
 			c.fdesc.AddMessage(outputMsg)

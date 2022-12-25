@@ -9,7 +9,6 @@ require (
 	github.com/Code-Hex/dd v1.1.0
 	github.com/alecthomas/chroma v0.10.0
 	github.com/getkin/kin-openapi v0.112.0
-	github.com/golang/protobuf v1.5.2
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jhump/protoreflect v1.14.0
 	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
@@ -23,6 +22,7 @@ require (
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/invopop/yaml v0.1.0 // indirect
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
