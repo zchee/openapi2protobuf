@@ -45,10 +45,10 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 		// remove all `/` separators and convert to UpperCamelCase based on that
 		ss := strings.Split(name, "/")
-		for i, s := range ss {
-			ss[i] = conv.NormalizeMessageName(s)
+		name = ""
+		for _, s := range ss {
+			name += conv.NormalizeMessageName(s)
 		}
-		name = strings.Join(ss, "")
 
 		for meth, op := range item.Operations() {
 			// prepend the http method name to the RPC method name
