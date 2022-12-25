@@ -17,6 +17,7 @@ type MessageDescriptorProto struct {
 
 	field          map[string]bool
 	fieldNumber    int32
+	fieldOrder     []string
 	fieldLocations map[int32]*descriptorpb.SourceCodeInfo_Location
 	enum           map[string]bool
 	enumLocations  []*descriptorpb.SourceCodeInfo_Location
@@ -71,6 +72,7 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 	if md.field[field.GetName()] {
 		return md
 	}
+	md.fieldOrder = append(md.fieldOrder, field.GetName())
 
 	md.fieldNumber++
 	field.desc.Number = proto.Int32(md.fieldNumber)
@@ -89,6 +91,10 @@ func (md *MessageDescriptorProto) AddField(field *FieldDescriptorProto) *Message
 	md.desc.Field = append(md.desc.Field, field.Build())
 
 	return md
+}
+
+func (md *MessageDescriptorProto) GetFieldOrder() []string {
+	return md.fieldOrder
 }
 
 func (md *MessageDescriptorProto) GetFieldLocations() []*descriptorpb.SourceCodeInfo_Location {

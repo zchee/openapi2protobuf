@@ -35,23 +35,24 @@ func (sd *ServiceDescriptorProto) GetName() string {
 	return sd.desc.GetName()
 }
 
-func (sd *ServiceDescriptorProto) AddMethod(method *descriptorpb.MethodDescriptorProto, description string) *ServiceDescriptorProto {
+func (sd *ServiceDescriptorProto) AddMethod(method *MethodDescriptorProto) *ServiceDescriptorProto {
 	if sd.seen[method.GetName()] {
 		return sd
 	}
 	sd.seen[method.GetName()] = true
 
 	sd.numMethod++
-	comments := description
-	if comments != "" {
+	comments := method.GetComment()
+	if comments != nil {
 		loc := &descriptorpb.SourceCodeInfo_Location{
-			LeadingComments: proto.String(comments),
-			Path:            []int32{prototag.ServiceMethods, sd.numMethod - 1},
+			LeadingComments:         proto.String(comments.LeadingComments),
+			TrailingComments:        proto.String(comments.TrailingComments),
+			LeadingDetachedComments: comments.LeadingDetachedComments,
+			Path:                    []int32{prototag.MessageFields, sd.numMethod - 1},
 		}
 		sd.methodLocations[sd.numMethod-1] = loc
-		sd.AddLeadingComment(method.GetName(), comments)
 	}
-	sd.desc.Method = append(sd.desc.Method, method)
+	sd.desc.Method = append(sd.desc.Method, method.Build())
 
 	return sd
 }
@@ -84,5 +85,56 @@ func (sd *ServiceDescriptorProto) GetComment() *Comment {
 }
 
 func (sd *ServiceDescriptorProto) Build() *descriptorpb.ServiceDescriptorProto {
+	return sd.desc
+}
+
+type MethodDescriptorProto struct {
+	desc    *descriptorpb.MethodDescriptorProto
+	comment *Comment
+}
+
+func NewMethodDescriptorProto(name, input, output string) *MethodDescriptorProto {
+	return &MethodDescriptorProto{
+		desc: &descriptorpb.MethodDescriptorProto{
+			Name:       proto.String(name),
+			InputType:  proto.String(input),
+			OutputType: proto.String(output),
+		},
+		comment: &Comment{},
+	}
+}
+
+func (sd *MethodDescriptorProto) GetName() string {
+	return sd.desc.GetName()
+}
+
+func (sd *MethodDescriptorProto) SetMethodOptions(options *descriptorpb.MethodOptions) *MethodDescriptorProto {
+	sd.desc.Options = options
+	return sd
+}
+
+func (sd *MethodDescriptorProto) AddLeadingComment(fn, leading string) *MethodDescriptorProto {
+	sd.comment.LeadingComments = conv.NormalizeComment(fn, leading)
+
+	return sd
+}
+
+func (sd *MethodDescriptorProto) AddTrailingComment(trailing string) *MethodDescriptorProto {
+	sd.comment.TrailingComments = trailing
+
+	return sd
+}
+
+func (sd *MethodDescriptorProto) AddLeadingDetachedComment(leadingDetached []string) *MethodDescriptorProto {
+	sd.comment.LeadingDetachedComments = leadingDetached
+
+	return sd
+}
+
+func (sd *MethodDescriptorProto) GetComment() *Comment {
+	return sd.comment
+}
+
+func (sd *MethodDescriptorProto) Build() *descriptorpb.MethodDescriptorProto {
 	return sd.desc
 }

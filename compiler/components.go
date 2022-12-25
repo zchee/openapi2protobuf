@@ -75,14 +75,15 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 			continue
 		}
 
+		propertyOrder := msg.GetFieldOrder()
 		propOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(json.RawMessage)
 		if ok && propOrder != nil {
-			var xPropertyOrder []string
-			if err := json.Unmarshal(propOrder, &xPropertyOrder); err != nil {
+			propertyOrder = propertyOrder[0:] // reset
+			if err := json.Unmarshal(propOrder, &propertyOrder); err != nil {
 				return err
 			}
-			msg.SortField(xPropertyOrder)
 		}
+		msg.SortField(propertyOrder)
 
 		c.fdesc.AddMessage(msg)
 	}
@@ -101,14 +102,15 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 			continue
 		}
 
+		propertyOrder := msg.GetFieldOrder()
 		propOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(json.RawMessage)
 		if ok && propOrder != nil {
-			var xPropertyOrder []string
-			if err := json.Unmarshal(propOrder, &xPropertyOrder); err != nil {
+			propertyOrder = propertyOrder[0:] // reset
+			if err := json.Unmarshal(propOrder, &propertyOrder); err != nil {
 				return err
 			}
-			msg.SortField(xPropertyOrder)
 		}
+		msg.SortField(propertyOrder)
 
 		c.fdesc.AddMessage(msg)
 	}

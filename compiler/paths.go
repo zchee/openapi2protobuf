@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	"go.lsp.dev/openapi2protobuf/internal/conv"
@@ -58,19 +57,17 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 			inputMsgName := methName + "Request"
 			outputMsgName := methName + "Response"
 
-			method := &descriptorpb.MethodDescriptorProto{
-				Name:       proto.String(methName),
-				InputType:  proto.String(inputMsgName),
-				OutputType: proto.String(outputMsgName),
-			}
+			method := protobuf.NewMethodDescriptorProto(methName, inputMsgName, outputMsgName)
 
 			inputMsg := protobuf.NewMessageDescriptorProto(inputMsgName)
 
+			var fieldOrder []string // for keep parameters order
 			// first, check whether the op has parameters and defines proto message fields
 			if params := op.Parameters; len(params) > 0 {
 				for _, param := range params {
 					var pname string
 					var paramVal *openapi3.Parameter
+
 					switch {
 					case param.Ref != "":
 						pname = pathpkg.Base(param.Ref)
@@ -105,8 +102,11 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 					// trim parameter in type name from field name
 					fieldName = strings.ReplaceAll(fieldName, "_"+conv.NormalizeFieldName(paramVal.In), "")
 					field := protobuf.NewFieldDescriptorProto(fieldName, fieldType)
+					fieldOrder = append(fieldOrder, field.GetName())
 					inputMsg.AddField(field)
 				}
+				sort.Strings(fieldOrder)
+				inputMsg.SortField(fieldOrder)
 			}
 
 			// parse RequestBody for inputMsg
@@ -137,12 +137,14 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 				field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(fieldName), fieldType)
 				field.SetTypeName(fieldName)
+				fieldOrder = append(fieldOrder, field.GetName())
 				inputMsg.AddField(field)
 
 				if description := reqBody.Description; description != "" {
 					inputMsg.AddLeadingComment(inputMsg.GetName(), description)
 				}
 			}
+			inputMsg.SortField(fieldOrder)
 			c.fdesc.AddMessage(inputMsg)
 
 			// parse Responses for outputMsg
@@ -241,9 +243,10 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 					}
 				}
 			}
+			outputMsg.SortField(outputMsg.GetFieldOrder())
 			c.fdesc.AddMessage(outputMsg)
 
-			svc.AddMethod(method, op.Description)
+			svc.AddMethod(method)
 		}
 	}
 
