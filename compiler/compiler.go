@@ -97,8 +97,9 @@ type compiler struct {
 	opt        *option
 	components openapi3.Components
 
-	schemasLookupFunc    lookupFunc
-	parametersLookupFunc lookupFunc
+	schemasLookupFunc       lookupFunc
+	parametersLookupFunc    lookupFunc
+	requestBodiesLookupFunc lookupFunc
 }
 
 // Compile takes an OpenAPI spec and compiles it into a protobuf file descriptor.

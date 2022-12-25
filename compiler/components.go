@@ -27,20 +27,100 @@ import (
 func (c *compiler) CompileComponents(components openapi3.Components) error {
 	c.schemasLookupFunc = components.Schemas.JSONLookup
 	c.parametersLookupFunc = components.Parameters.JSONLookup
+	c.requestBodiesLookupFunc = components.RequestBodies.JSONLookup
 
-	names := make([]string, len(components.Schemas))
+	schemaNames := make([]string, len(components.Schemas))
 	i := 0
 	for name := range components.Schemas {
-		names[i] = name
+		schemaNames[i] = name
 		i++
 	}
-	sort.Slice(names, func(i, j int) bool {
-		return names[i] < names[j]
-	})
-	for _, name := range names {
+	sort.Strings(schemaNames)
+	for _, name := range schemaNames {
 		c.fdesc.AddComponent(conv.NormalizeMessageName(name))
-		schemaRef := components.Schemas[name]
+	}
+
+	parameterNames := make([]string, len(components.Parameters))
+	i = 0
+	for name := range components.Parameters {
+		parameterNames[i] = name
+		i++
+	}
+	sort.Strings(parameterNames)
+	for _, name := range parameterNames {
+		c.fdesc.AddComponent(conv.NormalizeMessageName(name))
+	}
+
+	requestBodyNames := make([]string, len(components.RequestBodies))
+	i = 0
+	for name := range components.RequestBodies {
+		requestBodyNames[i] = name
+		i++
+	}
+	sort.Strings(requestBodyNames)
+	for _, name := range requestBodyNames {
+		c.fdesc.AddComponent(conv.NormalizeMessageName(name))
+	}
+
+	for _, name := range schemaNames {
+		schemaRef, ok := components.Schemas[name]
+		if !ok {
+			continue
+		}
+
 		msg, err := c.compileSchemaRef(name, schemaRef)
+		if err != nil {
+			return err
+		}
+		if skipMessage(msg) {
+			continue
+		}
+
+		propOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(json.RawMessage)
+		if ok && propOrder != nil {
+			var xPropertyOrder []string
+			if err := json.Unmarshal(propOrder, &xPropertyOrder); err != nil {
+				return err
+			}
+			msg.SortField(xPropertyOrder)
+		}
+
+		c.fdesc.AddMessage(msg)
+	}
+
+	for _, name := range parameterNames {
+		schemaRef, ok := components.Schemas[name]
+		if !ok {
+			continue
+		}
+
+		msg, err := c.compileSchemaRef(name, schemaRef)
+		if err != nil {
+			return err
+		}
+		if skipMessage(msg) {
+			continue
+		}
+
+		propOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(json.RawMessage)
+		if ok && propOrder != nil {
+			var xPropertyOrder []string
+			if err := json.Unmarshal(propOrder, &xPropertyOrder); err != nil {
+				return err
+			}
+			msg.SortField(xPropertyOrder)
+		}
+
+		c.fdesc.AddMessage(msg)
+	}
+
+	for _, name := range requestBodyNames {
+		schemaRef, ok := components.RequestBodies[name]
+		if !ok {
+			continue
+		}
+
+		msg, err := c.compileRequestBody(name, schemaRef.Value)
 		if err != nil {
 			return err
 		}
@@ -70,10 +150,6 @@ func skipMessage(msg *protobuf.MessageDescriptorProto) bool {
 
 // compileSchemaRef compiles schema reference.
 func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
-	// if strings.HasPrefix(name, "Get") {
-	// 	return nil, nil
-	// }
-
 	if schemaRef == nil {
 		return nil, errors.New("schemaRef must be non-nil")
 	}
@@ -176,8 +252,6 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 			if !skipMessage(refMsg) {
 				c.fdesc.AddMessage(refMsg)
 			}
-			// return refMsg, nil
-			// c.fdesc.AddMessage(refMsg)
 
 			if refBase == "NFTCategoryInputModel" {
 				data, err := json.Marshal(obj.Value)
@@ -343,6 +417,11 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 	}
 
 	return msg, nil
+}
+
+func (c *compiler) compileRequestBody(name string, requestBody *openapi3.RequestBody) (*protobuf.MessageDescriptorProto, error) {
+	content := requestBody.Content["application/json"]
+	return c.compileObject(name, content.Schema.Value)
 }
 
 // CompileEnum compiles enum objects.

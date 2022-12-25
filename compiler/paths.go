@@ -4,6 +4,7 @@
 package compiler
 
 import (
+	"fmt"
 	"net/http"
 	pathpkg "path"
 	"sort"
@@ -98,11 +99,8 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 					case openapi3.TypeString:
 						fieldType = stringFieldType(pv.Format)
 
-					case openapi3.TypeArray:
-						// TODO(zchee): handle
-
-					case openapi3.TypeObject:
-						// TODO(zchee): handle
+					default:
+						fmt.Printf("pv: %#v\n", pv)
 					}
 
 					field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(pname), fieldType)
@@ -111,31 +109,36 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 			}
 
 			// parse RequestBody
-			if reqBody := op.RequestBody; reqBody != nil && reqBody.Value != nil {
-				content, ok := reqBody.Value.Content["application/json"]
+			if reqBody := op.RequestBody; reqBody != nil {
+				var val *openapi3.RequestBody
+				switch {
+				case reqBody.Value != nil:
+					val = reqBody.Value
+				case reqBody.Ref != "":
+					val = c.components.RequestBodies[reqBody.Ref].Value
+				}
+
+				content, ok := val.Content["application/json"]
 				if !ok {
 					continue
 				}
 
-				fieldName := content.Schema.Value.Title
+				fmt.Printf("content: %#v\n", content.Schema)
+				var fieldVal *openapi3.Schema
+				switch {
+				case content.Schema.Value != nil:
+					fieldVal = content.Schema.Value
+				case content.Schema.Ref != "":
+					fieldVal = c.components.Schemas[content.Schema.Ref].Value
+				}
+
+				fieldName := fieldVal.Title
 				var fieldType *descriptorpb.FieldDescriptorProto_Type
 				switch content.Schema.Value.Type {
-				case openapi3.TypeBoolean:
-					fieldType = protobuf.FieldTypeBool()
-
-				case openapi3.TypeInteger:
-					fieldType = integerFieldType(content.Schema.Value.Format)
-
-				case openapi3.TypeNumber:
-					fieldType = numberFieldType(content.Schema.Value.Format)
-
-				case openapi3.TypeString:
-					fieldType = stringFieldType(content.Schema.Value.Format)
-
-				case openapi3.TypeArray:
-					fieldType = protobuf.FieldTypeMessage()
-
 				case openapi3.TypeObject:
+					fmt.Printf("content.Schema.Value.Title: %#v\n", content.Schema.Value.Title)
+					// fieldType = protobuf.FieldTypeMessage()
+					fieldType = protobuf.FieldTypeBool()
 					// TODO(zchee): check and parse (if needed) '#/components/schemas/*' on components.go
 					//   requestBody:
 					//     content:
@@ -144,10 +147,10 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 					//           $ref: '#/components/schemas/CreatePrivateContractParam'
 				}
 
-				field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(fieldName), fieldType)
+				field := protobuf.NewFieldDescriptorProto(fieldName, fieldType)
 				inputMsg.AddField(field)
 
-				if description := reqBody.Value.Description; description != "" {
+				if description := val.Description; description != "" {
 					inputMsg.AddLeadingComment(inputMsg.GetName(), description)
 				}
 			}
