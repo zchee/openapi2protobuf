@@ -68,7 +68,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 			continue
 		}
 
-		msg, err := c.compileSchemaRef(name, schemaRef)
+		msg, err := c.CompileSchemaRef(name, schemaRef)
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 			continue
 		}
 
-		msg, err := c.compileRequestBody(name, schemaRef.Value)
+		msg, err := c.CompileRequestBody(name, schemaRef.Value)
 		if err != nil {
 			return err
 		}
@@ -149,8 +149,8 @@ func skipMessage(msg *protobuf.MessageDescriptorProto) bool {
 	return msg == nil || msg.IsEmptyField()
 }
 
-// compileSchemaRef compiles schema reference.
-func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
+// CompileSchemaRef compiles schema reference.
+func (c *compiler) CompileSchemaRef(name string, schemaRef *openapi3.SchemaRef) (*protobuf.MessageDescriptorProto, error) {
 	if schemaRef == nil {
 		return nil, errors.New("schemaRef must be non-nil")
 	}
@@ -161,7 +161,7 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 			if additionalProps.Ref == "" {
 				fmt.Fprintf(os.Stderr, "%s\nadditionalProps.Value.Items: %#v\n", backtrace.FuncNameN(1), additionalProps.Value.AnyOf)
 			}
-			return c.compileSchemaRef("additionalProperties", additionalProps)
+			return c.CompileSchemaRef("additionalProperties", additionalProps)
 		}
 	}
 
@@ -183,22 +183,22 @@ func (c *compiler) compileSchemaRef(name string, schemaRef *openapi3.SchemaRef) 
 
 		switch val.Type {
 		case openapi3.TypeBoolean:
-			return c.compileBuiltin(name, val, protobuf.FieldTypeBool())
+			return c.CompileBuiltin(name, val, protobuf.FieldTypeBool())
 
 		case openapi3.TypeInteger:
-			return c.compileBuiltin(name, val, integerFieldType(val.Format))
+			return c.CompileBuiltin(name, val, IntegerFieldType(val.Format))
 
 		case openapi3.TypeNumber:
-			return c.compileBuiltin(name, val, numberFieldType(val.Format))
+			return c.CompileBuiltin(name, val, NumberFieldType(val.Format))
 
 		case openapi3.TypeString:
-			return c.compileBuiltin(name, val, stringFieldType(val.Format))
+			return c.CompileBuiltin(name, val, StringFieldType(val.Format))
 
 		case openapi3.TypeArray:
-			return c.compileArray(name, val)
+			return c.CompileArray(name, val)
 
 		case openapi3.TypeObject:
-			return c.compileObject(name, val)
+			return c.CompileObject(name, val)
 		}
 	}
 
@@ -217,7 +217,7 @@ func isAnyOf(schema *openapi3.Schema) bool { return schema.AnyOf != nil }
 // isAllOf reports whether the schema is allOf.
 func isAllOf(schema *openapi3.Schema) bool { return schema.AllOf != nil }
 
-func (c *compiler) compileBuiltin(name string, schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) CompileBuiltin(name string, schema *openapi3.Schema, fieldType *descriptorpb.FieldDescriptorProto_Type) (*protobuf.MessageDescriptorProto, error) {
 	if fieldType == nil {
 		return nil, errors.New("should fieldType is non-nil")
 	}
@@ -235,7 +235,7 @@ func (c *compiler) compileBuiltin(name string, schema *openapi3.Schema, fieldTyp
 	return msg, nil
 }
 
-func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) CompileArray(name string, array *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	if array.Title != "" {
 		name = array.Title
 	}
@@ -246,7 +246,7 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 
 		obj := c.components.Schemas[refBase]
 		if obj != nil {
-			refMsg, err := c.compileObject(refBase, obj.Value)
+			refMsg, err := c.CompileObject(refBase, obj.Value)
 			if err != nil {
 				return nil, fmt.Errorf("compile refObj.Items: %w", err)
 			}
@@ -281,7 +281,7 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 		switch refObj := refObj.(type) {
 		case *openapi3.Schema:
 			if refObj.Items != nil {
-				objMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(refBase), refObj.Items)
+				objMsg, err := c.CompileSchemaRef(conv.NormalizeMessageName(refBase), refObj.Items)
 				if err != nil {
 					return nil, fmt.Errorf("compile refObj.Items: %w", err)
 				}
@@ -307,7 +307,7 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 		return msg, nil
 	}
 
-	itemsMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(msg.GetName()), array.Items)
+	itemsMsg, err := c.CompileSchemaRef(conv.NormalizeMessageName(msg.GetName()), array.Items)
 	if err != nil {
 		return nil, fmt.Errorf("compile array items: %w", err)
 	}
@@ -342,7 +342,7 @@ func (c *compiler) compileArray(name string, array *openapi3.Schema) (*protobuf.
 	return msg, nil
 }
 
-func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) CompileObject(name string, object *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	if object.Title != "" {
 		name = object.Title
 	}
@@ -358,7 +358,7 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 
 			switch refObj := refObj.(type) {
 			case *openapi3.Schema:
-				refMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(refObj.Title), prop)
+				refMsg, err := c.CompileSchemaRef(conv.NormalizeMessageName(refObj.Title), prop)
 				if err != nil {
 					return nil, fmt.Errorf("compile object items: %w", err)
 				}
@@ -381,7 +381,7 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 			continue
 		}
 
-		propMsg, err := c.compileSchemaRef(conv.NormalizeMessageName(propName), prop)
+		propMsg, err := c.CompileSchemaRef(conv.NormalizeMessageName(propName), prop)
 		if err != nil {
 			return nil, fmt.Errorf("compile object items: %w", err)
 		}
@@ -420,9 +420,9 @@ func (c *compiler) compileObject(name string, object *openapi3.Schema) (*protobu
 	return msg, nil
 }
 
-func (c *compiler) compileRequestBody(name string, requestBody *openapi3.RequestBody) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) CompileRequestBody(name string, requestBody *openapi3.RequestBody) (*protobuf.MessageDescriptorProto, error) {
 	content := requestBody.Content["application/json"]
-	return c.compileObject(name, content.Schema.Value)
+	return c.CompileObject(name, content.Schema.Value)
 }
 
 // CompileEnum compiles enum objects.
@@ -434,11 +434,17 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Mes
 	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 	eb := protobuf.NewEnumDescriptorProto(conv.NormalizeMessageName(name))
 
+	enmuPrefix := conv.NormalizeFieldName(eb.GetName())
+
+	// add _UNSPECIFIED to first enum value
+	unspecified := protobuf.NewEnumValueDescriptorProto(strings.ToUpper(enmuPrefix+"_UNSPECIFIED"), int32(0))
+	eb.AddValue(unspecified)
+
 	for i, e := range enum.Enum {
 		var enumValName string
 		switch e := e.(type) {
 		case string:
-			enumValName = conv.NormalizeMessageName(e)
+			enumValName = conv.NormalizeFieldName(e)
 		case uint64:
 			enumValName = strconv.Itoa(int(e))
 		case int64:
@@ -449,7 +455,7 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Mes
 			fmt.Fprintf(os.Stderr, "%s: enumValName: %T -> %s\n", backtrace.FuncName(), e, e)
 		}
 
-		enumVal := protobuf.NewEnumValueDescriptorProto(eb.GetName()+"_"+enumValName, int32(i))
+		enumVal := protobuf.NewEnumValueDescriptorProto(strings.ToUpper(enmuPrefix+"_"+enumValName), int32(i+1))
 		eb.AddValue(enumVal)
 	}
 
@@ -482,7 +488,7 @@ func (c *compiler) CompileOneof(name string, oneOf *openapi3.Schema) (*protobuf.
 		if nestedMsgName == "" {
 			nestedMsgName = name + "_" + strconv.Itoa(i+1)
 		}
-		nestedMsg, err := c.compileSchemaRef(nestedMsgName, ref)
+		nestedMsg, err := c.CompileSchemaRef(nestedMsgName, ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile oneof ref: %w", err)
 		}
@@ -528,7 +534,7 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		if anyOfMsgName == "" {
 			anyOfMsgName = name + "_" + strconv.Itoa(i+1)
 		}
-		anyOfMsg, err := c.compileSchemaRef(anyOfMsgName, ref)
+		anyOfMsg, err := c.CompileSchemaRef(anyOfMsgName, ref)
 		if err != nil {
 			return nil, fmt.Errorf("compile anyOf ref: %w", err)
 		}
@@ -556,8 +562,8 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 	return msg, nil
 }
 
-// integerFieldType returns the FieldType of the underlying type of integer from the format.
-func integerFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
+// IntegerFieldType returns the FieldType of the underlying type of integer from the format.
+func IntegerFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "", "int32":
 		return protobuf.FieldTypeInt32()
@@ -570,8 +576,8 @@ func integerFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	}
 }
 
-// numberFieldType returns the FieldType of the underlying type of number from the format.
-func numberFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
+// NumberFieldType returns the FieldType of the underlying type of number from the format.
+func NumberFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "", "double":
 		return protobuf.FieldTypeDouble()
@@ -587,8 +593,8 @@ func numberFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	}
 }
 
-// stringFieldType returns the FieldType of the underlying type of string from the format.
-func stringFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
+// StringFieldType returns the FieldType of the underlying type of string from the format.
+func StringFieldType(format string) *descriptorpb.FieldDescriptorProto_Type {
 	switch format {
 	case "byte":
 		return protobuf.FieldTypeBytes()

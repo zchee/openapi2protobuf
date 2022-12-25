@@ -90,13 +90,13 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 						fieldType = protobuf.FieldTypeBool()
 
 					case openapi3.TypeInteger:
-						fieldType = integerFieldType(pv.Format)
+						fieldType = IntegerFieldType(pv.Format)
 
 					case openapi3.TypeNumber:
-						fieldType = numberFieldType(pv.Format)
+						fieldType = NumberFieldType(pv.Format)
 
 					case openapi3.TypeString:
-						fieldType = stringFieldType(pv.Format)
+						fieldType = StringFieldType(pv.Format)
 					}
 
 					field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(pname), fieldType)
