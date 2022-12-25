@@ -103,7 +103,7 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 					fieldName := conv.NormalizeFieldName(pname)
 					// trim parameter in type name from field name
-					fieldName = strings.ReplaceAll(fieldName, conv.NormalizeFieldName(paramVal.In)+"_", "")
+					fieldName = strings.ReplaceAll(fieldName, "_"+conv.NormalizeFieldName(paramVal.In), "")
 					field := protobuf.NewFieldDescriptorProto(fieldName, fieldType)
 					inputMsg.AddField(field)
 				}
@@ -167,16 +167,31 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 					for _, allOf := range content.Schema.Value.AllOf {
 						vals := make(map[string]*openapi3.Schema)
+						var valsOrder []string // for keep allOf field order
+
 						if properties := allOf.Value.Properties; properties != nil {
 							for name, prop := range properties {
-								if prop.Value == nil {
-									continue
+								val := prop.Value
+								if val == nil {
+									val = c.components.Schemas[prop.Ref].Value
+									name = val.Title
 								}
-								vals[name] = prop.Value
+								valsOrder = append(valsOrder, name)
+								vals[name] = val
 							}
 						}
 
-						for name, val := range vals {
+						if allOfRef := allOf.Ref; allOfRef != "" {
+							name := pathpkg.Base(allOfRef)
+							val := c.components.Schemas[name].Value
+
+							valsOrder = append(valsOrder, name)
+							vals[name] = val
+						}
+
+						for _, name := range valsOrder {
+							val := vals[name]
+
 							var field *protobuf.FieldDescriptorProto
 							switch val.Type {
 							case openapi3.TypeBoolean:
