@@ -202,8 +202,8 @@ func (c *compiler) CompileBuiltin(name string, schema *openapi3.Schema, fieldTyp
 	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 	field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), fieldType)
 	msg.AddField(field)
-	if description := schema.Description; description != "" {
-		msg.AddLeadingComment(msg.GetName(), description)
+	if desc := schema.Description; desc != "" {
+		msg.AddLeadingComment(msg.GetName(), desc)
 	}
 
 	return msg, nil
@@ -257,8 +257,8 @@ func (c *compiler) CompileArray(name string, array *openapi3.Schema) (*protobuf.
 			field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(typename), protobuf.FieldTypeMessage())
 			field.SetTypeName(typename)
 			msg.AddField(field)
-			if description := array.Description; description != "" {
-				msg.AddLeadingComment(msg.GetName(), description)
+			if desc := array.Description; desc != "" {
+				msg.AddLeadingComment(msg.GetName(), desc)
 			}
 
 		default:
@@ -291,12 +291,12 @@ func (c *compiler) CompileArray(name string, array *openapi3.Schema) (*protobuf.
 		field.SetTypeName(fieldType.String())
 	}
 
-	if description := array.Items.Value.Description; description != "" {
-		field.AddLeadingComment(field.GetName(), description)
+	if desc := array.Items.Value.Description; desc != "" {
+		field.AddLeadingComment(field.GetName(), desc)
 	}
 	msg.AddField(field)
-	if description := array.Description; description != "" {
-		msg.AddLeadingComment(msg.GetName(), description)
+	if desc := array.Description; desc != "" {
+		msg.AddLeadingComment(msg.GetName(), desc)
 	}
 
 	return msg, nil
@@ -329,8 +329,8 @@ func (c *compiler) CompileObject(name string, object *openapi3.Schema) (*protobu
 				field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(propName), protobuf.FieldTypeMessage())
 				field.SetTypeName(refMsg.GetName())
 				msg.AddField(field)
-				if description := object.Description; description != "" {
-					msg.AddLeadingComment(msg.GetName(), description)
+				if desc := object.Description; desc != "" {
+					msg.AddLeadingComment(msg.GetName(), desc)
 				}
 
 			default:
@@ -366,12 +366,12 @@ func (c *compiler) CompileObject(name string, object *openapi3.Schema) (*protobu
 			field.SetTypeName(fieldType.String())
 		}
 
-		if description := prop.Value.Description; description != "" {
-			field.AddLeadingComment(field.GetName(), description)
+		if desc := prop.Value.Description; desc != "" {
+			field.AddLeadingComment(field.GetName(), desc)
 		}
 		msg.AddField(field)
-		if description := object.Description; description != "" {
-			msg.AddLeadingComment(msg.GetName(), description)
+		if desc := object.Description; desc != "" {
+			msg.AddLeadingComment(msg.GetName(), desc)
 		}
 	}
 
@@ -418,12 +418,12 @@ func (c *compiler) CompileEnum(name string, enum *openapi3.Schema) *protobuf.Mes
 		eb.AddValue(enumVal)
 	}
 
-	if description := enum.Description; description != "" {
-		eb.AddLeadingComment(eb.GetName(), description)
+	if desc := enum.Description; desc != "" {
+		eb.AddLeadingComment(eb.GetName(), desc)
 	}
 	msg.AddEnumType(eb)
-	if description := enum.Description; description != "" {
-		msg.AddLeadingComment(msg.GetName(), description)
+	if desc := enum.Description; desc != "" {
+		msg.AddLeadingComment(msg.GetName(), desc)
 	}
 
 	return msg
@@ -438,8 +438,8 @@ func (c *compiler) CompileOneof(name string, oneOf *openapi3.Schema) (*protobuf.
 	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 	ob := protobuf.NewOneofDescriptorProto(conv.NormalizeFieldName(name))
 	msg.AddOneof(ob)
-	if description := oneOf.Description; description != "" {
-		msg.AddLeadingComment(msg.GetName(), description)
+	if desc := oneOf.Description; desc != "" {
+		msg.AddLeadingComment(msg.GetName(), desc)
 	}
 
 	for i, ref := range oneOf.OneOf {
@@ -465,8 +465,8 @@ func (c *compiler) CompileOneof(name string, oneOf *openapi3.Schema) (*protobuf.
 		field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(nestedMsg.GetName()), protobuf.FieldTypeMessage())
 		field.SetOneofIndex(msg.GetOneofIndex())
 		field.SetTypeName(nestedMsg.GetName())
-		if description := ref.Value.Description; description != "" {
-			field.AddLeadingComment(field.GetName(), description)
+		if desc := ref.Value.Description; desc != "" {
+			field.AddLeadingComment(field.GetName(), desc)
 		}
 		msg.AddField(field)
 	}
@@ -483,8 +483,8 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
 	ob := protobuf.NewOneofDescriptorProto(conv.NormalizeFieldName(name))
 	msg.AddOneof(ob)
-	if description := anyOf.Description; description != "" {
-		msg.AddLeadingComment(msg.GetName(), description)
+	if desc := anyOf.Description; desc != "" {
+		msg.AddLeadingComment(msg.GetName(), desc)
 	}
 
 	for i, ref := range anyOf.AnyOf {
@@ -510,8 +510,8 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 		field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(anyOfMsg.GetName()), protobuf.FieldTypeMessage())
 		field.SetOneofIndex(msg.GetOneofIndex())
 		field.SetTypeName(anyOfMsg.GetName())
-		if description := ref.Value.Description; description != "" {
-			field.AddLeadingComment(field.GetName(), description)
+		if desc := ref.Value.Description; desc != "" {
+			field.AddLeadingComment(field.GetName(), desc)
 		}
 		msg.AddField(field)
 	}
@@ -519,12 +519,29 @@ func (c *compiler) CompileAnyOf(name string, anyOf *openapi3.Schema) (*protobuf.
 	return msg, nil
 }
 
-func (c *compiler) CompileAllOf(name string, allOf *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
+func (c *compiler) CompileAllOf(name string, allOfs *openapi3.Schema) (*protobuf.MessageDescriptorProto, error) {
 	msg := protobuf.NewMessageDescriptorProto(conv.NormalizeMessageName(name))
+	if desc := allOfs.Description; desc != "" {
+		msg.AddLeadingComment(msg.GetName(), desc)
+	}
 
-	for i, ref := range allOf.AllOf {
-		_ = i
-		_ = ref
+	for _, allOf := range allOfs.AllOf {
+		allOfMsgName := allOf.Value.Title
+		allOfMsg, err := c.CompileSchemaRef(allOfMsgName, allOf)
+		if err != nil {
+			return nil, fmt.Errorf("compile allOf ref: %w", err)
+		}
+		if skipMessage(allOfMsg) {
+			continue
+		}
+
+		if !c.fdesc.HasComponent(allOfMsg.GetName()) {
+			msg.AddNestedMessage(allOfMsg)
+		}
+
+		field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(allOfMsg.GetName()), protobuf.FieldTypeMessage())
+		field.SetTypeName(allOfMsg.GetName())
+		msg.AddField(field)
 	}
 
 	return msg, nil

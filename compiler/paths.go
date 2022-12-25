@@ -168,8 +168,8 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 					}
 
 					for _, allOf := range content.Schema.Value.AllOf {
-						vals := make(map[string]*openapi3.Schema)
 						var valsOrder []string // for keep allOf field order
+						vals := make(map[string]*openapi3.Schema)
 
 						if properties := allOf.Value.Properties; properties != nil {
 							for name, prop := range properties {
@@ -182,6 +182,7 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 								vals[name] = val
 							}
 						}
+						sort.Strings(valsOrder)
 
 						if allOfRef := allOf.Ref; allOfRef != "" {
 							name := pathpkg.Base(allOfRef)
@@ -243,7 +244,6 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 					}
 				}
 			}
-			outputMsg.SortField(outputMsg.GetFieldOrder())
 			c.fdesc.AddMessage(outputMsg)
 
 			svc.AddMethod(method)

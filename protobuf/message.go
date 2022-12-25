@@ -111,7 +111,7 @@ func (md *MessageDescriptorProto) GetFieldLocations() []*descriptorpb.SourceCode
 func (md *MessageDescriptorProto) SortField(order []string) *MessageDescriptorProto {
 	propOrder := make([]string, len(order))
 	for i, s := range order {
-		propOrder[i] = conv.NormalizeFieldName(s)
+		propOrder[i] = s
 	}
 
 	n := len(md.desc.Field)
