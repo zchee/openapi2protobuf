@@ -4,7 +4,6 @@
 package compiler
 
 import (
-	"fmt"
 	"net/http"
 	pathpkg "path"
 	"sort"
@@ -98,9 +97,6 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 
 					case openapi3.TypeString:
 						fieldType = stringFieldType(pv.Format)
-
-					default:
-						fmt.Printf("pv: %#v\n", pv)
 					}
 
 					field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(pname), fieldType)
@@ -123,7 +119,6 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 					continue
 				}
 
-				fmt.Printf("content: %#v\n", content.Schema)
 				var fieldVal *openapi3.Schema
 				switch {
 				case content.Schema.Value != nil:
@@ -136,18 +131,11 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 				var fieldType *descriptorpb.FieldDescriptorProto_Type
 				switch content.Schema.Value.Type {
 				case openapi3.TypeObject:
-					fmt.Printf("content.Schema.Value.Title: %#v\n", content.Schema.Value.Title)
-					// fieldType = protobuf.FieldTypeMessage()
-					fieldType = protobuf.FieldTypeBool()
-					// TODO(zchee): check and parse (if needed) '#/components/schemas/*' on components.go
-					//   requestBody:
-					//     content:
-					//       application/json:
-					//         schema:
-					//           $ref: '#/components/schemas/CreatePrivateContractParam'
+					fieldType = protobuf.FieldTypeMessage()
 				}
 
-				field := protobuf.NewFieldDescriptorProto(fieldName, fieldType)
+				field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(fieldName), fieldType)
+				field.SetTypeName(fieldName)
 				inputMsg.AddField(field)
 
 				if description := val.Description; description != "" {
@@ -156,7 +144,7 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 			}
 			c.fdesc.AddMessage(inputMsg)
 
-			// parse output type
+			// parse Responses
 			outputMsg := protobuf.NewMessageDescriptorProto(outputMsgName)
 			for status, resp := range op.Responses {
 				st, _ := strconv.ParseInt(status, 10, 64)
@@ -165,10 +153,6 @@ func (c *compiler) CompilePaths(paths openapi3.Paths) error {
 				switch st {
 				case http.StatusOK:
 					outputType := pathpkg.Base(resp.Ref)
-
-					if idx := strings.LastIndex(outputType, "/"); idx > 0 {
-						outputType = outputType[idx+1:]
-					}
 
 					if !strings.HasSuffix(outputType, "Response") {
 						outputType += "Response"
