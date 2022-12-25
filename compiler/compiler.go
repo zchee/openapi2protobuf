@@ -137,7 +137,7 @@ func Compile(ctx context.Context, spec *openapi.Schema, options ...Option) (*des
 	}
 
 	// compile paths object
-	if err := c.CompilePaths(spec.Paths); err != nil {
+	if err := c.CompilePaths(c.opt.packageName, spec.Paths); err != nil {
 		return nil, fmt.Errorf("could not compile paths object: %w", err)
 	}
 

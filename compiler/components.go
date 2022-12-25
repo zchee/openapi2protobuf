@@ -87,33 +87,6 @@ func (c *compiler) CompileComponents(components openapi3.Components) error {
 		c.fdesc.AddMessage(msg)
 	}
 
-	// TODO(zchee): unnecessary? because Parameters always hasn't schema
-	// for _, name := range parameterNames {
-	// 	schemaRef, ok := components.Parameters[name]
-	// 	if !ok {
-	// 		continue
-	// 	}
-	//
-	// 	msg, err := c.compileSchemaRef(name, schemaRef.Value.Schema)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	if skipMessage(msg) {
-	// 		continue
-	// 	}
-	//
-	// 	propOrder, ok := schemaRef.Value.Extensions["x-propertyOrder"].(json.RawMessage)
-	// 	if ok && propOrder != nil {
-	// 		var xPropertyOrder []string
-	// 		if err := json.Unmarshal(propOrder, &xPropertyOrder); err != nil {
-	// 			return err
-	// 		}
-	// 		msg.SortField(xPropertyOrder)
-	// 	}
-	//
-	// 	c.fdesc.AddMessage(msg)
-	// }
-
 	for _, name := range requestBodyNames {
 		schemaRef, ok := components.RequestBodies[name]
 		if !ok {
