@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"go.lsp.dev/openapi2protobuf/compiler"
+	"go.lsp.dev/openapi2protobuf/internal/conv"
 	"go.lsp.dev/openapi2protobuf/openapi"
 )
 
@@ -21,6 +22,13 @@ func main() {
 }
 
 func run(args []string) error {
+	conv.UpperCaseAcronym["Nft"] = "NFT"
+	conv.UpperCaseAcronym["nFT"] = "NFT"
+	conv.UpperCaseAcronym["NFT"] = "NFT"
+	conv.UpperCaseAcronym["Did"] = "DID"
+	conv.UpperCaseAcronym["dID"] = "DID"
+	conv.UpperCaseAcronym["DID"] = "DID"
+
 	f := args[0]
 	pkgname := args[1]
 	// f := "testdata/lsp/3.17/types-3.17.0-next.8.openapi.yaml"

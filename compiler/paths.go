@@ -4,6 +4,7 @@
 package compiler
 
 import (
+	"fmt"
 	"net/http"
 	pathpkg "path"
 	"regexp"
@@ -45,7 +46,7 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 		// remove all `/` separators and convert to UpperCamelCase based on that
 		ss := strings.Split(name, "/")
-		name = ""
+		name = "" // reset
 		for _, s := range ss {
 			name += conv.NormalizeMessageName(s)
 		}
@@ -53,6 +54,7 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 		for meth, op := range item.Operations() {
 			// prepend the http method name to the RPC method name
 			methName := conv.NormalizeMessageName(meth) + name
+			fmt.Printf("methName: %s\n", methName)
 
 			inputMsgName := methName + "Request"
 			outputMsgName := methName + "Response"
@@ -73,7 +75,7 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 						pname = pathpkg.Base(param.Ref)
 						paramVal = c.components.Parameters[pname].Value
 					case param.Value != nil:
-						pname = pathpkg.Base(param.Value.Name)
+						pname = param.Value.Name
 						paramVal = param.Value
 					}
 
@@ -116,7 +118,7 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 				case rb.Value != nil:
 					reqBody = rb.Value
 				case rb.Ref != "":
-					reqBody = c.components.RequestBodies[rb.Ref].Value
+					reqBody = c.components.RequestBodies[pathpkg.Base(rb.Ref)].Value
 				}
 
 				content, ok := reqBody.Content["application/json"]
@@ -129,7 +131,7 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 				case content.Schema.Value != nil:
 					fieldVal = content.Schema.Value
 				case content.Schema.Ref != "":
-					fieldVal = c.components.Schemas[content.Schema.Ref].Value
+					fieldVal = c.components.Schemas[pathpkg.Base(content.Schema.Ref)].Value
 				}
 
 				fieldName := fieldVal.Title
@@ -154,92 +156,157 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 				// TODO(zchee): handle other than 200(http.StatusOK) status
 				switch st {
 				case http.StatusOK:
-					outputType := pathpkg.Base(resp.Ref)
-					if !strings.HasSuffix(outputType, "Response") {
-						outputType += "Response"
+					var val *openapi3.Schema
+
+					v := c.components.Schemas[pathpkg.Base(resp.Ref)]
+					if v != nil {
+						switch {
+						case v.Value != nil:
+							val = v.Value
+						case v.Ref != "":
+							val = c.components.Schemas[pathpkg.Base(v.Ref)].Value
+						}
 					}
 
-					var content *openapi3.MediaType
-					switch {
-					case resp.Value != nil:
-						content = resp.Value.Content["application/json"]
-					case resp.Ref != "":
-						content = c.components.Responses[resp.Ref].Value.Content["application/json"]
+					if val == nil {
+						var content *openapi3.Response
+						switch {
+						case resp.Value != nil:
+							content = resp.Value
+						case resp.Ref != "":
+							content = c.components.Responses[pathpkg.Base(resp.Ref)].Value
+						}
+
+						switch {
+						case content.Content != nil:
+							switch {
+							case content.Content["application/json"].Schema.Value != nil:
+								val = content.Content["application/json"].Schema.Value
+							case content.Content["application/json"].Schema.Ref != "":
+								val = c.components.Schemas[pathpkg.Base(content.Content["application/json"].Schema.Ref)].Value
+							}
+						default:
+							continue
+						}
 					}
 
-					for _, allOf := range content.Schema.Value.AllOf {
-						var valsOrder []string // for keep allOf field order
-						vals := make(map[string]*openapi3.Schema)
+					var field *protobuf.FieldDescriptorProto
+					switch val.Type {
+					case openapi3.TypeBoolean:
+						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeBool())
+						if title := val.Title; title != "" {
+							field.AddLeadingComment(field.GetName(), title)
+						}
 
-						if properties := allOf.Value.Properties; properties != nil {
-							for name, prop := range properties {
-								val := prop.Value
-								if val == nil {
-									val = c.components.Schemas[prop.Ref].Value
-									name = val.Title
+					case openapi3.TypeInteger:
+						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), IntegerFieldType(val.Format))
+						if title := val.Title; title != "" {
+							field.AddLeadingComment(field.GetName(), title)
+						}
+
+					case openapi3.TypeNumber:
+						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), NumberFieldType(val.Format))
+						if title := val.Title; title != "" {
+							field.AddLeadingComment(field.GetName(), title)
+						}
+
+					case openapi3.TypeString:
+						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), StringFieldType(val.Format))
+						if title := val.Title; title != "" {
+							field.AddLeadingComment(field.GetName(), title)
+						}
+
+					case openapi3.TypeArray:
+						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeMessage())
+						if description := val.Description; description != "" {
+							field.AddLeadingComment(field.GetName(), description)
+						}
+
+					case openapi3.TypeObject:
+						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeMessage())
+						field.SetTypeName(name)
+						if description := val.Description; description != "" {
+							field.AddLeadingComment(field.GetName(), description)
+						}
+					}
+					outputMsg.AddField(field)
+
+					allOfs := val.AllOf
+					if allOfs != nil {
+						for _, allOf := range allOfs {
+							var valsOrder []string // for keep allOf field order
+							vals := make(map[string]*openapi3.Schema)
+
+							if properties := allOf.Value.Properties; properties != nil {
+								for name, prop := range properties {
+									val := prop.Value
+									if val == nil {
+										val = c.components.Schemas[pathpkg.Base(prop.Ref)].Value
+										name = val.Title
+									}
+									valsOrder = append(valsOrder, name)
+									vals[name] = val
 								}
+							}
+							sort.Strings(valsOrder)
+
+							if allOfRef := allOf.Ref; allOfRef != "" {
+								name := pathpkg.Base(allOfRef)
+								val := c.components.Schemas[name].Value
+
 								valsOrder = append(valsOrder, name)
 								vals[name] = val
 							}
-						}
-						sort.Strings(valsOrder)
 
-						if allOfRef := allOf.Ref; allOfRef != "" {
-							name := pathpkg.Base(allOfRef)
-							val := c.components.Schemas[name].Value
+							for _, name := range valsOrder {
+								val := vals[name]
 
-							valsOrder = append(valsOrder, name)
-							vals[name] = val
-						}
+								var field *protobuf.FieldDescriptorProto
+								switch val.Type {
+								case openapi3.TypeBoolean:
+									field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeBool())
+									if title := val.Title; title != "" {
+										field.AddLeadingComment(field.GetName(), title)
+									}
 
-						for _, name := range valsOrder {
-							val := vals[name]
+								case openapi3.TypeInteger:
+									field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), IntegerFieldType(val.Format))
+									if title := val.Title; title != "" {
+										field.AddLeadingComment(field.GetName(), title)
+									}
 
-							var field *protobuf.FieldDescriptorProto
-							switch val.Type {
-							case openapi3.TypeBoolean:
-								field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeBool())
-								if title := val.Title; title != "" {
-									field.AddLeadingComment(field.GetName(), title)
+								case openapi3.TypeNumber:
+									field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), NumberFieldType(val.Format))
+									if title := val.Title; title != "" {
+										field.AddLeadingComment(field.GetName(), title)
+									}
+
+								case openapi3.TypeString:
+									field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), StringFieldType(val.Format))
+									if title := val.Title; title != "" {
+										field.AddLeadingComment(field.GetName(), title)
+									}
+
+								case openapi3.TypeArray:
+									field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeMessage())
+									if description := val.Description; description != "" {
+										field.AddLeadingComment(field.GetName(), description)
+									}
+
+								case openapi3.TypeObject:
+									field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeMessage())
+									field.SetTypeName(name)
+									if description := val.Description; description != "" {
+										field.AddLeadingComment(field.GetName(), description)
+									}
 								}
 
-							case openapi3.TypeInteger:
-								field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), IntegerFieldType(val.Format))
-								if title := val.Title; title != "" {
-									field.AddLeadingComment(field.GetName(), title)
-								}
-
-							case openapi3.TypeNumber:
-								field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), NumberFieldType(val.Format))
-								if title := val.Title; title != "" {
-									field.AddLeadingComment(field.GetName(), title)
-								}
-
-							case openapi3.TypeString:
-								field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), StringFieldType(val.Format))
-								if title := val.Title; title != "" {
-									field.AddLeadingComment(field.GetName(), title)
-								}
-
-							case openapi3.TypeArray:
-								field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeMessage())
-								if description := val.Description; description != "" {
-									field.AddLeadingComment(field.GetName(), description)
-								}
-
-							case openapi3.TypeObject:
-								field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeMessage())
-								field.SetTypeName(name)
-								if description := val.Description; description != "" {
-									field.AddLeadingComment(field.GetName(), description)
-								}
+								outputMsg.AddField(field)
 							}
-
-							outputMsg.AddField(field)
 						}
 					}
 
-					if description := content.Schema.Value.Title; description != "" {
+					if description := val.Title; description != "" {
 						outputMsg.AddLeadingComment(outputMsg.GetName(), description)
 					}
 				}
