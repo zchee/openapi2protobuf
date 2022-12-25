@@ -21,6 +21,8 @@ var UpperCaseAcronym = map[string]string{
 	http.MethodConnect: "Connect",
 	http.MethodOptions: "Options",
 	http.MethodTrace:   "Trace",
+
+	"Id": "ID",
 }
 
 func NormalizeMessageName(s string) string {
