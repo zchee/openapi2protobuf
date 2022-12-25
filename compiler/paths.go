@@ -6,6 +6,7 @@ package compiler
 import (
 	"net/http"
 	pathpkg "path"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -17,6 +18,8 @@ import (
 	"go.lsp.dev/openapi2protobuf/internal/conv"
 	"go.lsp.dev/openapi2protobuf/protobuf"
 )
+
+var queryRe = regexp.MustCompile(`/{\w+}`)
 
 // CompilePaths compiles paths object.
 func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error {
@@ -38,11 +41,8 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 		name := path // do not change the original path variable
 
-		// cut query template, use only before word
-		before, _, ok := strings.Cut(name, "/{")
-		if ok {
-			name = before
-		}
+		// trim query template
+		name = queryRe.ReplaceAllString(name, "")
 
 		// remove all `/` separators and convert to UpperCamelCase based on that
 		ss := strings.Split(name, "/")
