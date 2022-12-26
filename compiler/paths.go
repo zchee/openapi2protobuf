@@ -4,6 +4,7 @@
 package compiler
 
 import (
+	"fmt"
 	"net/http"
 	pathpkg "path"
 	"regexp"
@@ -18,7 +19,7 @@ import (
 	"go.lsp.dev/openapi2protobuf/protobuf"
 )
 
-var queryRe = regexp.MustCompile(`/{\w+}`)
+var queryRe = regexp.MustCompile(`/({\w+})`)
 
 // CompilePaths compiles paths object.
 func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error {
@@ -41,6 +42,8 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 		name := path // do not change the original path variable
 
 		// trim query template
+		queries := queryRe.FindStringSubmatch(name)
+		fmt.Printf("queries: %v\n", queries)
 		name = queryRe.ReplaceAllString(name, "")
 
 		// remove all `/` separators and convert to UpperCamelCase based on that
@@ -188,44 +191,32 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 						}
 					}
 
-					var field *protobuf.FieldDescriptorProto
+					var fieldType *descriptorpb.FieldDescriptorProto_Type
 					switch val.Type {
 					case openapi3.TypeBoolean:
-						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), protobuf.FieldTypeBool())
-						if title := val.Title; title != "" {
-							field.AddLeadingComment(field.GetName(), title)
-						}
+						fieldType = protobuf.FieldTypeBool()
 
 					case openapi3.TypeInteger:
-						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), IntegerFieldType(val.Format))
-						if title := val.Title; title != "" {
-							field.AddLeadingComment(field.GetName(), title)
-						}
+						fieldType = IntegerFieldType(val.Format)
 
 					case openapi3.TypeNumber:
-						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), NumberFieldType(val.Format))
-						if title := val.Title; title != "" {
-							field.AddLeadingComment(field.GetName(), title)
-						}
+						fieldType = NumberFieldType(val.Format)
 
 					case openapi3.TypeString:
-						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), StringFieldType(val.Format))
-						if title := val.Title; title != "" {
-							field.AddLeadingComment(field.GetName(), title)
-						}
+						fieldType = StringFieldType(val.Format)
 
 					case openapi3.TypeArray:
-						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), protobuf.FieldTypeMessage())
-						if description := val.Description; description != "" {
-							field.AddLeadingComment(field.GetName(), description)
-						}
+						fieldType = protobuf.FieldTypeMessage()
 
 					case openapi3.TypeObject:
-						field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), protobuf.FieldTypeMessage())
+						fieldType = protobuf.FieldTypeMessage()
+					}
+					field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(val.Title), fieldType)
+					if val.Type == openapi3.TypeObject {
 						field.SetTypeName(val.Title)
-						if description := val.Description; description != "" {
-							field.AddLeadingComment(field.GetName(), description)
-						}
+					}
+					if title := val.Title; title != "" {
+						field.AddLeadingComment(field.GetName(), title)
 					}
 					outputMsg.AddField(field)
 
