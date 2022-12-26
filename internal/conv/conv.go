@@ -4,45 +4,53 @@
 package conv
 
 import (
-	"net/http"
+	"bytes"
+	"fmt"
 	"strings"
-	"unicode"
 
-	"github.com/iancoleman/strcase"
+	"github.com/gobuffalo/flect"
 )
 
-var UpperCaseAcronym = map[string]string{
-	http.MethodGet:     "Get",
-	http.MethodHead:    "Head",
-	http.MethodPost:    "Post",
-	http.MethodPut:     "Put",
-	http.MethodPatch:   "Patch", // RFC 5789
-	http.MethodDelete:  "Delete",
-	http.MethodConnect: "Connect",
-	http.MethodOptions: "Options",
-	http.MethodTrace:   "Trace",
+// RegisterAcronyms registers acronym list to flect package.
+func RegisterAcronyms(ss []string) {
+	var buf bytes.Buffer
 
-	"Id": "ID",
-}
-
-func NormalizeMessageName(s string) string {
-	camel := strcase.ToCamel(s)
-	for acronym, replace := range UpperCaseAcronym {
-		if strings.Contains(camel, acronym) {
-			camel = strings.ReplaceAll(camel, acronym, replace)
+	buf.WriteByte('[')
+	for i, s := range ss {
+		buf.WriteString(fmt.Sprintf("%q", s))
+		if i != len(ss)-1 {
+			buf.WriteByte(',')
 		}
 	}
+	buf.WriteByte(']')
 
-	return camel
+	if err := flect.LoadAcronyms(bytes.NewReader(buf.Bytes())); err != nil {
+		panic(err)
+	}
 }
 
+// NormalizeMessageName normalizes s to the proto message name.
+func NormalizeMessageName(s string) string {
+	s = flect.Pascalize(s)
+	if strings.Contains(s, "IDS") {
+		s = strings.ReplaceAll(s, "IDS", "IDs")
+	}
+
+	return s
+}
+
+// NormalizeFieldName normalizes s to the proto field name.
 func NormalizeFieldName(s string) string {
-	return strcase.ToSnake(s)
+	return flect.Underscore(s)
 }
 
-// NormalizeComment normalizes title and description to Go style comment.
+func ToSingularize(s string) string {
+	return flect.Singularize(s)
+}
+
+// NormalizeComment normalizes the title and description to Go style comment.
 //
-// This function returns the string that assumes inserting after the "//" token.
+// This function returns the string that assumes inserting after the `//` token.
 func NormalizeComment(title, description string) string {
 	var sb strings.Builder
 
@@ -51,24 +59,29 @@ func NormalizeComment(title, description string) string {
 	sb.WriteString(" is the") // add godoc style words
 	sb.WriteString(" ")       // add space after title
 
-	// hasAcronym := false
-	// for acronym := range UpperCaseAcronym {
-	// 	if strings.Contains(description, acronym) {
-	// 		hasAcronym = true
-	// 	}
-	// }
-	// if !hasAcronym {
-	// // ToLower the first letter of the description
-	// sb.WriteByte(byte(unicode.ToLower(rune(description[0]))))
-	// }
-
-	// ToLower the first letter of the description
-	sb.WriteByte(byte(unicode.ToLower(rune(description[0]))))
-	// replaces all newline with space for after "//"
-	sb.WriteString(strings.ReplaceAll(description[1:], "\n", "\n "))
+	// parse first word
+	idx := strings.Index(description, " ")
+	switch idx {
+	case -1:
+		sb.WriteString(flect.Camelize(description))
+	default:
+		sb.WriteString(flect.Camelize(strings.ToLower(description[:idx])))
+		// replaces all newline with space for after "//"
+		sb.WriteString(strings.ReplaceAll(description[idx:], "\n", "\n "))
+	}
 	if description[len(description)-1] != '.' {
 		sb.WriteString(".")
 	}
 
 	return sb.String()
+}
+
+// IsVowel returns whether the r is vowel letter.
+func IsVowel(r rune) bool {
+	switch r {
+	case 'a', 'e', 'i', 'o', 'u':
+		return true
+	default:
+		return false
+	}
 }

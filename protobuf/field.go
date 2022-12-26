@@ -14,7 +14,7 @@ type FieldDescriptorProto struct {
 	number  int32
 	comment *Comment
 
-	fieldrrder []string
+	fieldOrder []string
 }
 
 func NewFieldDescriptorProto(name string, fieldType *descriptorpb.FieldDescriptorProto_Type) *FieldDescriptorProto {

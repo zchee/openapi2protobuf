@@ -9,6 +9,7 @@ require (
 	github.com/Code-Hex/dd v1.1.0
 	github.com/alecthomas/chroma v0.10.0
 	github.com/getkin/kin-openapi v0.112.0
+	github.com/gobuffalo/flect v0.3.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jhump/protoreflect v1.14.0
 	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37

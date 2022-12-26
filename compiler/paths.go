@@ -4,7 +4,6 @@
 package compiler
 
 import (
-	"fmt"
 	"net/http"
 	pathpkg "path"
 	"regexp"
@@ -19,7 +18,7 @@ import (
 	"go.lsp.dev/openapi2protobuf/protobuf"
 )
 
-var queryRe = regexp.MustCompile(`/({\w+})`)
+var queryRe = regexp.MustCompile(`/{(\w+)}`)
 
 // CompilePaths compiles paths object.
 func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error {
@@ -41,9 +40,8 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 		name := path // do not change the original path variable
 
-		// trim query template
+		// trim query template if needed
 		queries := queryRe.FindStringSubmatch(name)
-		fmt.Printf("queries: %v\n", queries)
 		name = queryRe.ReplaceAllString(name, "")
 
 		// remove all `/` separators and convert to UpperCamelCase based on that
@@ -52,8 +50,33 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 		for _, s := range ss {
 			name += conv.NormalizeMessageName(s)
 		}
+		if len(queries) > 0 {
+			for i := 1; i < len(queries); i++ {
+				sep := "And"
+				if i == 1 {
+					sep = "By"
+				}
+				name += sep + conv.NormalizeMessageName(queries[i])
+			}
+		}
 
-		for meth, op := range item.Operations() {
+		methodOrder := []string{
+			http.MethodGet,
+			http.MethodHead,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+			http.MethodConnect,
+			http.MethodOptions,
+			http.MethodTrace,
+		}
+		for _, meth := range methodOrder {
+			op := item.GetOperation(meth)
+			if op == nil {
+				continue
+			}
+
 			// prepend the http method name to the RPC method name
 			methName := conv.NormalizeMessageName(meth) + name
 
@@ -62,9 +85,8 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 			method := protobuf.NewMethodDescriptorProto(methName, inputMsgName, outputMsgName)
 
-			inputMsg := protobuf.NewMessageDescriptorProto(inputMsgName)
-
 			var fieldOrder []string // for keep parameters order
+			inputMsg := protobuf.NewMessageDescriptorProto(inputMsgName)
 			// first, check whether the op has parameters and defines proto message fields
 			if params := op.Parameters; len(params) > 0 {
 				for _, param := range params {
@@ -104,7 +126,12 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 					fieldName := conv.NormalizeFieldName(pname)
 					// trim parameter in type name from field name
 					fieldName = strings.ReplaceAll(fieldName, "_"+conv.NormalizeFieldName(paramVal.In), "")
+
 					field := protobuf.NewFieldDescriptorProto(fieldName, fieldType)
+					if desc := paramVal.Description; desc != "" {
+						field.AddLeadingComment(field.GetName(), desc)
+					}
+
 					fieldOrder = append(fieldOrder, field.GetName())
 					inputMsg.AddField(field)
 				}
@@ -116,10 +143,10 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 			if rb := op.RequestBody; rb != nil {
 				var reqBody *openapi3.RequestBody
 				switch {
-				case rb.Value != nil:
-					reqBody = rb.Value
 				case rb.Ref != "":
 					reqBody = c.components.RequestBodies[pathpkg.Base(rb.Ref)].Value
+				case rb.Value != nil:
+					reqBody = rb.Value
 				}
 
 				content, ok := reqBody.Content["application/json"]
@@ -129,10 +156,10 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 				var fieldVal *openapi3.Schema
 				switch {
-				case content.Schema.Value != nil:
-					fieldVal = content.Schema.Value
 				case content.Schema.Ref != "":
 					fieldVal = c.components.Schemas[pathpkg.Base(content.Schema.Ref)].Value
+				case content.Schema.Value != nil:
+					fieldVal = content.Schema.Value
 				}
 
 				fieldName := fieldVal.Title
@@ -140,12 +167,12 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 				field := protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(fieldName), fieldType)
 				field.SetTypeName(fieldName)
+				if desc := fieldVal.Description; desc != "" {
+					field.AddLeadingComment(field.GetName(), desc)
+				}
+
 				fieldOrder = append(fieldOrder, field.GetName())
 				inputMsg.AddField(field)
-
-				if description := reqBody.Description; description != "" {
-					inputMsg.AddLeadingComment(inputMsg.GetName(), description)
-				}
 			}
 			inputMsg.SortField(fieldOrder)
 			c.fdesc.AddMessage(inputMsg)
@@ -162,29 +189,29 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 					v := c.components.Schemas[pathpkg.Base(resp.Ref)]
 					if v != nil {
 						switch {
-						case v.Value != nil:
-							val = v.Value
 						case v.Ref != "":
 							val = c.components.Schemas[pathpkg.Base(v.Ref)].Value
+						case v.Value != nil:
+							val = v.Value
 						}
 					}
 
 					if val == nil {
 						var content *openapi3.Response
 						switch {
-						case resp.Value != nil:
-							content = resp.Value
 						case resp.Ref != "":
 							content = c.components.Responses[pathpkg.Base(resp.Ref)].Value
+						case resp.Value != nil:
+							content = resp.Value
 						}
 
 						switch {
 						case content.Content != nil:
 							switch {
-							case content.Content["application/json"].Schema.Value != nil:
-								val = content.Content["application/json"].Schema.Value
 							case content.Content["application/json"].Schema.Ref != "":
 								val = c.components.Schemas[pathpkg.Base(content.Content["application/json"].Schema.Ref)].Value
+							case content.Content["application/json"].Schema.Value != nil:
+								val = content.Content["application/json"].Schema.Value
 							}
 						default:
 							continue
@@ -215,8 +242,16 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 					if val.Type == openapi3.TypeObject {
 						field.SetTypeName(val.Title)
 					}
-					if title := val.Title; title != "" {
-						field.AddLeadingComment(field.GetName(), title)
+
+					switch {
+					case val.Description != "":
+						if decs := val.Description; decs != "" {
+							field.AddLeadingComment(field.GetName(), decs)
+						}
+					case val.Title != "":
+						if title := val.Title; title != "" {
+							field.AddLeadingComment(field.GetName(), title)
+						}
 					}
 					outputMsg.AddField(field)
 
@@ -226,6 +261,7 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 							var valsOrder []string // for keep allOf field order
 							vals := make(map[string]*openapi3.Schema)
 
+							// parse properties
 							if properties := allOf.Value.Properties; properties != nil {
 								for name, prop := range properties {
 									val := prop.Value
@@ -239,6 +275,7 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 							}
 							sort.Strings(valsOrder)
 
+							// parse allOf
 							if allOfRef := allOf.Ref; allOfRef != "" {
 								name := pathpkg.Base(allOfRef)
 								val := c.components.Schemas[name].Value
@@ -278,15 +315,15 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 								case openapi3.TypeArray:
 									field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeMessage())
-									if description := val.Description; description != "" {
-										field.AddLeadingComment(field.GetName(), description)
+									if desc := val.Description; desc != "" {
+										field.AddLeadingComment(field.GetName(), desc)
 									}
 
 								case openapi3.TypeObject:
 									field = protobuf.NewFieldDescriptorProto(conv.NormalizeFieldName(name), protobuf.FieldTypeMessage())
 									field.SetTypeName(name)
-									if description := val.Description; description != "" {
-										field.AddLeadingComment(field.GetName(), description)
+									if desc := val.Description; desc != "" {
+										field.AddLeadingComment(field.GetName(), desc)
 									}
 								}
 
