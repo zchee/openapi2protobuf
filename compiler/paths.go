@@ -4,6 +4,8 @@
 package compiler
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	pathpkg "path"
 	"regexp"
@@ -79,6 +81,11 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 
 			// prepend the http method name to the RPC method name
 			methName := conv.NormalizeMessageName(meth) + name
+			if grpcMethodName, ok := op.Extensions["x-grpc-method-name"]; ok {
+				if err := json.Unmarshal(grpcMethodName.(json.RawMessage), &methName); err != nil {
+					return fmt.Errorf("unmarshal x-grpc-method-name extension: %w", err)
+				}
+			}
 
 			inputMsgName := methName + "Request"
 			outputMsgName := methName + "Response"
@@ -135,8 +142,6 @@ func (c *compiler) CompilePaths(serviceName string, paths openapi3.Paths) error 
 					fieldOrder = append(fieldOrder, field.GetName())
 					inputMsg.AddField(field)
 				}
-				sort.Strings(fieldOrder)
-				inputMsg.SortField(fieldOrder)
 			}
 
 			// parse RequestBody for inputMsg
