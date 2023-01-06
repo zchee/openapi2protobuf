@@ -15,6 +15,16 @@ import (
 	"go.lsp.dev/openapi2protobuf/openapi"
 )
 
+func init() {
+	conv.RegisterAcronyms(
+		[]string{
+			"NFT",
+			"DID",
+			"IDs",
+		},
+	)
+}
+
 func main() {
 	if err := run(os.Args[1:]); err != nil {
 		log.Fatal(err)
@@ -22,16 +32,8 @@ func main() {
 }
 
 func run(args []string) error {
-	conv.UpperCaseAcronym["Nft"] = "NFT"
-	conv.UpperCaseAcronym["nFT"] = "NFT"
-	conv.UpperCaseAcronym["NFT"] = "NFT"
-	conv.UpperCaseAcronym["Did"] = "DID"
-	conv.UpperCaseAcronym["dID"] = "DID"
-	conv.UpperCaseAcronym["DID"] = "DID"
-
 	f := args[0]
 	pkgname := args[1]
-	// f := "testdata/lsp/3.17/types-3.17.0-next.8.openapi.yaml"
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
